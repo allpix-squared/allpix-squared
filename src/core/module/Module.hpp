@@ -26,6 +26,7 @@
 #include "core/config/ConfigManager.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
+#include "core/geometry/GeometryManager.hpp"
 #include "core/histograms/HistogramManager.hpp"
 #include "core/log/Logger.hpp"
 #include "core/messenger/delegates.h"
@@ -60,7 +61,7 @@ namespace allpix {
 
     public:
         /**
-         * @brief Base constructor for unique modules
+         * @brief Base constructor for unique modules not requiring a messenger
          * @param config Configuration for this module
          */
         explicit Module(Configuration& config);
@@ -68,8 +69,9 @@ namespace allpix {
          * @brief Base constructor for unique modules
          * @param config Configuration for this module
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        explicit Module(Configuration& config, Messenger* messenger);
+        explicit Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
         /**
          * @brief Base constructor for detector modules
          * @param config Configuration for this module
@@ -235,6 +237,7 @@ namespace allpix {
 
         Messenger* messenger_;
         std::shared_ptr<Detector> detector_;
+        GeometryManager* geo_manager_;
 
     private:
         /**
@@ -328,7 +331,8 @@ namespace allpix {
         friend class Messenger;
 
     public:
-        explicit SequentialModule(Configuration& config, Messenger* messenger) : Module(config, messenger) {}
+        explicit SequentialModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+            : Module(config, messenger, geo_manager) {}
         explicit SequentialModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
             : Module(config, messenger, std::move(detector)) {}
 

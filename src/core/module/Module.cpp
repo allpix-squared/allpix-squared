@@ -34,9 +34,10 @@
 
 using namespace allpix;
 
-Module::Module(Configuration& config) : Module(config, nullptr, nullptr) {}
+Module::Module(Configuration& config) : config_(config) {}
 
-Module::Module(Configuration& config, Messenger* messenger) : Module(config, messenger, nullptr) {}
+Module::Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+    : config_(config), messenger_(messenger), geo_manager_(geo_manager) {}
 
 Module::Module(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
     : config_(config), logger_(generate_logger(config)), messenger_(messenger), detector_(std::move(detector)) {}
