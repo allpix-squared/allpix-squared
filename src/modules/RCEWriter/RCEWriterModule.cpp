@@ -315,7 +315,7 @@ RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, Ge
     allow_multithreading();
 
     assert(messenger && "messenger must be non-null");
-    assert(geo_mgr && "geo_mgr must be non-null");
+    assert(geo_manager && "geo_manager must be non-null");
 
     // Bind to PixelHitMessage
     messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
