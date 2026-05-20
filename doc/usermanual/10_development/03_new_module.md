@@ -190,13 +190,21 @@ constructor of a detector module is:
 
 ```cpp
 TestModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : Module(config, std::move(detector)) {}
+    : Module(config, messenger, std::move(detector)) {}
 ```
 
 The pointer to a Messenger can be used to bind variables to either receive or dispatch messages as explained in
 [Section 4.6](../04_framework/06_messages.md). The constructor should be used to bind required messages, set configuration
 defaults and to throw exceptions in case of failures. Unique modules can access the GeometryManager to fetch all detector
 descriptions, while detector modules directly receive a link to their respective detector.
+
+In case the messenger or detector are not required by a module, they can be omitted in the module constructor if in the last
+position, or tagged as in the following example:
+
+```cpp
+TestModule(Configuration& config, Messenger* /*unused*/, std::shared_ptr<Detector> detector)
+    : Module(config, nullptr, std::move(detector)) {}
+```
 
 In addition to the constructor, each module can override the following methods:
 
