@@ -68,7 +68,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        std::shared_ptr<const Detector> detector_;
         std::shared_ptr<const DetectorModel> model_;
 
         // Config parameters

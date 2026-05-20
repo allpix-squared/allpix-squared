@@ -57,7 +57,6 @@ namespace allpix {
         void initialize() override;
 
     private:
-
         /**
          * @brief Create and apply a linear field
          * @param depletion_voltage Depletion voltage of the sensor for the given thickness domain

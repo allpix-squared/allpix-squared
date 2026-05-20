@@ -74,7 +74,6 @@ namespace allpix {
 
     private:
         // General module members
-        std::shared_ptr<const Detector> detector_;
         std::shared_ptr<const DetectorModel> model_;
 
         /**
