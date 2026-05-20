@@ -53,8 +53,6 @@ namespace allpix {
         void initialize() override;
 
     private:
-        GeometryManager* geometry_manager_;
-
         /**
          * @brief Read field from a file in init or apf format
          * @return Data of the field read from file

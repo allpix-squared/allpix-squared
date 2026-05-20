@@ -53,7 +53,7 @@ using namespace allpix;
 VisualizationGeant4Module::VisualizationGeant4Module(Configuration& config,
                                                      Messenger* /*unused*/,
                                                      GeometryManager* geo_manager)
-    : Module(config, nullptr), geo_manager_(geo_manager) {
+    : Module(config, nullptr, geo_manager) {
     // Interpret transparency parameter as opacity for backwards-compatibility
     config_.setAlias("opacity", "transparency", true);
 

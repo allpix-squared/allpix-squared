@@ -48,7 +48,7 @@
 using namespace allpix;
 
 DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : SequentialModule(config, messenger), geo_manager_(geo_manager) {
+    : SequentialModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 

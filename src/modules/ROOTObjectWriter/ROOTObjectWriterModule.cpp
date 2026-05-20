@@ -42,8 +42,8 @@
 
 using namespace allpix;
 
-ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : SequentialModule(config, messenger), geo_mgr_(geo_mgr) {
+ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+    : SequentialModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
@@ -312,7 +312,7 @@ void ROOTObjectWriterModule::finalize() {
     // Save the detectors to the output file
     auto* detectors_dir = output_file_->mkdir("detectors");
     auto* models_dir = output_file_->mkdir("models");
-    for(auto& detector : geo_mgr_->getDetectors()) {
+    for(auto& detector : geo_manager_->getDetectors()) {
         detectors_dir->cd();
         LOG(TRACE) << "Writing detector configuration for: " << detector->getName();
         auto* detector_dir = detectors_dir->mkdir(detector->getName().c_str());

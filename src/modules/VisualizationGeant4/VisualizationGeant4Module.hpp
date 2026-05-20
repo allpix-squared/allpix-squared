@@ -80,8 +80,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        GeometryManager* geo_manager_;
-
         /**
          * @brief Set the visualization settings from the configuration
          */

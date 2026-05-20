@@ -64,8 +64,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        GeometryManager* geo_mgr_;
-
         // Struct to store tree and information for each detector
         struct sensor_data {
             static constexpr int kMaxHits = (1 << 14);

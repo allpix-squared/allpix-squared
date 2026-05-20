@@ -44,7 +44,7 @@
 using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : SequentialModule(config, messenger), geometry_manager_(geo_manager) {
+    : SequentialModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
@@ -64,12 +64,12 @@ void CorryvreckanWriterModule::initialize() {
     output_mc_truth_ = config_.get<bool>("output_mctruth");
 
     reference_ = config_.get<std::string>("reference");
-    if(!geometry_manager_->hasDetector(reference_)) {
+    if(!geo_manager_->hasDetector(reference_)) {
         throw InvalidValueError(config_, "reference", "detector not defined");
     }
     dut_ = config_.getArray<std::string>("dut", std::vector<std::string>());
     for(auto& dut : dut_) {
-        if(!geometry_manager_->hasDetector(dut)) {
+        if(!geo_manager_->hasDetector(dut)) {
             throw InvalidValueError(config_, "dut", "detector not defined");
         }
     }
@@ -255,7 +255,7 @@ void CorryvreckanWriterModule::finalize() {
 
         geometry_file << "# Allpix Squared detector geometry - https://cern.ch/allpix-squared" << '\n' << '\n';
 
-        auto detectors = geometry_manager_->getDetectors();
+        auto detectors = geo_manager_->getDetectors();
         for(auto& detector : detectors) {
             geometry_file << "[" << detector->getName() << "]" << '\n';
             geometry_file << "position = " << Units::display(detector->getPosition().x(), {"mm", "um"}) << ", "
@@ -294,7 +294,7 @@ void CorryvreckanWriterModule::finalize() {
             }
 
             // Get the material budget if available:
-            auto budget = geometry_manager_->getExternalObject<double>(detector->getName(), "material_budget");
+            auto budget = geo_manager_->getExternalObject<double>(detector->getName(), "material_budget");
             if(budget != nullptr) {
                 LOG(DEBUG) << "Found calculated material budget for detector " << detector->getName() << ", storing.";
                 geometry_file << "material_budget = " << *budget << '\n';

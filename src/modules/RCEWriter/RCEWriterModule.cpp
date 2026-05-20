@@ -309,8 +309,8 @@ static void write_proteus_config(const std::string& device_path,
     print_geometry(geometry_file, names, geo_mgr, cfg_mgr);
 }
 
-RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : SequentialModule(config, messenger), geo_mgr_(geo_mgr) {
+RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+    : SequentialModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
@@ -329,7 +329,7 @@ RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, Ge
 void RCEWriterModule::initialize() {
     // We need a sorted list of names to assign monotonic, numeric ids
     std::vector<std::string> detector_names;
-    for(const auto& detector : geo_mgr_->getDetectors()) {
+    for(const auto& detector : geo_manager_->getDetectors()) {
         detector_names.push_back(detector->getName());
     }
     std::ranges::sort(detector_names);
@@ -375,7 +375,7 @@ void RCEWriterModule::initialize() {
     // Write proteus config files
     auto device_path = createOutputFile(config_.get<std::string>("device_file"), "toml");
     auto geometry_path = createOutputFile(config_.get<std::string>("geometry_file"), "toml");
-    write_proteus_config(device_path, geometry_path, detector_names, *geo_mgr_, *getConfigManager());
+    write_proteus_config(device_path, geometry_path, detector_names, *geo_manager_, *getConfigManager());
 }
 
 void RCEWriterModule::run(Event* event) {

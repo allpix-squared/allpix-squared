@@ -111,9 +111,6 @@ namespace allpix {
         std::optional<PhotonHit>
         track(const ROOT::Math::XYZPoint& position, const ROOT::Math::XYZVector& direction, double penetration_depth) const;
 
-        // General module members
-        GeometryManager* geo_manager_;
-
         // Laser parameters
         ROOT::Math::XYZPoint source_position_;
         ROOT::Math::XYZVector beam_direction_;

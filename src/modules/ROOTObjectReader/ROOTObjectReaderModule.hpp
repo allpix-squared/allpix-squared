@@ -45,7 +45,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param geo_mgr Pointer to the geometry manager, containing the detectors
          */
-        ROOTObjectReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr);
+        ROOTObjectReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
         /**
          * @brief Destructor deletes the internal objects read from ROOT Tree
          */
@@ -78,8 +78,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        GeometryManager* geo_mgr_;
-
         /**
          * @brief Internal object storing objects and information to construct a message from tree
          */

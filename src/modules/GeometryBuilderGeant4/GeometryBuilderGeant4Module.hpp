@@ -52,7 +52,6 @@ namespace allpix {
         virtual ~GeometryBuilderGeant4Module();
 
     private:
-        GeometryManager* geo_manager_;
         // Geant4 run manager is owned by this module
         GeometryConstructionG4* geometry_construction_;
         std::unique_ptr<G4RunManager> run_manager_g4_;

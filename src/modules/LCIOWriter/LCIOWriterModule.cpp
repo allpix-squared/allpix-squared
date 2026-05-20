@@ -100,8 +100,8 @@ static std::array<long double, 3> getRotationAnglesFromMatrix(const ROOT::Math::
     return vec;
 }
 
-LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo)
-    : SequentialModule(config, messenger), geo_mgr_(geo) {
+LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+    : SequentialModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
@@ -139,7 +139,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
         has_short_config = true;
     }
 
-    auto detectors = geo_mgr_->getDetectors();
+    auto detectors = geo_manager_->getDetectors();
 
     if(has_short_config) {
         auto out_col_name = config_.get<std::string>("output_collection_name");
@@ -482,7 +482,7 @@ void LCIOWriterModule::finalize() {
             throw ModuleError("Cannot write to GEAR geometry file");
         }
 
-        auto detectors = geo_mgr_->getDetectors();
+        auto detectors = geo_manager_->getDetectors();
         geometry_file << "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
                       << "<!-- ?xml-stylesheet type=\"text/xsl\" href=\"https://cern.ch/allpix-squared/\"? -->\n"
                       << "<gear>\n";
@@ -492,7 +492,7 @@ void LCIOWriterModule::finalize() {
             const ROOT::Math::XYZVector b_field = geo_mgr_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
             geometry_file << R"(  <BField type="ConstantBField" x=")" << Units::convert(b_field.x(), "T") << "\" y=\""
                           << Units::convert(b_field.y(), "T") << "\" z=\"" << Units::convert(b_field.z(), "T") << "\"/>\n";
-        } else if(geo_mgr_->getMagneticFieldType() == MagneticFieldType::NONE) {
+        } else if(geo_manager_->getMagneticFieldType() == MagneticFieldType::NONE) {
             geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>\n";
         } else {
             LOG(WARNING) << "Field type not handled by GEAR geometry. Writing null magnetic field instead.";

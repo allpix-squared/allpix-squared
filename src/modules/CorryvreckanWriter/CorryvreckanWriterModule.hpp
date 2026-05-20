@@ -62,9 +62,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        // General module members
-        GeometryManager* geometry_manager_;
-
         // Parameters for output writing
         std::string file_name_;              // Output filename
         std::string geometry_file_name_;     // Output geometry filename

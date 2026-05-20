@@ -45,7 +45,7 @@ using namespace ROOT;
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config,
                                                          Messenger* /*unused*/,
                                                          GeometryManager* geo_manager)
-    : Module(config, nullptr), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
+    : Module(config, nullptr, geo_manager), run_manager_g4_(nullptr) {
 
     // Register an exception handler for Geant4:
     G4StateManager::GetStateManager()->SetExceptionHandler(new G4ExceptionHandler());

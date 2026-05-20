@@ -56,7 +56,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        GeometryManager* geo_mgr_{};
         std::shared_ptr<IO::LCWriter> lc_writer_;
 
         std::vector<std::string> collection_names_vector_;
