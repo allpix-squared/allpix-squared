@@ -45,7 +45,7 @@ using namespace allpix;
 WeightingPotentialReaderModule::WeightingPotentialReaderModule(Configuration& config,
                                                                Messenger* /*unused*/,
                                                                std::shared_ptr<Detector> detector)
-    : Module(config, nullptr, detector) {
+    : Module(config, nullptr, std::move(detector)) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 }
