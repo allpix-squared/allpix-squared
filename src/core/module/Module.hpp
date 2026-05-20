@@ -235,9 +235,9 @@ namespace allpix {
         Configuration& config_;
         Logger& logger_;
 
-        Messenger* messenger_;
-        std::shared_ptr<Detector> detector_;
-        GeometryManager* geo_manager_;
+        Messenger* messenger_{};
+        std::shared_ptr<Detector> detector_{};
+        GeometryManager* geo_manager_{};
 
     private:
         /**
