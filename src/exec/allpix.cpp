@@ -43,48 +43,19 @@
 #include "core/utils/log.h"
 
 using namespace allpix;
-
-void clean();
-void abort_handler(int /*unused*/);
-void interrupt_handler(int /*unused*/);
+using namespace std::chrono_literals;
 
 std::unique_ptr<Allpix> apx;
-std::atomic<bool> apx_ready{false};
 
-/**
- * @brief Handle user abort (CTRL+\) which should stop the framework immediately
- * @note This handler is actually not fully reliable (but otherwise crashing is okay...)
- */
-void abort_handler(int /*unused*/) {
-    // Output interrupt message and clean
-    LOG(FATAL) << "Aborting!";
-    clean();
+// Global variable for signal handler
+namespace {
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+    volatile std::sig_atomic_t signal_v{0};
+} // namespace
 
-    // Ignore any segmentation fault that may arise after this
-    std::signal(SIGSEGV, SIG_IGN); // NOLINT
-    std::abort();
-}
-
-/**
- * @brief Handle termination request (CTRL+C) as soon as possible while keeping the program flow
- */
-void interrupt_handler(int /*unused*/) {
-    // Stop the framework if it is loaded
-    if(apx_ready) {
-        LOG(STATUS) << "Interrupted! Finishing up active events...";
-        apx->terminate();
-    }
-}
-
-/**
- * @brief Clean the environment when closing application
- */
-void clean() {
-    Log::finish();
-    if(apx_ready) {
-        apx.reset();
-    }
-}
+// The only safe thing a signal handler can do is setting an atomic int
+extern "C" void signal_handler(int signal);
+extern "C" void signal_handler(int signal) { signal_v = signal; }
 
 /**
  * @brief Main function running the application
@@ -93,15 +64,10 @@ int main(int argc, const char* argv[]) {
     // Add cout as the default logging stream
     Log::addStream(std::cout);
 
-    // Install abort handler (CTRL+\)
-    std::signal(SIGQUIT, abort_handler);
-    std::signal(SIGABRT, abort_handler);
-
-    // Install interrupt handler (CTRL+C)
-    std::signal(SIGINT, interrupt_handler);
-
-    // Install termination handler (e.g. from "kill"). Gracefully exit, finish last event and quit
-    std::signal(SIGTERM, interrupt_handler);
+    std::signal(SIGTERM, &signal_handler); // NOLINT(cert-err33-c)
+    std::signal(SIGINT, &signal_handler);  // NOLINT(cert-err33-c)
+    std::signal(SIGQUIT, &signal_handler); // NOLINT(cert-err33-c)
+    std::signal(SIGABRT, &signal_handler); // NOLINT(cert-err33-c)
 
     // If no arguments are provided, print the help:
     bool print_help = false;
@@ -167,7 +133,8 @@ int main(int argc, const char* argv[]) {
             std::cout << "In applying this license, CERN does not waive the privileges and immunities" << '\n';
             std::cout << "granted to it by virtue of its status as an Intergovernmental Organization" << '\n';
             std::cout << "or submit itself to any jurisdiction." << '\n';
-            clean();
+            Log::finish();
+
             return 0;
         } else if(arg == "-v" && (i + 1 < argc)) {
             try {
@@ -216,14 +183,14 @@ int main(int argc, const char* argv[]) {
         std::cout << "  --version    print version information and quit" << '\n';
         std::cout << '\n';
         std::cout << "For more help, please see <https://cern.ch/allpix-squared>" << '\n';
-        clean();
+        Log::finish();
         return return_code;
     }
 
     // Check if we have a configuration file
     if(config_file_name.empty()) {
         LOG(FATAL) << "No configuration file provided! See usage info with \"allpix -h\"";
-        clean();
+        Log::finish();
         return 1;
     }
 
@@ -234,7 +201,7 @@ int main(int argc, const char* argv[]) {
         log_file.open(log_file_name, std::ios_base::out | std::ios_base::trunc);
         if(!log_file.good()) {
             LOG(FATAL) << "Cannot write to provided log file! Check if permissions are sufficient.";
-            clean();
+            Log::finish();
             return 1;
         }
 
@@ -244,7 +211,21 @@ int main(int argc, const char* argv[]) {
     try {
         // Construct main Allpix object
         apx = std::make_unique<Allpix>(config_file_name, module_options, detector_options);
-        apx_ready = true;
+
+        std::jthread signal_bridge([&](const std::stop_token& stop_token) {
+            while(signal_v == 0 && !stop_token.stop_requested()) {
+                std::this_thread::sleep_for(100ms);
+            }
+
+            if(signal_v == SIGABRT || signal_v == SIGQUIT) {
+                LOG(FATAL) << "Aborting!";
+                Log::finish();
+                std::quick_exit(134);
+            } else if(signal_v != 0) {
+                LOG(STATUS) << "Interrupted! Finishing up active events...";
+                apx->interrupt();
+            }
+        });
 
         // Load modules
         apx->load();
@@ -253,10 +234,20 @@ int main(int argc, const char* argv[]) {
         apx->initialize();
 
         // Run modules and event-loop
-        apx->run();
+        apx->start();
+
+        // Wait for finalization and check for exceptions
+        apx->wait();
+        apx->checkException();
 
         // Finalize modules (post-run)
         apx->finalize();
+
+        signal_bridge.request_stop();
+        if(signal_bridge.joinable()) {
+            signal_bridge.join();
+        }
+
     } catch(ConfigurationError& e) {
         LOG(FATAL) << "Error in the configuration:" << '\n'
                    << e.what() << '\n'
@@ -277,8 +268,10 @@ int main(int argc, const char* argv[]) {
         return_code = 127;
     }
 
+    apx.reset();
+
     // Finish the logging
-    clean();
+    Log::finish();
 
     return return_code;
 }

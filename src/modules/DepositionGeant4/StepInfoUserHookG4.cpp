@@ -15,7 +15,7 @@
 #include "StepInfoUserHookG4.hpp"
 
 #include "core/utils/log.h"
-#include "tools/geant4/RunManager.hpp"
+#include "tools/geant4/MTRunManager.hpp"
 
 using namespace allpix;
 

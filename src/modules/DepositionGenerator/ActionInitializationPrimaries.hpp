@@ -23,7 +23,7 @@ namespace allpix {
     class PrimariesReader;
 
     /**
-     * @brief Initializer for the generator actions, required for \ref RunManager
+     * @brief Initializer for the generator actions, required for \ref MTRunManager
      *
      * We directly inherit from Geant4's action initialization class instead of the DepositionGeant4 class since the latter
      * provides functionality specific to that module which we do not need - while we need to be able to pass an additional

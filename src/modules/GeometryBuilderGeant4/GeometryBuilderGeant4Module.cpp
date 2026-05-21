@@ -35,7 +35,6 @@
 #include "tools/geant4/G4ExceptionHandler.hpp"
 #include "tools/geant4/G4LoggingDestination.hpp"
 #include "tools/geant4/MTRunManager.hpp"
-#include "tools/geant4/RunManager.hpp"
 
 using namespace allpix;
 using namespace ROOT;
@@ -128,17 +127,9 @@ void GeometryBuilderGeant4Module::initialize() {
     check_dataset_g4("G4NEUTRONXSDATA");
 #endif
 
-    // Create the G4 run manager. If multithreading was requested we use the custom run manager
-    // that support calling BeamOn operations in parallel. Otherwise we use default manager.
-    if(multithreadingEnabled()) {
-        LOG(DEBUG) << "Making a multi-thread RunManager";
-        run_manager_g4_ = std::make_unique<MTRunManager>();
-    } else {
-        LOG(DEBUG) << "Making a single-thread RunManager";
-        run_manager_g4_ = std::make_unique<RunManager>();
-        LOG(INFO) << "Using Geant4 modules without multithreading might reduce performance when using complex geometries, "
-                     "please check the documentation for details";
-    }
+    // Create the G4 run manager, we use the custom run manager that support calling BeamOn operations in parallel.
+    LOG(DEBUG) << "Preparing Geant4 RunManager";
+    run_manager_g4_ = std::make_unique<MTRunManager>();
 
     // Set the geometry construction to use
     run_manager_g4_->SetUserInitialization(geometry_construction_);

@@ -226,6 +226,10 @@ void DepositionPointChargeModule::initialize() {
                                   bins_z,
                                   -static_cast<double>(Units::convert(detector_model_->getSensorSize().z() / 2, "um")),
                                   static_cast<double>(Units::convert(detector_model_->getSensorSize().z() / 2, "um")));
+
+        deposition_position_xy->SetOption("colz");
+        deposition_position_xz->SetOption("colz");
+        deposition_position_yz->SetOption("colz");
     }
 }
 
@@ -300,18 +304,6 @@ void DepositionPointChargeModule::run(Event* event) {
             deposition_position_xz->Fill(in_pixel_um_x, in_pixel_um_z);
             deposition_position_yz->Fill(in_pixel_um_y, in_pixel_um_z);
         }
-    }
-}
-
-void DepositionPointChargeModule::finalize() {
-    if(output_plots_) {
-        deposition_position_xy->Get()->SetOption("colz");
-        deposition_position_xz->Get()->SetOption("colz");
-        deposition_position_yz->Get()->SetOption("colz");
-
-        deposition_position_xy->Write();
-        deposition_position_xz->Write();
-        deposition_position_yz->Write();
     }
 }
 

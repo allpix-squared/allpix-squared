@@ -428,34 +428,4 @@ double DefaultDigitizerModule::time_of_arrival(const PixelCharge& pixel_charge, 
     return 0;
 }
 
-void DefaultDigitizerModule::finalize() {
-    if(output_plots_) {
-        // Write histograms
-        LOG(TRACE) << "Writing output plots to file";
-
-        // Charge plots
-        h_pxq->Write();
-        h_pxq_noise->Write();
-        h_gain->Write();
-        h_pxq_gain->Write();
-        h_thr->Write();
-        h_pxq_sat->Write();
-        h_pxq_thr->Write();
-
-        h_pxq_adc->Write();
-        if(qdc_resolution_ > 0) {
-            h_pxq_adc_smear->Write();
-            h_calibration->Write();
-        }
-
-        // Time plots
-        h_px_toa->Write();
-        if(tdc_resolution_ > 0) {
-            h_px_tdc_smear->Write();
-            h_toa_calibration->Write();
-        }
-        h_px_tdc->Write();
-    }
-
-    LOG(INFO) << "Digitized " << total_hits_ << " pixel hits in total";
-}
+void DefaultDigitizerModule::finalize() { LOG(INFO) << "Digitized " << total_hits_ << " pixel hits in total"; }

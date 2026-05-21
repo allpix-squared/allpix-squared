@@ -59,11 +59,6 @@ namespace allpix {
          */
         void run(Event*) override;
 
-        /**
-         * @brief Write output plots
-         */
-        void finalize() override;
-
     private:
         /**
          * @brief Helper function to deposit charges at a single point

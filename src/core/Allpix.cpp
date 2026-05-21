@@ -23,6 +23,7 @@
 #include <ios>
 #include <memory>
 #include <stdexcept>
+#include <stop_token>
 #include <string>
 #include <thread>
 #include <utility>
@@ -33,6 +34,7 @@
 #include <TSystem.h>
 
 #include "core/config/ConfigManager.hpp"
+#include "core/config/FileParser.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
@@ -48,24 +50,17 @@ using namespace allpix;
  * - Set the log level and log format as requested.
  * - Load the detector configuration and parse it
  */
-Allpix::Allpix(std::string config_file_name,
+Allpix::Allpix(std::filesystem::path config_file_name,
                const std::vector<std::string>& module_options,
                const std::vector<std::string>& detector_options)
-    : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
-      geo_mgr_(std::make_unique<GeometryManager>()) {
-    // Load the global configuration
-    conf_mgr_ = std::make_unique<ConfigManager>(std::move(config_file_name),
-                                                std::initializer_list<std::string>({"Allpix", ""}),
-                                                std::initializer_list<std::string>({"Ignore"}));
+    : has_run_(false), msg_(std::make_unique<Messenger>()), geo_mgr_(std::make_unique<GeometryManager>()),
+      mod_mgr_(std::make_unique<ModuleManager>()) {
 
-    // Load and apply the provided module options
-    conf_mgr_->loadModuleOptions(module_options);
-
-    // Load and apply the provided detector options
-    conf_mgr_->loadDetectorOptions(detector_options);
+    // Load the configuration from file
+    load_configuration(std::move(config_file_name), module_options, detector_options);
 
     // Fetch the global configuration
-    Configuration const& global_config = conf_mgr_->getGlobalConfiguration();
+    const auto& global_config = conf_mgr_->getGlobalConfiguration();
 
     // Set the log level from config if not specified earlier
     std::string log_level_string;
@@ -73,16 +68,14 @@ Allpix::Allpix(std::string config_file_name,
         log_level_string = global_config.get<std::string>("log_level", "WARNING");
         std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
         try {
-            LogLevel const log_level = Log::getLevelFromString(log_level_string);
-            Log::setReportingLevel(log_level);
+            log_level_ = Log::getLevelFromString(log_level_string);
         } catch(std::invalid_argument& e) {
             LOG(ERROR) << "Log level \"" << log_level_string
                        << "\" specified in the configuration is invalid, defaulting to WARNING instead";
-            Log::setReportingLevel(LogLevel::WARNING);
+            log_level_ = LogLevel::WARNING;
         }
-    } else {
-        log_level_string = Log::getStringFromLevel(Log::getReportingLevel());
     }
+    Log::setReportingLevel(log_level_);
 
     // Set the log format from config
     auto log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
@@ -105,8 +98,43 @@ Allpix::Allpix(std::string config_file_name,
     }
 
     // Wait for the first detailed messages until level and format are properly set
-    LOG(TRACE) << "Global log level is set to " << log_level_string;
+    LOG(TRACE) << "Global log level is set to " << Log::getStringFromLevel(Log::getReportingLevel());
     LOG(TRACE) << "Global log format is set to " << log_format_string;
+}
+
+void Allpix::load_configuration(std::filesystem::path config_file_name,
+                                const std::vector<std::string>& module_options,
+                                const std::vector<std::string>& detector_options) {
+
+    // Check if the configuration file exists
+    std::ifstream file(config_file_name);
+    if(!file || !std::filesystem::is_regular_file(config_file_name)) {
+        throw ConfigFileUnavailableError(config_file_name);
+    }
+
+    // Convert main file to absolute path and read the file
+    LOG(TRACE) << "Reading main configuration";
+    config_file_name = std::filesystem::canonical(config_file_name);
+    const auto stack_cfg = FileParser::getStack(file, std::move(config_file_name));
+
+    // Load the global configuration
+    conf_mgr_ = std::make_unique<ConfigManager>(stack_cfg.getHeaderConfiguration(),
+                                                stack_cfg.getConfigurations(),
+                                                std::initializer_list<std::string>({"Allpix", ""}),
+                                                std::initializer_list<std::string>({"Ignore"}));
+
+    // Load and apply the provided module options
+    conf_mgr_->loadModuleOptions(module_options);
+
+    // Read the detector file and load it to the config manager
+    auto detector_file_name = conf_mgr_->getGlobalConfiguration().getPath("detectors_file", true);
+    LOG(TRACE) << "Reading detector configuration";
+    std::ifstream detector_file(detector_file_name);
+    const auto stack_geo = FileParser::getStack(detector_file, std::move(detector_file_name));
+    conf_mgr_->loadDetectors(stack_geo.getConfigurations());
+
+    // Load and apply the provided detector options
+    conf_mgr_->loadDetectorOptions(detector_options);
 }
 
 /**
@@ -117,6 +145,12 @@ Allpix::Allpix(std::string config_file_name,
  * - Load the modules from the configuration
  */
 void Allpix::load() {
+    Log::setReportingLevel(log_level_);
+    if(stop_source_.get_token().stop_requested()) {
+        LOG(INFO) << "Skip loading modules because termination is requested";
+        return;
+    }
+
     LOG(TRACE) << "Loading Allpix";
 
     // Fetch the global configuration
@@ -201,13 +235,120 @@ void Allpix::load() {
     set_style();
 
     // Load the geometry
-    geo_mgr_->load(conf_mgr_.get(), seeder_core_);
+    load_geometry();
+
+    // Get a histogram manager
+    histo_mgr_ = std::make_unique<HistogramManager>(global_config.get<std::string>("root_file", "histograms"),
+                                                    global_config.get<bool>("deny_overwrite", false));
 
     // Load the modules from the configuration
-    if(!terminate_) {
-        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
-    } else {
-        LOG(INFO) << "Skip loading modules because termination is requested";
+    mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get(), histo_mgr_.get());
+}
+
+void Allpix::load_geometry() {
+
+    // Fetch the global configuration
+    const auto& global_config = conf_mgr_->getGlobalConfiguration();
+
+    geo_mgr_->loadGeometry(conf_mgr_->getDetectorConfigurations(), seeder_core_);
+
+    // Load model files:
+    LOG(TRACE) << "Loading remaining default models";
+
+    // Get paths to read models from
+    LOG(TRACE) << "Reading model files";
+    const auto model_paths = get_model_paths(global_config.getFilePath());
+
+    // Add all the paths to the reader
+    for(const auto& path : model_paths) {
+        // Check if file or directory
+        if(std::filesystem::is_directory(path)) {
+            for(const auto& entry : std::filesystem::directory_iterator(path)) {
+                if(!entry.is_regular_file()) {
+                    continue;
+                }
+
+                // Accept only with correct model suffix
+                auto sub_path = std::filesystem::canonical(entry);
+                std::string const suffix(ALLPIX_MODEL_SUFFIX);
+                if(sub_path.extension() != suffix) {
+                    continue;
+                }
+
+                // Read model file and add model to list
+                read_model_file(sub_path);
+            }
+        } else {
+            // Always a file because paths are already checked
+            read_model_file(path);
+        }
+    }
+}
+
+std::vector<std::filesystem::path> Allpix::get_model_paths(const std::filesystem::path& config_file_path) {
+
+    std::vector<std::filesystem::path> model_paths{};
+
+    // Fetch the global configuration
+    const auto& global_config = conf_mgr_->getGlobalConfiguration();
+
+    // Load the list of standard model paths
+    if(global_config.has("model_paths")) {
+        model_paths = global_config.getPathArray("model_paths", true);
+    }
+
+    if(std::filesystem::is_directory(ALLPIX_MODEL_DIRECTORY)) {
+        model_paths.emplace_back(ALLPIX_MODEL_DIRECTORY);
+        LOG(TRACE) << "Registered model path: " << ALLPIX_MODEL_DIRECTORY;
+    }
+    const char* data_dirs_env = std::getenv("XDG_DATA_DIRS"); // NOLINT(concurrency-mt-unsafe)
+    if(data_dirs_env == nullptr || strlen(data_dirs_env) == 0) {
+        data_dirs_env = "/usr/local/share/:/usr/share/:";
+    }
+    auto data_dirs = split<std::filesystem::path>(data_dirs_env, ":");
+    for(auto data_dir : data_dirs) {
+        data_dir /= std::filesystem::path(ALLPIX_PROJECT_NAME) / std::string("models");
+        if(std::filesystem::is_directory(data_dir)) {
+            model_paths.emplace_back(data_dir);
+            LOG(TRACE) << "Registered global model path: " << data_dir;
+        }
+    }
+    if(!config_file_path.empty() && std::filesystem::is_directory(config_file_path.parent_path())) {
+        model_paths.emplace_back(config_file_path.parent_path());
+        LOG(TRACE) << "Registered path of configuration file as model location.";
+    }
+
+    return model_paths;
+}
+
+void Allpix::read_model_file(const std::filesystem::path& path) {
+    auto model_name = path.stem();
+    LOG(TRACE) << "Reading model " << model_name << " in path " << path;
+
+    try {
+        // Try to parse as config file
+        std::ifstream file(path);
+        const auto stack = FileParser::getStack(file, path);
+
+        // Prefer in-file name field over file name:
+        model_name = stack.getHeaderConfiguration().get<std::string>("name", model_name);
+
+        // Check if we need to look at file at all
+        if(geo_mgr_->hasModel(model_name)) {
+            LOG(DEBUG) << "Skipping overwritten model " << model_name << " in path " << path;
+            return;
+        }
+        if(!geo_mgr_->needsModel(model_name)) {
+            LOG(TRACE) << "Skipping not required model " << model_name << " in path " << path;
+            return;
+        }
+
+        // Parse configuration and add model to the config
+        geo_mgr_->addModel(DetectorModel::factory(model_name, stack));
+
+    } catch(const ConfigParseError& e) {
+        // Not a valid config file, see https://gitlab.cern.ch/allpix-squared/allpix-squared/-/issues/277
+        LOG(ERROR) << "Skipping invalid model file \"" << path << "\":" << '\n' << e.what();
     }
 }
 
@@ -215,46 +356,79 @@ void Allpix::load() {
  * Runs the Module::initialize() method linearly for every module
  */
 void Allpix::initialize() {
-    if(!terminate_) {
-        LOG(TRACE) << "Initializing Allpix";
-        mod_mgr_->initialize();
-    } else {
+    Log::setReportingLevel(log_level_);
+    if(stop_source_.get_token().stop_requested()) {
         LOG(INFO) << "Skip initializing modules because termination is requested";
+        return;
+    }
+
+    LOG(TRACE) << "Initializing Allpix";
+    mod_mgr_->initialize();
+}
+
+/**
+ * Start the thread which calls the ModuleManager's run method
+ */
+void Allpix::start() { run_thread_ = std::jthread(std::bind_front(&Allpix::run, this)); }
+
+/**
+ * Check for any exception thrown in the run thread
+ */
+void Allpix::checkException() {
+    // If exception has been thrown, propagate it
+    if(exception_ptr_) {
+        const auto exception_ptr_copy = exception_ptr_;
+        exception_ptr_ = nullptr;
+        std::rethrow_exception(exception_ptr_copy);
     }
 }
+
 /**
  * Runs every modules Module::run() method linearly for the number of events
  */
-void Allpix::run() {
-    if(!terminate_) {
-        LOG(TRACE) << "Running Allpix";
-        mod_mgr_->run(seeder_modules_);
+void Allpix::run(const std::stop_token& /*unused*/) {
 
-        // Set that we have run and want to finalize as well
-        has_run_ = true;
-    } else {
-        LOG(INFO) << "Skip running modules because termination is requested";
+    try {
+        Log::setReportingLevel(log_level_);
+        const auto& stop_token = stop_source_.get_token();
+        if(stop_token.stop_requested()) {
+            LOG(INFO) << "Skip running modules because termination is requested";
+            return;
+        }
+
+        LOG(TRACE) << "Running Allpix";
+        mod_mgr_->run(seeder_modules_, stop_token);
+    } catch(...) {
+        LOG(ERROR) << "Caught exception in run thread";
+        exception_ptr_ = std::current_exception();
+    }
+
+    // Indicate that we have run and want to finalize as well
+    has_run_ = true;
+}
+
+void Allpix::interrupt() { stop_source_.request_stop(); }
+
+void Allpix::wait() {
+    if(run_thread_.joinable()) {
+        run_thread_.join();
     }
 }
+
 /**
  * Runs all modules Module::finalize() method linearly for every module
  */
 void Allpix::finalize() {
+    Log::setReportingLevel(log_level_);
+    LOG(TRACE) << "Finalizing Allpix";
+
     if(has_run_) {
-        LOG(TRACE) << "Finalizing Allpix";
         mod_mgr_->finalize();
     } else {
         LOG(INFO) << "Skip finalizing modules because no module did run";
     }
-}
 
-/**
- * This function can be called safely from any signal handler. Time between the request to terminate
- * and the actual termination is not always negigible.
- */
-void Allpix::terminate() {
-    terminate_ = true;
-    mod_mgr_->terminate();
+    histo_mgr_->finalize();
 }
 
 /**

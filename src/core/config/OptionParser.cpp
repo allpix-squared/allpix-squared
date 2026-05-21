@@ -13,8 +13,8 @@
 #include <string>
 #include <utility>
 
-#include "core/config/ConfigReader.hpp"
 #include "core/config/Configuration.hpp"
+#include "core/config/FileParser.hpp"
 #include "core/utils/log.h"
 #include "core/utils/text.h"
 
@@ -28,7 +28,7 @@ using namespace allpix;
  */
 void OptionParser::parseOption(std::string line) {
     line = allpix::trim(line);
-    auto [key, value] = ConfigReader::parseKeyValue(std::move(line));
+    auto [key, value] = FileParser::parseKeyValue(std::move(line));
 
     auto dot_pos = key.find('.');
     if(dot_pos == std::string::npos) {

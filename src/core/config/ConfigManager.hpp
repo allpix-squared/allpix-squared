@@ -13,11 +13,11 @@
 #define ALLPIX_CONFIG_MANAGER_H
 
 #include <filesystem>
+#include <list>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "ConfigReader.hpp"
 #include "Configuration.hpp"
 #include "OptionParser.hpp"
 #include "core/module/ModuleIdentifier.hpp"
@@ -39,11 +39,13 @@ namespace allpix {
     public:
         /**
          * @brief Construct the configuration manager
-         * @param file_name Path to the main configuration file
+         * @param header Header configuration section
+         * @param modules Vector of module configuration sections
          * @param global List of sections representing the global configuration (excluding the empty header section)
          * @param ignore List of sections that should be ignored
          */
-        explicit ConfigManager(std::filesystem::path file_name,
+        explicit ConfigManager(Configuration header,
+                               const std::vector<Configuration>& modules,
                                std::initializer_list<std::string> global = {},
                                std::initializer_list<std::string> ignore = {"Ignore"});
         /**
@@ -106,6 +108,12 @@ namespace allpix {
         void dropInstanceConfiguration(const ModuleIdentifier& identifier);
 
         /**
+         * @brief Load the provided detector configuration sections into the config manager
+         * @param detector_configs Vector with Configuration objects for each detector in the simulation
+         */
+        void loadDetectors(const std::vector<Configuration>& detector_configs);
+
+        /**
          * @brief Load module options and directly apply them to the global configuration and the module configurations
          * @param options List of options to load and apply
          * @return True if any actual options where applied
@@ -113,6 +121,7 @@ namespace allpix {
          * @note Instance configuration options are applied in \ref ConfigManager::addInstanceConfiguration instead
          */
         bool loadModuleOptions(const std::vector<std::string>& options);
+
         /**
          * @brief Get all the detector configurations
          * @return Reference to list of detector configurations
@@ -135,8 +144,6 @@ namespace allpix {
         std::list<Configuration> module_configs_;
         Configuration global_config_;
 
-        // Helper function for delayed parsing of detectors file
-        void parse_detectors();
         std::list<Configuration> detector_configs_;
 
         std::list<Configuration> instance_configs_;

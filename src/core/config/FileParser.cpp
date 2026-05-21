@@ -1,15 +1,15 @@
 /**
  * @file
- * @brief Implementation of config reader
+ * @brief Implementation of config file parser
  *
- * @copyright Copyright (c) 2017-2025 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2026 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  * SPDX-License-Identifier: MIT
  */
 
-#include "ConfigReader.hpp"
+#include "FileParser.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -26,31 +26,12 @@
 
 using namespace allpix;
 
-ConfigReader::ConfigReader() = default;
-ConfigReader::ConfigReader(std::istream& stream, std::filesystem::path file_name) : ConfigReader() {
-    add(stream, std::move(file_name));
-}
-
-ConfigReader::ConfigReader(const ConfigReader& other) : conf_array_(other.conf_array_) { copy_init_map(); }
-ConfigReader& ConfigReader::operator=(const ConfigReader& other) {
-    conf_array_ = other.conf_array_;
-    copy_init_map();
-    return *this;
-}
-
-void ConfigReader::copy_init_map() {
-    conf_map_.clear();
-    for(auto iter = conf_array_.begin(); iter != conf_array_.end(); ++iter) {
-        conf_map_[allpix::transform(iter->getName(), ::tolower)].push_back(iter);
-    }
-}
-
 /**
  * @throws KeyValueParseError If the key / value pair could not be parsed
  *
  * The key / value pair is split according to the format specifications
  */
-std::pair<std::string, std::string> ConfigReader::parseKeyValue(std::string line) {
+std::pair<std::string, std::string> FileParser::parseKeyValue(std::string line) {
     line = allpix::trim(line);
     size_t const equals_pos = line.find('=');
     if(equals_pos != std::string::npos) {
@@ -99,8 +80,9 @@ std::pair<std::string, std::string> ConfigReader::parseKeyValue(std::string line
  *
  * The configuration is immediately parsed and all of its configurations are available after the functions returns.
  */
-void ConfigReader::add(std::istream& stream, std::filesystem::path file_name) {
+ConfigStack FileParser::getStack(std::istream& stream, std::filesystem::path file_name) {
     LOG(TRACE) << "Parsing configuration file " << file_name;
+    ConfigStack stack;
 
     // Convert file name to absolute path (if given)
     if(!file_name.empty()) {
@@ -143,7 +125,7 @@ void ConfigReader::add(std::istream& stream, std::filesystem::path file_name) {
                 // Ignore empty sections if they contain no configurations
                 if(!conf.getName().empty() || conf.countSettings() > 0) {
                     // Add previous section
-                    addConfiguration(std::move(conf));
+                    stack.addConfiguration(std::move(conf));
                 }
 
                 // Begin new section
@@ -171,71 +153,7 @@ void ConfigReader::add(std::istream& stream, std::filesystem::path file_name) {
         }
     }
     // Add last section
-    addConfiguration(std::move(conf));
+    stack.addConfiguration(std::move(conf));
+
+    return stack;
 }
-
-void ConfigReader::addConfiguration(Configuration config) {
-    conf_array_.push_back(std::move(config));
-
-    auto section_name = allpix::transform(conf_array_.back().getName(), ::tolower);
-    conf_map_[section_name].push_back(--conf_array_.end());
-}
-
-void ConfigReader::clear() {
-    conf_map_.clear();
-    conf_array_.clear();
-}
-
-bool ConfigReader::hasConfiguration(std::string name) const {
-    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-    return conf_map_.find(name) != conf_map_.end();
-}
-
-unsigned int ConfigReader::countConfigurations(std::string name) const {
-    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-    if(!hasConfiguration(name)) {
-        return 0;
-    }
-    return static_cast<unsigned int>(conf_map_.at(name).size());
-}
-
-/**
- * @warning This will have the file path of the first header section
- * @note An empty configuration is returned if no empty section is found
- */
-Configuration ConfigReader::getHeaderConfiguration() const {
-    // Get empty configurations
-    std::vector<Configuration> configurations = getConfigurations("");
-    if(configurations.empty()) {
-        // Use all configurations to find the file name if no empty
-        configurations = getConfigurations();
-        std::string file_name;
-        if(!configurations.empty()) {
-            file_name = configurations.at(0).getFilePath();
-        }
-        return Configuration("", file_name);
-    }
-
-    // Merge all configurations
-    Configuration header_config = configurations.at(0);
-    for(auto& config : configurations) {
-        // NOTE: Merging first configuration again has no effect
-        header_config.merge(config);
-    }
-    return header_config;
-}
-
-std::vector<Configuration> ConfigReader::getConfigurations(std::string name) const {
-    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-    if(!hasConfiguration(name)) {
-        return {};
-    }
-
-    std::vector<Configuration> result;
-    for(const auto& iter : conf_map_.at(name)) {
-        result.push_back(*iter);
-    }
-    return result;
-}
-
-std::vector<Configuration> ConfigReader::getConfigurations() const { return {conf_array_.begin(), conf_array_.end()}; }

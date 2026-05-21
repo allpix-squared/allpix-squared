@@ -495,13 +495,3 @@ void CSADigitizerModule::create_output_pulsegraphs(const std::string& s_event_nu
     csa_pulse_graph->SetTitle((s_title + " in pixel (" + s_pixel_index + ")").c_str());
     getROOTDirectory()->WriteTObject(csa_pulse_graph, name.c_str());
 }
-
-void CSADigitizerModule::finalize() {
-    if(output_plots_) {
-        // Write histograms
-        LOG(TRACE) << "Writing output plots to file";
-        h_tot->Write();
-        h_toa->Write();
-        h_pxq_vs_tot->Write();
-    }
-}

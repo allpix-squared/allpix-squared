@@ -17,7 +17,6 @@
 
 #include "GeometryConstructionG4.hpp"
 #include "PassiveMaterialConstructionG4.hpp"
-#include "core/config/ConfigReader.hpp"
 #include "core/config/Configuration.hpp"
 
 #include "core/geometry/GeometryManager.hpp"

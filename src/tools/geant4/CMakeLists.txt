@@ -17,7 +17,7 @@ ENDIF()
 ADD_RUNTIME_DEP(geant4.sh)
 
 # Define the library adding the object file created above
-ADD_LIBRARY(AllpixGeant4Interface SHARED MTRunManager.cpp RunManager.cpp WorkerRunManager.cpp G4LoggingDestination.cpp)
+ADD_LIBRARY(AllpixGeant4Interface SHARED MTRunManager.cpp WorkerRunManager.cpp G4LoggingDestination.cpp)
 
 # Add Geant4 flags before our own flags
 ADD_DEFINITIONS(${Geant4_DEFINITIONS})

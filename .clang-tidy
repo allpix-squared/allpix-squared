@@ -7,7 +7,7 @@
 
 Checks: [
   '-*',
-  'bugprone-*','-bugprone-easily-swappable-parameters',
+  'bugprone-*','-bugprone-easily-swappable-parameters','-bugprone-lambda-function-name',
   'cert-*',
   'concurrency-*',
   'cppcoreguidelines-*','-cppcoreguidelines-pro-bounds-pointer-arithmetic',

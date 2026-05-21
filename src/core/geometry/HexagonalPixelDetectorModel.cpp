@@ -22,7 +22,7 @@
 #include <Math/Point3Dfwd.h>
 #include <Math/Vector3Dfwd.h>
 
-#include "core/config/ConfigReader.hpp"
+#include "core/config/ConfigStack.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorAssembly.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
@@ -32,9 +32,9 @@ using namespace allpix;
 
 HexagonalPixelDetectorModel::HexagonalPixelDetectorModel(std::string type,
                                                          const std::shared_ptr<DetectorAssembly>& assembly,
-                                                         const ConfigReader& reader,
+                                                         const ConfigStack& stack,
                                                          const Configuration& config)
-    : PixelDetectorModel(std::move(type), assembly, reader, config) {
+    : PixelDetectorModel(std::move(type), assembly, stack, config) {
 
     // Select shape orientation
     pixel_type_ = config.get<Pixel::Type>("pixel_type");

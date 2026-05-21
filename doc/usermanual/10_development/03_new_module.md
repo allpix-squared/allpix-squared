@@ -219,8 +219,7 @@ In addition to the constructor, each module can override the following methods:
 
 * `finalize()`:
   Called once per module from the main thread after processing all events in the run and before destructing the module.
-  Typically used to save the output data (like histograms). Any exceptions should be thrown from here instead of the
-  destructor.
+  Typically used to save the output data if applicable. Any exceptions should be thrown from here instead of the destructor.
 
 If necessary, modules can also access the ConfigurationManager directly in order to obtain configuration information from
 other module instances or other modules in the framework using the `getConfigManager()` call. This allows to retrieve and

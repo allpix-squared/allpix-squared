@@ -26,8 +26,8 @@ simulation process. ROOT provides the template class `ROOT::TThreadedObject` whi
 environments but slightly alters the interface of the histogram objects. Furthermore, there have been significant changes to
 the class between minor release version of ROOT and it doesn't scale well with a large number of predefined threads.
 Therefore, Allpix Squared provides its own re-implementation of this class, `allpix::ThreadedHistogram` which also restores
-the original interface of the histogram classes, i.e. it is possible to instantiate, fill and store histograms the same way
-as in a single-threaded environment.
+the original interface of the histogram classes, i.e. it is possible to instantiate and fill histograms the same way
+as in a single-threaded environment, while writing and modifying histograms is centrally managed via the `HistogramManager`.
 
 This class can be used as follows:
 
@@ -38,10 +38,14 @@ Histogram<TH1D> my_histogram;
 // Creation of the histogram using the CreateHistogram helper method:
 my_histogram = CreateHistogram<TH1D>("name", "title", 100, 0., 100.);
 
-// Filling, setting bin contents and writing the histogram works as before:
+// Filling, setting bin contents and applying draw options work as before:
 my_histogram->Fill(12.);
 my_histogram->SetBinContent(15, 23.);
-my_histogram->Write();
+my_histogram->SetOption("hist");
+
+// Autoscaling of axes and an auto adjustment of axis divisions (a la SetNdivisions) are managed through the HistogramManager:
+my_histogram->setAdjustAxisRanges();
+my_histogram->setAdjustAxisDivisions();
 ```
 
 ## Declaring a Module Thread-Safe

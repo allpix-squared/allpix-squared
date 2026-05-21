@@ -87,6 +87,12 @@ void ThreadPool::checkException() {
     }
 }
 
+void ThreadPool::setPaused(bool pause) {
+    // Set the pause flag and notify the run condition
+    paused_.store(pause, std::memory_order_release);
+    run_condition_.notify_all();
+}
+
 void ThreadPool::wait() {
     std::unique_lock<std::mutex> lock{run_mutex_};
     run_condition_.wait(lock, [this]() { return exception_ptr_ != nullptr || (run_cnt_ == 0 || done_); });
@@ -113,6 +119,17 @@ void ThreadPool::worker(size_t min_thread_buffer,
             Task task{nullptr};
 
             if(queue_.pop(task, min_thread_buffer)) {
+
+                // Pause if requested, hold the current task until resumed
+                {
+                    std::unique_lock<std::mutex> lock{run_mutex_};
+                    run_condition_.wait(lock, [this]() { return !paused_.load(std::memory_order_acquire) || done_; });
+                }
+                // Check for destroy call during pause
+                if(done_) {
+                    break;
+                }
+
                 // Execute task
                 (*task)();
                 // Fetch the future to propagate exceptions

@@ -52,11 +52,6 @@ namespace allpix {
          */
         void run(Event*) override;
 
-        /**
-         * @brief Finalize and write optional histograms
-         */
-        void finalize() override;
-
     private:
         bool output_plots_{}, output_pulsegraphs_{};
         double timestep_{};

@@ -37,7 +37,8 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
-#include "core/config/ConfigReader.hpp"
+#include "core/config/ConfigStack.hpp"
+#include "core/config/FileParser.hpp"
 #include "core/geometry/DetectorModel.hpp"
 #include "core/module/ThreadPool.hpp"
 #include "core/utils/log.h"
@@ -155,8 +156,8 @@ int main(int argc, char** argv) {
 
         // Parsing detector model to generate potential for:
         std::ifstream file(model_path);
-        allpix::ConfigReader const reader(file, model_path);
-        auto model = allpix::DetectorModel::factory(model_path, reader);
+        const auto stack = allpix::FileParser::getStack(file, model_path);
+        auto model = allpix::DetectorModel::factory(model_path, stack);
 
         // Get pixel implant size from the detector model:
         auto implants = model->getImplants();

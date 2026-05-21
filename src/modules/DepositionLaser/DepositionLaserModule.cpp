@@ -443,19 +443,6 @@ void DepositionLaserModule::run(Event* event) {
     }
 }
 
-void DepositionLaserModule::finalize() {
-    if(output_plots_) {
-        h_intensity_focalplane_->Write();
-        h_intensity_sourceplane_->Write();
-        h_angular_phi_->Write();
-        h_angular_theta_->Write();
-        h_pulse_shape_->Write();
-        for(auto& [detector, histo] : h_deposited_charge_shapes_) {
-            histo->Write();
-        }
-    }
-}
-
 std::pair<ROOT::Math::XYZPoint, ROOT::Math::XYZVector> DepositionLaserModule::generate_photon_geometry(Event* event) {
     // Lambda to generate two unit vectors, orthogonal to beam direction
     // Adapted from TVector3::Orthogonal()

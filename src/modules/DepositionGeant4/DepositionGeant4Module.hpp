@@ -75,7 +75,7 @@ namespace allpix {
         void run(Event*) override;
 
         /**
-         * @brief Cleanup \ref RunManager for each thread
+         * @brief Cleanup \ref MTRunManager for each thread
          */
         void finalizeThread() override;
 

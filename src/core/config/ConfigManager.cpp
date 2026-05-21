@@ -22,7 +22,6 @@
 #include <utility>
 #include <vector>
 
-#include "core/config/ConfigReader.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
@@ -33,32 +32,19 @@ using namespace allpix;
 /**
  * @throws ConfigFileUnavailableError If the main configuration file cannot be accessed
  */
-ConfigManager::ConfigManager(std::filesystem::path file_name,
+ConfigManager::ConfigManager(Configuration header,
+                             const std::vector<Configuration>& modules,
                              std::initializer_list<std::string> global,
-                             std::initializer_list<std::string> ignore) {
-    // Check if the file exists
-    std::ifstream file(file_name);
-    if(!file || !std::filesystem::is_regular_file(file_name)) {
-        throw ConfigFileUnavailableError(file_name);
-    }
-
-    // Convert main file to absolute path
-    file_name = std::filesystem::canonical(file_name);
-    LOG(TRACE) << "Reading main configuration";
-
-    // Read the file
-    ConfigReader const reader(file, std::move(file_name));
+                             std::initializer_list<std::string> ignore)
+    : global_config_(std::move(header)) {
 
     // Convert all global and ignored names to lower case and store them
     auto lowercase = [](const std::string& in) { return allpix::transform(in, ::tolower); };
     std::transform(global.begin(), global.end(), std::inserter(global_names_, global_names_.end()), lowercase);
     std::transform(ignore.begin(), ignore.end(), std::inserter(ignore_names_, ignore_names_.end()), lowercase);
 
-    // Initialize global base configuration
-    global_config_ = reader.getHeaderConfiguration();
-
-    // Store all the configurations read
-    for(auto& config : reader.getConfigurations()) {
+    // Store all module configurations
+    for(const auto& config : modules) {
         // Skip all ignored sections
         std::string const config_name = allpix::transform(config.getName(), ::tolower);
         if(ignore_names_.find(config_name) != ignore_names_.end()) {
@@ -75,19 +61,10 @@ ConfigManager::ConfigManager(std::filesystem::path file_name,
     }
 }
 
-void ConfigManager::parse_detectors() {
-    // If detector configurations have been parsed already, skip:
-    if(!detector_configs_.empty()) {
-        return;
-    }
-
-    // Reading detector file
-    std::string const detector_file_name = global_config_.getPath("detectors_file", true);
-    LOG(TRACE) << "Reading detector configuration";
-
-    std::ifstream detector_file(detector_file_name);
-    ConfigReader const detector_reader(detector_file, detector_file_name);
-    auto detector_configs = detector_reader.getConfigurations();
+/**
+ * Load the detector configurations
+ */
+void ConfigManager::loadDetectors(const std::vector<Configuration>& detector_configs) {
     detector_configs_ = std::list<Configuration>(detector_configs.begin(), detector_configs.end());
 }
 
@@ -131,7 +108,6 @@ bool ConfigManager::loadDetectorOptions(const std::vector<std::string>& options)
     }
 
     // Apply detector options
-    parse_detectors();
     for(auto& config : detector_configs_) {
         optionsApplied = detector_option_parser.applyOptions(config.getName(), config) || optionsApplied;
     }
@@ -142,10 +118,7 @@ bool ConfigManager::loadDetectorOptions(const std::vector<std::string>& options)
 /**
  * The list of detector configurations is read from the configuration defined in 'detector_file'
  */
-std::list<Configuration>& ConfigManager::getDetectorConfigurations() {
-    parse_detectors();
-    return detector_configs_;
-}
+std::list<Configuration>& ConfigManager::getDetectorConfigurations() { return detector_configs_; }
 
 /**
  * @warning A previously stored configuration is directly invalidated if the same unique name is used again

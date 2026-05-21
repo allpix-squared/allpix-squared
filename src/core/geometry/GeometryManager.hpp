@@ -24,7 +24,6 @@
 #include "Detector.hpp"
 #include "DetectorModel.hpp"
 #include "core/config/ConfigManager.hpp"
-#include "core/config/ConfigReader.hpp"
 #include "core/utils/prng.h"
 
 namespace allpix {
@@ -78,22 +77,11 @@ namespace allpix {
 
         /**
          * @brief Loads the geometry from the global configuration
-         * @param conf_manager Configuration manager of the framework
+         * @param detector_configs Configuration of the individual detectors
          * @param seeder PRNG to use for generating random misalignments
          * @warning Has to be the first function called after the constructor
          */
-        void load(ConfigManager* conf_manager, RandomNumberGenerator& seeder);
-
-        /**
-         * @brief Returns the list of standard paths where models should be searched in
-         * @return List of absolute paths to file or directories that contain models
-         *
-         * The default list of models to search for are in the following order
-         * - The list of paths provided in the main configuration as model_paths
-         * - The build variable ALLPIX_MODEL_DIR pointing to the installation directory of the framework models
-         * - The directories in XDG_DATA_DIRS attached by ALLPIX_PROJECT_NAME or /usr/share/:/usr/local/share if not defined
-         */
-        const std::vector<std::string>& getModelsPath() const { return model_paths_; }
+        void loadGeometry(const std::list<Configuration>& detector_configs, RandomNumberGenerator& seeder);
 
         /**
          * @brief Returns the position and orientation for a passive element
@@ -262,17 +250,6 @@ namespace allpix {
 
     private:
         /**
-         * @brief Load all standard framework models (automatically done when the geometry is closed)
-         */
-        void load_models();
-
-        /**
-         * @brief Read a model file, check if the model is required and call \ref GeometryManager::addModel in that case
-         * @param path Path to the model file
-         */
-        void read_model_file(const std::filesystem::path& path);
-
-        /**
          * @brief Get the orientation of an object
          * @param config Configuration that defines in the object
          * @return Position and rotation vector of the object
@@ -289,7 +266,6 @@ namespace allpix {
 
         std::vector<ROOT::Math::XYZPoint> points_;
 
-        std::vector<std::string> model_paths_;
         std::vector<std::shared_ptr<DetectorModel>> models_;
         std::set<std::string> model_names_;
 

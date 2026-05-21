@@ -185,7 +185,7 @@ void WeightingPotentialReaderModule::create_output_plots() {
 
     // Create 1D histograms
     std::string const title = "#phi_{w}/V_{w} at " + Units::display(position, {"um"}) + ";z (mm);unit potential";
-    auto* histogram = new TH1F("potential1d", title.c_str(), static_cast<int>(steps), z_min, z_max);
+    auto histogram = CreateHistogram<TH1F>("potential1d", title.c_str(), static_cast<int>(steps), z_min, z_max);
 
     // Get the weighting potential at every index
     for(size_t j = 0; j < steps; ++j) {
@@ -203,32 +203,32 @@ void WeightingPotentialReaderModule::create_output_plots() {
     }
 
     // Create 2D histograms
-    auto* histogram2Dx = new TH2F("potential_x",
-                                  "#phi_{w}/V_{w} of Pixel(1,1);x (mm); z (mm); unit potential",
-                                  static_cast<int>(steps),
-                                  x_min,
-                                  x_max,
-                                  static_cast<int>(steps),
-                                  z_min,
-                                  z_max);
+    auto histogram2Dx = CreateHistogram<TH2F>("potential_x",
+                                              "#phi_{w}/V_{w} of Pixel(1,1);x (mm); z (mm); unit potential",
+                                              static_cast<int>(steps),
+                                              x_min,
+                                              x_max,
+                                              static_cast<int>(steps),
+                                              z_min,
+                                              z_max);
 
-    auto* histogram2Dy = new TH2F("potential_y",
-                                  "#phi_{w}/V_{w} of Pixel(1,1);y (mm); z (mm); unit potential",
-                                  static_cast<int>(steps),
-                                  y_min,
-                                  y_max,
-                                  static_cast<int>(steps),
-                                  z_min,
-                                  z_max);
+    auto histogram2Dy = CreateHistogram<TH2F>("potential_y",
+                                              "#phi_{w}/V_{w} of Pixel(1,1);y (mm); z (mm); unit potential",
+                                              static_cast<int>(steps),
+                                              y_min,
+                                              y_max,
+                                              static_cast<int>(steps),
+                                              z_min,
+                                              z_max);
 
-    auto* histogram2Dz = new TH2F("potential_z",
-                                  "#phi_{w}/V_{w} of Pixel(1,1);x (mm); y (mm); unit potential",
-                                  static_cast<int>(steps),
-                                  x_min,
-                                  x_max,
-                                  static_cast<int>(steps),
-                                  y_min,
-                                  y_max);
+    auto histogram2Dz = CreateHistogram<TH2F>("potential_z",
+                                              "#phi_{w}/V_{w} of Pixel(1,1);x (mm); y (mm); unit potential",
+                                              static_cast<int>(steps),
+                                              x_min,
+                                              x_max,
+                                              static_cast<int>(steps),
+                                              y_min,
+                                              y_max);
 
     // Get the weighting potential at every index
     for(size_t j = 0; j < steps; ++j) {
@@ -269,12 +269,6 @@ void WeightingPotentialReaderModule::create_output_plots() {
     histogram2Dx->SetOption("colz");
     histogram2Dy->SetOption("colz");
     histogram2Dz->SetOption("colz");
-
-    // Write the histogram to module file
-    histogram->Write();
-    histogram2Dx->Write();
-    histogram2Dy->Write();
-    histogram2Dz->Write();
 }
 
 /**

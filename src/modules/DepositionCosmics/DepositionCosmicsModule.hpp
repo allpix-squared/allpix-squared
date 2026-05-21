@@ -39,7 +39,7 @@ namespace allpix {
         DepositionCosmicsModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
-         * @brief Cleanup \ref RunManager for each thread
+         * @brief Cleanup \ref MTRunManager for each thread
          */
         void finalizeThread() override;
 

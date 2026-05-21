@@ -67,11 +67,6 @@ namespace allpix {
          */
         void run(Event* event) override;
 
-        /**
-         * @brief Finalize and write optional histograms
-         */
-        void finalize() override;
-
     private:
         // Control of module output settings
         bool output_plots_{}, output_pulsegraphs_{};

@@ -19,7 +19,6 @@
 #include <TBranchElement.h>
 #include <TClass.h>
 
-#include "core/config/ConfigReader.hpp"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 

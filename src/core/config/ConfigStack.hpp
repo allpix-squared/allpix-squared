@@ -1,16 +1,16 @@
 /**
  * @file
- * @brief Provides a reader for configuration files
+ * @brief A stack of configuration sections
  *
- * @copyright Copyright (c) 2017-2025 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2026 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef ALLPIX_CONFIG_READER_H
-#define ALLPIX_CONFIG_READER_H
+#ifndef ALLPIX_CONFIG_STACK_H
+#define ALLPIX_CONFIG_STACK_H
 
 #include <filesystem>
 #include <istream>
@@ -30,32 +30,13 @@ namespace allpix {
      * - A set of section header between [ and ] brackets
      * - Key/value pairs linked to the last defined section (or the empty section if none has been defined yet)
      */
-    class ConfigReader {
+    class ConfigStack {
     public:
         /**
-         * @brief Constructs a config reader without any attached streams
+         * @brief Default constructor
          */
-        ConfigReader();
-        /**
-         * @brief Constructs a config reader with a single attached stream
-         * @param stream Stream to read configuration from
-         * @param file_name Name of the file related to the stream or empty if not linked to a file
-         */
-        explicit ConfigReader(std::istream& stream, std::filesystem::path file_name = "");
-
-        /**
-         * @brief Parse a line as key-value pair
-         * @param line Line to interpret
-         * @return Pair of the key and the value
-         */
-        static std::pair<std::string, std::string> parseKeyValue(std::string line);
-
-        /**
-         * @brief Adds a configuration stream to read
-         * @param stream Stream to read configuration from
-         * @param file_name Name of the file related to the stream or empty if not linked to a file
-         */
-        void add(std::istream&, std::filesystem::path file_name = "");
+        ConfigStack() = default;
+        virtual ~ConfigStack() = default;
 
         /**
          * @brief Directly add a configuration object to the reader
@@ -67,16 +48,16 @@ namespace allpix {
         /**
          * @brief Implement correct copy behaviour
          */
-        ConfigReader(const ConfigReader&);
-        ConfigReader& operator=(const ConfigReader&);
+        ConfigStack(const ConfigStack&);
+        ConfigStack& operator=(const ConfigStack&);
         /// @}
 
         /// @{
         /**
          * @brief Use default move behaviour
          */
-        ConfigReader(ConfigReader&&) noexcept = default;
-        ConfigReader& operator=(ConfigReader&&) noexcept = default;
+        ConfigStack(ConfigStack&&) noexcept = default;
+        ConfigStack& operator=(ConfigStack&&) noexcept = default;
         /// @}
 
         /**
@@ -128,4 +109,4 @@ namespace allpix {
     };
 } // namespace allpix
 
-#endif /* ALLPIX_CONFIG_MANAGER_H */
+#endif /* ALLPIX_CONFIG_STACK_H */

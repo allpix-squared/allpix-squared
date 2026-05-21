@@ -35,8 +35,9 @@ ADD_EXECUTABLE(
     ${ALLPIX_SRC}/core/utils/log.cpp
     ${ALLPIX_SRC}/core/utils/text.cpp
     ${ALLPIX_SRC}/core/utils/unit.cpp
-    ${ALLPIX_SRC}/core/config/ConfigReader.cpp
+    ${ALLPIX_SRC}/core/config/ConfigStack.cpp
     ${ALLPIX_SRC}/core/config/Configuration.cpp
+    ${ALLPIX_SRC}/core/config/FileParser.cpp
     ${ALLPIX_SRC}/core/config/exceptions.cpp
     ${ALLPIX_SRC}/core/geometry/DetectorModel.cpp
     ${ALLPIX_SRC}/core/geometry/PixelDetectorModel.cpp
