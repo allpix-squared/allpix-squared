@@ -165,6 +165,54 @@ The c_e has been updated accordingly based on the erratum \[[@MandicErratum]\].
 
 This model can be selected in the configuration file via the parameter `trapping_model = "ljubljana_highfluence"` or `trapping_model = "mandic"`.
 
+### Polycrystalline Diamond
+
+The polycrystalline diamond trapping model \[[@is-haqzai]\] describes trapping in pcCVD diamond using the
+charge collection distance $`\text{CCD}`$ as detector-level input. For a planar sensor of thickness $`d`$, the charge
+collection efficiency can be written as
+
+```math
+\text{CCE} = \frac{Q}{Q_0} \approx \frac{\text{CCD}}{d}
+```
+
+where $`Q_0`$ is the charge expected without trapping and $`Q`$ is the collected charge in the presence of trapping.
+
+The model maps the provided $`\text{CCD}`$ value to effective electron and hole trapping lengths using the Hecht relation
+
+```math
+\frac{Q}{Q_0} =
+\frac{\lambda_e}{d}\left(1 - e^{-d/\lambda_e}\right) +
+\frac{\lambda_h}{d}\left(1 - e^{-d/\lambda_h}\right)
+```
+
+where $`\lambda_e`$ and $`\lambda_h`$ are the electron and hole trapping lengths, respectively. The ratio between both
+trapping lengths is configured as
+
+```math
+r = \frac{\lambda_h}{\lambda_e}
+```
+
+such that $`\lambda_h = r\lambda_e`$. For the given sensor thickness, CCD, and ratio $`r`$, the model solves the Hecht
+relation for $`\lambda_e`$ and derives $`\lambda_h`$ from the configured ratio.
+
+During charge-carrier transport, the trapping probability is calculated from the drift distance $`\Delta x`$ of the current
+simulation step as
+
+```math
+p_{e,h} = 1 - \exp\left(-\frac{\Delta x}{\lambda_{e,h}}\right)
+```
+
+where $`\lambda_{e,h}`$ is the trapping length of the respective charge carrier.
+
+This model can be selected in the configuration file via the parameter `trapping_model = "pcdiamond"`:
+
+```ini
+trapping_model = "pcdiamond"
+pcdiamond_thickness = 500um
+pcdiamond_ccd = 260um
+pcdiamond_lambda_ratio = 1.3
+```
+
 ### Constant Trapping Model
 
 For some situations or materials, a constant trapping probability is necessary. This can be achieved with the constant
@@ -258,3 +306,4 @@ detrapping_time_hole = 10ns
 [@CMSTrackerTrapping]: https://doi.org/10.1088/1748-0221/11/04/p04023
 [@Mandic]: https://doi.org/10.1088/1748-0221/15/11/p11018
 [@MandicErratum]: https://doi.org/10.1088/1748-0221/16/03/E03001
+[@is-haqzai]: https://doi.org/10.48550/arXiv.2603.13146

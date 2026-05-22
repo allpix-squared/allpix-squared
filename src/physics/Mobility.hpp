@@ -601,47 +601,14 @@ namespace allpix {
                 LOG(WARNING) << "Sensor material " << allpix::to_string(material) << " not valid for this model.";
             }
 
-            // ------------------------------------------------------------------
-            // Electron mobility: piecewise model
-            //
-            // Drift velocity:
-            //   v_d(E) = α E,                                           E < E_t
-            //   v_d(E) = v_s E / ( E_c * [1 + (E/E_c)^β]^(1/β) ),       E ≥ E_t
-            //
-            // Therefore, mobility μ(E) = v_d(E)/E becomes:
-            //   μ(E) = α,                                                E < E_t
-            //   μ(E) = (v_s / E_c) / [1 + (E/E_c)^β]^(1/β),             E ≥ E_t
-            //
-            // Parameters (electrons, PW, full range):
-            //   v_s = 26.59e6 cm/s
-            //   E_c = 0.56 V/um
-            //   α   = 1879.59 cm^2/V/s   // low-field mobility
-            //   β   = 0.41
-            //   E_t = 0.08 V/um
-            // ------------------------------------------------------------------
-
             // Low-field mobility μ0,1
             electron_mu0_linear_ = Units::get(1879.59, "cm*cm/V/s");
-
             // Threshold field E_t
             electron_et_ = Units::get(0.08, "V/um"); // critical electric field 1
-
             // High-field CT branch parameters (electrons)
             electron_vs_ = Units::get(26.59e6, "cm/s"); // saturation velocity
             electron_ec_ = Units::get(0.56, "V/um");    // Critical electric field 2
             electron_beta_ = 0.41;                      // shaper of the curve
-
-            // ------------------------------------------------------------------
-            // Holes: Caughey-Thomas model
-            //
-            //   μ(E) = (v_s / E_c) / [1 + (E/E_c)^β]^(1/β)
-            //
-            // Parameters (holes, CT, full range):
-            //   v_s   = 15.09 × 10^6 cm/s
-            //   E_c   = 0.55 V/µm
-            //   μ0,2  = v_s / E_c ≈ 2744 cm^2/V/s
-            //   β     = 0.88
-            // ------------------------------------------------------------------
 
             hole_vs_ = Units::get(15.09e6, "cm/s"); // saturation velocity
             hole_ec_ = Units::get(0.55, "V/um");    // critical electric field

@@ -169,46 +169,6 @@ namespace allpix {
      * lambda_h / lambda_e = r.
      */
 
-    // ------------------------------------------------------------------
-    // Polycrystalline diamond trapping model based on the charge
-    // collection distance (CCD).
-    //
-    // The CCD is related to the collected charge by
-    //
-    //   CCD = (Q_collected / Q_generated) * t
-    //
-    // where t is the sensor thickness.
-    //
-    // For polycrystalline diamond, the CCD is described as the sum of the
-    // electron and hole Hecht contributions:
-    //
-    //   CCD = f(lambda_e, t) + f(lambda_h, t)
-    //
-    // with
-    //
-    //   f(lambda, t) = lambda * [ 1 - (lambda / t) * (1 - exp(-t / lambda)) ]
-    //
-    // Here:
-    //   lambda_e = electron trapping length
-    //   lambda_h = hole trapping length
-    //   t        = sensor thickness
-    //
-    // We assume
-    //
-    //   lambda_h = r * lambda_e
-    //
-    // where r is the hole-to-electron trapping-length ratio.
-    //
-    // Given CCD and sensor thickness, this model solves for lambda_e and
-    // derives lambda_h from the chosen ratio.
-    //
-    // During transport, the trapping probability over a drift distance dx is
-    //
-    //   P_trap = 1 - exp(-dx / lambda)
-    //
-    // where lambda is the trapping length (Mean Drift Path) of the carrier type.
-    // ------------------------------------------------------------------
-
     class PCDiamond : virtual public TrappingModel {
     public:
         // ccd and thickness must be in the SAME length units as dx_drift (Allpix internal length units)
