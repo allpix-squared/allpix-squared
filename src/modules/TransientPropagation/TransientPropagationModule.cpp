@@ -721,11 +721,8 @@ TransientPropagationModule::propagate(Event* event,
         // Check if the charge carrier has been trapped:
         const double dpos_drift = step.value.norm(); // drift-only distance in this RK step
         if(state == CarrierState::MOTION &&
-           trapping_(type,
-            uniform_distribution(event->getRandomEngine()),
-            timestep_,
-            std::sqrt(efield.Mag2()),
-            dpos_drift)) {
+           trapping_(
+               type, uniform_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()), dpos_drift)) {
             LOG(TRACE) << "Trapping charge " << charge << " at " << position.x() << "," << position.y() << ","
                        << position.z() << " and time " << runge_kutta.getTime();
             if(output_plots_) {
