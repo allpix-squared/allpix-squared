@@ -198,14 +198,6 @@ The pointer to a Messenger can be used to bind variables to either receive or di
 defaults and to throw exceptions in case of failures. Unique modules can access the GeometryManager to fetch all detector
 descriptions, while detector modules directly receive a link to their respective detector.
 
-In case the Messenger, the GeometryManager or the pointer to the corresponding detector are not required by a module, they
-can be tagged as in the following example:
-
-```cpp
-TestModule(Configuration& config, Messenger* /*unused*/, std::shared_ptr<Detector> detector)
-    : Module(config, nullptr, std::move(detector)) {}
-```
-
 In addition to the constructor, each module can override the following methods:
 
 * `initialize()`:

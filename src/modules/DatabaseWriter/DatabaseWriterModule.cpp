@@ -29,8 +29,8 @@ using namespace allpix;
 
 thread_local std::shared_ptr<pqxx::connection> DatabaseWriterModule::conn_ = nullptr;
 
-DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager* /*geo_manager*/)
-    : SequentialModule(config, messenger, nullptr) {
+DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+    : SequentialModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
     // Bind to all messages with filter
