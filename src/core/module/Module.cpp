@@ -34,8 +34,6 @@
 
 using namespace allpix;
 
-Module::Module(Configuration& config) : config_(config) {}
-
 Module::Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
     : config_(config), messenger_(messenger), geo_manager_(geo_manager) {}
 

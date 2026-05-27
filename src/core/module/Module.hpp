@@ -61,11 +61,6 @@ namespace allpix {
 
     public:
         /**
-         * @brief Base constructor for unique modules not requiring a messenger
-         * @param config Configuration for this module
-         */
-        explicit Module(Configuration& config);
-        /**
          * @brief Base constructor for unique modules
          * @param config Configuration for this module
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
