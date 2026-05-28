@@ -44,11 +44,15 @@ stages:
     image: $DOCKER_DEPS_UBUNTU2404
     tags:
         - k8s-default
+    before_script:
+        - mkdir -p build/ && cd build/
 
 .ubuntu2204:
     image: $DOCKER_DEPS_UBUNTU2204
     tags:
         - k8s-default
+    before_script:
+        - mkdir -p build/ && cd build/
 
 .lxplus:
     image: gitlab-registry.cern.ch/sft/docker/alma9:latest
@@ -98,8 +102,6 @@ cmp:ubuntu2404:
     extends:
         - .ubuntu2404
         - .compile
-    before_script:
-        - mkdir -p build/ && cd build/
     script:
         - cmake -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - make
@@ -109,8 +111,6 @@ cmp:ubuntu2204:
     extends:
         - .ubuntu2204
         - .compile
-    before_script:
-        - mkdir -p build/ && cd build/
     script:
         - cmake -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - make
