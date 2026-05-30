@@ -30,16 +30,18 @@
 
 using namespace allpix;
 
-static void interrupt_handler(int /*unused*/);
+namespace {
+    void interrupt_handler(int /*unused*/);
 
-/**
- * @brief Handle termination request (CTRL+C)
- */
-static void interrupt_handler(int /*unused*/) {
-    LOG(STATUS) << "Interrupted! Aborting conversion...";
-    allpix::Log::finish();
-    std::exit(0);
-}
+    /**
+     * @brief Handle termination request (CTRL+C)
+     */
+    void interrupt_handler(int /*unused*/) {
+        LOG(STATUS) << "Interrupted! Aborting conversion...";
+        allpix::Log::finish();
+        std::exit(0);
+    }
+} // namespace
 
 int main(int argc, char** argv) {
 
