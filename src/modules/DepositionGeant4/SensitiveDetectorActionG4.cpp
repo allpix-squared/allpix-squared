@@ -193,7 +193,6 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
         auto track_id = track_id_point.first;
         auto local_begin = track_id_point.second;
 
-        ROOT::Math::XYZPoint const end_point;
         auto local_end = track_end_.at(track_id);
         auto pdg_code = track_pdg_.at(track_id);
         auto charge = track_charge_.at(track_id);
