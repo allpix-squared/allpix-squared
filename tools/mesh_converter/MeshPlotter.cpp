@@ -39,7 +39,7 @@ namespace {
     void interrupt_handler(int /*unused*/) {
         LOG(STATUS) << "Interrupted! Aborting conversion...";
         allpix::Log::finish();
-        std::exit(0);
+        std::quick_exit(0);
     }
 } // namespace
 
