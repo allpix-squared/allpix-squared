@@ -78,8 +78,8 @@ namespace allpix {
                                                     1280,
                                                     1024);
             canvas->cd();
-            canvas->SetTheta(config.get<float>("output_plots_theta") * 180.0f / ROOT::Math::Pi());
-            canvas->SetPhi(config.get<float>("output_plots_phi") * 180.0f / ROOT::Math::Pi());
+            canvas->SetTheta(config.get<float>("output_plots_theta") * 180.0F / ROOT::Math::Pi());
+            canvas->SetPhi(config.get<float>("output_plots_phi") * 180.0F / ROOT::Math::Pi());
 
             // Draw the frame on the canvas
             histogram_frame->GetXaxis()->SetTitle(
@@ -105,7 +105,8 @@ namespace allpix {
                 }
                 // Plot all lines with at least three points with different color
                 if(line->GetN() >= 2) {
-                    EColor plot_color = (std::get<2>(deposit) == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
+                    const EColor plot_color =
+                        (std::get<2>(deposit) == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
                     current_color = static_cast<short int>(plot_color - 9 + ((static_cast<int>(current_color) + 1) % 19));
                     line->SetLineColor(current_color);
                     line->Draw("same");
@@ -165,11 +166,11 @@ namespace allpix {
                          std::round(config.get<double>("output_plots_theta") / (ROOT::Math::Pi() / 2.0))) < 1e-6 ||
                std::fabs((config.get<double>("output_plots_phi") / (ROOT::Math::Pi() / 2.0)) -
                          std::round(config.get<double>("output_plots_phi") / (ROOT::Math::Pi() / 2.0))) < 1e-6) {
-                histogram_frame->GetXaxis()->SetLabelOffset(-0.1f);
-                histogram_frame->GetYaxis()->SetLabelOffset(-0.075f);
+                histogram_frame->GetXaxis()->SetLabelOffset(-0.1F);
+                histogram_frame->GetYaxis()->SetLabelOffset(-0.075F);
             } else {
-                histogram_frame->GetXaxis()->SetTitleOffset(2.0f);
-                histogram_frame->GetYaxis()->SetTitleOffset(2.0f);
+                histogram_frame->GetXaxis()->SetTitleOffset(2.0F);
+                histogram_frame->GetYaxis()->SetTitleOffset(2.0F);
             }
 
             // Draw frame on canvas
@@ -213,7 +214,7 @@ namespace allpix {
             histogram_contour.back()->SetDirectory(module->getROOTDirectory());
 
             // Create file and disable statistics for histogram
-            std::string file_name_anim = module->createOutputFile("animation" + std::to_string(event_num) + ".gif");
+            const auto file_name_anim = module->createOutputFile("animation" + std::to_string(event_num) + ".gif");
             for(size_t i = 0; i < 3; ++i) {
                 histogram_contour[i]->SetStats(false);
             }
@@ -232,9 +233,9 @@ namespace allpix {
             for(int i = 20; i < 100; ++i) {
                 auto color_idx = TColor::GetFreeColorIndex();
                 colors[i - 20] = new TColor(color_idx,
-                                            (static_cast<float>(i) / 100.0f) - 0.2f,
-                                            (static_cast<float>(i) / 100.0f) - 0.2f,
-                                            (static_cast<float>(i) / 100.0f) - 0.2f);
+                                            (static_cast<float>(i) / 100.0F) - 0.2F,
+                                            (static_cast<float>(i) / 100.0F) - 0.2F,
+                                            (static_cast<float>(i) / 100.0F) - 0.2F);
             }
 
             // Create animation of moving charges
@@ -251,8 +252,8 @@ namespace allpix {
 
                 // Reset the canvas
                 canvas->Clear();
-                canvas->SetTheta(config.get<float>("output_plots_theta") * 180.0f / ROOT::Math::Pi());
-                canvas->SetPhi(config.get<float>("output_plots_phi") * 180.0f / ROOT::Math::Pi());
+                canvas->SetTheta(config.get<float>("output_plots_theta") * 180.0F / ROOT::Math::Pi());
+                canvas->SetPhi(config.get<float>("output_plots_phi") * 180.0F / ROOT::Math::Pi());
                 canvas->Draw();
 
                 // Reset the histogram frame
@@ -382,12 +383,14 @@ namespace allpix {
                           const OutputPlotPoints& output_plot_points) {
 
             // Convert to pixel units if necessary
-            double scale_x = (config.get<bool>("output_plots_use_pixel_units") ? model->getPixelSize().x() : 1);
-            double scale_y = (config.get<bool>("output_plots_use_pixel_units") ? model->getPixelSize().y() : 1);
+            const double scale_x = (config.get<bool>("output_plots_use_pixel_units") ? model->getPixelSize().x() : 1);
+            const double scale_y = (config.get<bool>("output_plots_use_pixel_units") ? model->getPixelSize().y() : 1);
 
             // Calculate the axis limits
-            double minX = FLT_MAX, maxX = FLT_MIN;
-            double minY = FLT_MAX, maxY = FLT_MIN;
+            double minX = FLT_MAX;
+            double maxX = FLT_MIN;
+            double minY = FLT_MAX;
+            double maxY = FLT_MIN;
             unsigned long tot_point_cnt = 0;
             double start_time = std::numeric_limits<double>::max();
             unsigned int total_charge = 0;
@@ -410,8 +413,8 @@ namespace allpix {
 
             // Compute frame axis sizes if equal scaling is requested
             if(config.get<bool>("output_plots_use_equal_scaling", true)) {
-                double centerX = (minX + maxX) / 2.0;
-                double centerY = (minY + maxY) / 2.0;
+                const auto centerX = (minX + maxX) / 2.0;
+                const auto centerY = (minY + maxY) / 2.0;
                 if(config.get<bool>("output_plots_use_pixel_units")) {
                     minX = centerX - model->getSensorSize().z() / model->getPixelSize().x() / 2.0;
                     maxX = centerX + model->getSensorSize().z() / model->getPixelSize().x() / 2.0;
