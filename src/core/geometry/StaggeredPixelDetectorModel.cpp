@@ -90,6 +90,7 @@ std::set<Pixel::Index> StaggeredPixelDetectorModel::getNeighbors(const Pixel::In
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
 
     // Double-resolution integer coordinates for the center
+    // NOLINTNEXTLINE(readability-avoid-nested-conditional-operator)
     const int cx = (2 * idx.x()) + ((idx.y() % 2 != 0) ? (offset_ > 0 ? 1 : -1) : 0);
     // Squared distance threshold
     const int r2 = (2 * static_cast<int>(distance) + 1) * (2 * static_cast<int>(distance) + 1);
@@ -126,8 +127,10 @@ bool StaggeredPixelDetectorModel::areNeighbors(const Pixel::Index& seed,
                                                const Pixel::Index& entrant,
                                                const size_t distance) const {
     // Double-resolution x positions
+    // NOLINTBEGIN(readability-avoid-nested-conditional-operator)
     const int x1d = (2 * seed.x()) + ((seed.y() % 2 != 0) ? (offset_ > 0 ? 1 : -1) : 0);
     const int x2d = (2 * entrant.x()) + ((entrant.y() % 2 != 0) ? (offset_ > 0 ? 1 : -1) : 0);
+    // NOLINTEND(readability-avoid-nested-conditional-operator)
 
     const int dx = x2d - x1d;
     const int dy = entrant.y() - seed.y();
