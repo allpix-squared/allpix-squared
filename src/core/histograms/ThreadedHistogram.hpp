@@ -14,6 +14,7 @@
 
 #include <cmath>
 #include <concepts>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -130,14 +131,7 @@ namespace allpix {
          *
          * Based on get in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html, optimized for faster retrieval.
          */
-        std::shared_ptr<T> Get() {
-            auto idx = ThreadPool::threadNum();
-            auto& object = objects_[idx];
-            if(!object) {
-                object.reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[idx]));
-            }
-            return object;
-        }
+        std::shared_ptr<T> Get();
 
     private:
         /**
@@ -146,86 +140,13 @@ namespace allpix {
          * Based on initialization in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html, modified to
          * initialize based on number of preregistered threads.
          */
-        template <class... ARGS> void init(ARGS&&... args) {
-            const auto num_slots = ThreadPool::threadCount();
-            objects_.resize(num_slots);
-
-#if ROOT_VERSION_CODE < ROOT_VERSION(6, 22, 0)
-            directories_ = ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create(num_slots);
-#else
-            // create at least one directory (we need it for the model), plus others as needed by the size of objects
-            directories_.emplace_back(ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create());
-            for(auto i = 1U; i < num_slots; ++i) {
-                directories_.emplace_back(ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create());
-            }
-#endif
-
-            TDirectory::TContext ctxt(directories_[0]);
-            model_.reset(ROOT::Internal::TThreadedObjectUtils::Detacher<T>::Detach(new T(std::forward<ARGS>(args)...)));
-
-            // initialize at least the base object
-            objects_[0].reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[0]));
-        }
+        template <class... ARGS> void init(ARGS&&... args);
 
         /**
          * @brief An easy way to write a histogram. Applies draw & modification options before.
          */
-        void write() override {
-            this->merge();
+        void write() override;
 
-            if(draw_minimum_) {
-                objects_[0]->SetMinimum(draw_minimum_.value());
-            }
-
-            if(draw_maximum_) {
-                objects_[0]->SetMaximum(draw_maximum_.value());
-            }
-
-            for(const auto& option : drawing_options_) {
-                objects_[0]->SetOption(option.c_str());
-            }
-
-            auto adjust_axis_divisions = [&](TAxis* axis) {
-                if(static_cast<int>(axis->GetXmax()) < 10) {
-                    axis->SetNdivisions(static_cast<int>(axis->GetXmax()) + 1, 0, 0, true);
-                }
-            };
-
-            if(auto_adjust_axis_ranges_) {
-                auto adjust_axis_range = [&](int axis_id, TAxis* axis) {
-                    auto xmax = std::ceil(axis->GetBinCenter(objects_[0]->FindLastBinAbove(0, axis_id)) + 1);
-                    axis->SetRangeUser(0, xmax);
-                    adjust_axis_divisions(axis);
-                };
-
-                auto ndim = objects_[0]->GetDimension();
-                if(ndim >= 1) {
-                    adjust_axis_range(1, objects_[0]->GetXaxis());
-                }
-                if(ndim >= 2) {
-                    adjust_axis_range(2, objects_[0]->GetYaxis());
-                }
-                if(ndim >= 3) {
-                    adjust_axis_range(3, objects_[0]->GetZaxis());
-                }
-            }
-
-            if(auto_adjust_axis_divisions_) {
-
-                auto ndim = objects_[0]->GetDimension();
-                if(ndim >= 1) {
-                    adjust_axis_divisions(objects_[0]->GetXaxis());
-                }
-                if(ndim >= 2) {
-                    adjust_axis_divisions(objects_[0]->GetYaxis());
-                }
-                if(ndim >= 3) {
-                    adjust_axis_divisions(objects_[0]->GetZaxis());
-                }
-            }
-
-            objects_[0]->Write();
-        }
         // NOLINTEND(readability-identifier-naming)
 
         /**
@@ -233,14 +154,7 @@ namespace allpix {
          *
          * Based on merging in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html.
          */
-        void merge() {
-            ROOT::TThreadedObjectUtils::MergeFunctionType<T> mergeFunction = ROOT::TThreadedObjectUtils::MergeTObjects<T>;
-            if(is_merged_) {
-                return;
-            }
-            mergeFunction(objects_[0], objects_);
-            is_merged_ = true;
-        }
+        void merge();
 
         std::unique_ptr<T> model_;
         std::vector<std::shared_ptr<T>> objects_;
@@ -255,5 +169,8 @@ namespace allpix {
 
     template <class T> using Histogram = std::shared_ptr<ThreadedHistogram<T>>;
 } // namespace allpix
+
+// Include template members
+#include "ThreadedHistogram.tpp"
 
 #endif /* ALLPIX_THREADED_HISTOGRAM_H */

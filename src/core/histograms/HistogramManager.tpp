@@ -9,6 +9,10 @@
  * SPDX-License-Identifier: MIT
  */
 
+#pragma once
+
+#include "HistogramManager.hpp" // NOLINT(misc-header-include-cycle)
+
 #include "core/histograms/ThreadedHistogram.hpp"
 
 namespace allpix {
