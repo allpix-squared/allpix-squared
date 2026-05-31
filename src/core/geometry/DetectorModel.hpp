@@ -18,6 +18,7 @@
 #define ALLPIX_DETECTOR_MODEL_H
 
 #include <array>
+#include <set>
 #include <string>
 #include <utility>
 

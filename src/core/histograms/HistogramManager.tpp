@@ -9,6 +9,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "core/histograms/ThreadedHistogram.hpp"
+
 namespace allpix {
     template <typename T, class... ARGS>
     std::shared_ptr<ThreadedHistogram<T>> HistogramManager::registerHistogram(TDirectory* directory, ARGS&&... args) {
