@@ -13,6 +13,7 @@
 #define ALLPIX_THREADED_HISTOGRAM_H
 
 #include <cmath>
+#include <concepts>
 #include <string>
 #include <utility>
 
@@ -63,8 +64,7 @@ namespace allpix {
      *
      * Enables filling histograms in parallel and makes sure an empty instance will exist if not filled.
      */
-    template <typename T, typename std::enable_if_t<std::is_base_of_v<TH1, T>>* = nullptr>
-    class ThreadedHistogram : public BaseHistogram {
+    template <typename T> requires std::derived_from<T, TH1> class ThreadedHistogram : public BaseHistogram {
         friend class HistogramManager;
 
     public:
