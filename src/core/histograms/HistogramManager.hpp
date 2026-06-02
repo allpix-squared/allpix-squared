@@ -18,7 +18,7 @@
 #include <filesystem>
 
 #include "core/config/exceptions.h"
-#include "tools/ROOT.h"
+#include "core/histograms/ThreadedHistogram.hpp"
 
 namespace allpix {
 
