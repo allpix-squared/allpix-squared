@@ -21,8 +21,9 @@
 using namespace allpix;
 
 Parameterization2DG4::Parameterization2DG4(
-    int div_x, double size_x, double size_y, double offset_x, double offset_y, double pos_z)
-    : div_x_(div_x), size_x_(size_x), size_y_(size_y), offset_x_(offset_x), offset_y_(offset_y), pos_z_(pos_z) {}
+    int div_x, double size_x, double size_y, double size_z, double offset_x, double offset_y, double pos_z)
+    : div_x_(div_x), size_x_(size_x), size_y_(size_y), size_z_(size_z), offset_x_(offset_x), offset_y_(offset_y),
+      pos_z_(pos_z), bounding_box_("bounding_box", size_x / 2.0, size_y / 2.0, size_z / 2.0) {}
 
 void Parameterization2DG4::ComputeTransformation(const G4int copy_id, G4VPhysicalVolume* phys_volume) const {
     auto idx_x = copy_id % div_x_;
@@ -33,6 +34,16 @@ void Parameterization2DG4::ComputeTransformation(const G4int copy_id, G4VPhysica
 
     phys_volume->SetTranslation(G4ThreeVector(pos_x, pos_y, pos_z_));
     phys_volume->SetRotation(nullptr);
+}
+
+G4VSolid* Parameterization2DG4::ComputeSolid(G4int /*copy_id*/, G4VPhysicalVolume* /*phys_volume*/) {
+    return &bounding_box_;
+}
+
+void Parameterization2DG4::ComputeDimensions(G4Box& box, G4int /*unused*/, const G4VPhysicalVolume* /*unused*/) const {
+    box.SetXHalfLength(size_x_ / 2.0);
+    box.SetYHalfLength(size_y_ / 2.0);
+    box.SetZHalfLength(size_z_ / 2.0);
 }
 
 ParameterisedG4::ParameterisedG4(const G4String& name,

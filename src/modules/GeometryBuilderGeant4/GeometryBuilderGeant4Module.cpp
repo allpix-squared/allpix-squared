@@ -21,6 +21,9 @@
 
 #include <G4EnvironmentUtils.hh>
 #include <G4GlobalConfig.hh>
+#include <G4LogicalVolumeStore.hh>
+#include <G4PhysicalVolumeStore.hh>
+#include <G4SolidStore.hh>
 #include <G4StateManager.hh>
 #include <G4UImanager.hh>
 #include <G4Version.hh>
@@ -137,4 +140,12 @@ void GeometryBuilderGeant4Module::initialize() {
     // Run the geometry construct function in GeometryConstructionG4
     LOG(TRACE) << "Building Geant4 geometry";
     run_manager_g4_->InitializeGeometry();
+}
+
+GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() {
+    run_manager_g4_.reset();
+
+    G4PhysicalVolumeStore::GetInstance()->clear();
+    G4LogicalVolumeStore::GetInstance()->clear();
+    G4SolidStore::GetInstance()->clear();
 }
