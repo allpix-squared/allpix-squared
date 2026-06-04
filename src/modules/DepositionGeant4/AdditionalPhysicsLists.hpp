@@ -14,7 +14,7 @@
 
 #include "core/utils/text.h"
 
-#include <G4VModularPhysicsList.hh>
+#include <G4VUserPhysicsList.hh>
 
 #ifdef ALLPIX_PHYSICSLIST_MICROELEC
 #include <MicroElecSiPhysics.hh>
@@ -34,12 +34,12 @@ namespace allpix::physicslists {
      *
      * @return              Pointer to the G4VModularPhysicsList of the found physics list, or a nullptr if not found.
      */
-    inline G4VModularPhysicsList* getList(const std::string& list_name) {
+    inline G4VUserPhysicsList* getList(const std::string& list_name) {
 
 #ifdef ALLPIX_PHYSICSLIST_MICROELEC
         if(list_name == "MICROELEC-SIONLY" || allpix::transform(list_name, ::toupper) == "MICROELEC-SIONLY") {
-            // Downcasting from a G4VUserPhysicsList* to a G4VModularPhysicsList
-            return dynamic_cast<G4VModularPhysicsList*>(new MicroElecSiPhysics());
+            // Downcasting to a G4VUserPhysicsList
+            return dynamic_cast<G4VUserPhysicsList*>(new MicroElecSiPhysics());
         }
 #endif
 
