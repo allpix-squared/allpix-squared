@@ -211,6 +211,7 @@ void DepositionGeant4Module::initialize() {
                 throw ModuleError("");
             }
 
+            // NOLINTBEGIN(cppcoreguidelines-owning-memory)
             // Register a step limiter (uses the user limits defined earlier)
             LOG(DEBUG) << "Registering Geant4 step limiter physics list";
             modularPhysicsList->RegisterPhysics(new G4StepLimiterPhysics());
@@ -220,6 +221,7 @@ void DepositionGeant4Module::initialize() {
                 LOG(DEBUG) << "Registering Geant4 radioactive decay physics list";
                 modularPhysicsList->RegisterPhysics(new G4RadioactiveDecayPhysics());
             }
+            // NOLINTEND(cppcoreguidelines-owning-memory)
 
             physicsList = dynamic_cast<G4VUserPhysicsList*>(modularPhysicsList);
 
