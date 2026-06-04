@@ -254,6 +254,14 @@ void DepositionGeant4Module::initialize() {
     // If the specified physics list is one of the microelec variations, apply a target region to the volumes with silicon
     // materials
     if(physics_list == "MICROELEC" || physics_list == "MICROELEC-SIONLY") {
+        auto particle_type = allpix::transform(config_.get<std::string>("particle_type", ""), ::tolower);
+        if(!(particle_type == "e-" || particle_type == "proton")) {
+            throw InvalidCombinationError(
+                config_,
+                {"physics_list", "particle_type"},
+                "The physics list \"MICROELEC-SIONLY\" supports only electrons and protons as particle type.");
+        }
+
         // Create target region
         auto* region = new G4Region("Target");
 
