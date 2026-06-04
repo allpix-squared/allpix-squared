@@ -50,8 +50,8 @@ StaggeredPixelDetectorModel::StaggeredPixelDetectorModel(std::string type,
 ROOT::Math::XYZPoint StaggeredPixelDetectorModel::getMatrixCenter() const {
     // The matrix center is calculated relative to the local origin. It is shifted by the pixel offset along x only if the
     // offset is negative, because then the origin of the local coordinate system is not the leftmost pixel anymore.
-    return {getMatrixSize().x() / 2.0 - getPixelSize().x() / 2.0 + (offset_ < 0 ? offset_ : 0.) * getPixelSize().x(),
-            getMatrixSize().y() / 2.0 - getPixelSize().y() / 2.0,
+    return {(getMatrixSize().x() / 2.0) - (getPixelSize().x() / 2.0) + ((offset_ < 0 ? offset_ : 0.) * getPixelSize().x()),
+            (getMatrixSize().y() / 2.0) - (getPixelSize().y() / 2.0),
             0};
 }
 
@@ -78,7 +78,7 @@ std::pair<int, int> StaggeredPixelDetectorModel::getPixelIndex(const ROOT::Math:
     // Check if we have an odd or even row
     bool const odd_row = (static_cast<int>(std::lround(position.y() / pixel_size_.y())) % 2) != 0;
 
-    auto pixel_x = static_cast<int>(std::lround(position.x() / pixel_size_.x() - (odd_row ? offset_ : 0.)));
+    auto pixel_x = static_cast<int>(std::lround((position.x() / pixel_size_.x()) - (odd_row ? offset_ : 0.)));
     auto pixel_y = static_cast<int>(std::lround(position.y() / pixel_size_.y()));
     return {pixel_x, pixel_y};
 }
@@ -90,7 +90,8 @@ std::set<Pixel::Index> StaggeredPixelDetectorModel::getNeighbors(const Pixel::In
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
 
     // Double-resolution integer coordinates for the center
-    const int cx = 2 * idx.x() + ((idx.y() % 2 != 0) ? (offset_ > 0 ? 1 : -1) : 0);
+    // NOLINTNEXTLINE(readability-avoid-nested-conditional-operator)
+    const int cx = (2 * idx.x()) + ((idx.y() % 2 != 0) ? (offset_ > 0 ? 1 : -1) : 0);
     // Squared distance threshold
     const int r2 = (2 * static_cast<int>(distance) + 1) * (2 * static_cast<int>(distance) + 1);
 
@@ -109,7 +110,7 @@ std::set<Pixel::Index> StaggeredPixelDetectorModel::getNeighbors(const Pixel::In
             auto dy2 = ny - idx.y();
 
             // Check distance to central pixel, add + 1 to distance to include diagonal elements
-            if((dx2 * dx2 + dy2 * dy2 * 4) <= r2) {
+            if(((dx2 * dx2) + (dy2 * dy2 * 4)) <= r2) {
                 if(!PixelDetectorModel::isWithinMatrix(nx, ny)) {
                     continue;
                 }
@@ -126,14 +127,16 @@ bool StaggeredPixelDetectorModel::areNeighbors(const Pixel::Index& seed,
                                                const Pixel::Index& entrant,
                                                const size_t distance) const {
     // Double-resolution x positions
-    const int x1d = 2 * seed.x() + ((seed.y() % 2 != 0) ? (offset_ > 0 ? 1 : -1) : 0);
-    const int x2d = 2 * entrant.x() + ((entrant.y() % 2 != 0) ? (offset_ > 0 ? 1 : -1) : 0);
+    // NOLINTBEGIN(readability-avoid-nested-conditional-operator)
+    const int x1d = (2 * seed.x()) + ((seed.y() % 2 != 0) ? (offset_ > 0 ? 1 : -1) : 0);
+    const int x2d = (2 * entrant.x()) + ((entrant.y() % 2 != 0) ? (offset_ > 0 ? 1 : -1) : 0);
+    // NOLINTEND(readability-avoid-nested-conditional-operator)
 
     const int dx = x2d - x1d;
     const int dy = entrant.y() - seed.y();
 
     // Double-resolution squared distance
-    const int dist2 = dx * dx + 4 * dy * dy;
+    const int dist2 = (dx * dx) + (4 * dy * dy);
     // Squared distance threshold
     const int r2 = (2 * static_cast<int>(distance) + 1) * (2 * static_cast<int>(distance) + 1);
 

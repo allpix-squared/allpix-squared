@@ -15,7 +15,6 @@
 #include <cstring>
 #include <exception>
 #include <iostream>
-#include <signal.h>
 #include <stdexcept>
 #include <string>
 
@@ -31,16 +30,18 @@
 
 using namespace allpix;
 
-void interrupt_handler(int /*unused*/);
+namespace {
+    void interrupt_handler(int /*unused*/);
 
-/**
- * @brief Handle termination request (CTRL+C)
- */
-void interrupt_handler(int /*unused*/) {
-    LOG(STATUS) << "Interrupted! Aborting conversion...";
-    allpix::Log::finish();
-    std::exit(0);
-}
+    /**
+     * @brief Handle termination request (CTRL+C)
+     */
+    void interrupt_handler(int /*unused*/) {
+        LOG(STATUS) << "Interrupted! Aborting conversion...";
+        allpix::Log::finish();
+        std::quick_exit(0);
+    }
+} // namespace
 
 int main(int argc, char** argv) {
 

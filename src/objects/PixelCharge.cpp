@@ -168,10 +168,10 @@ void PixelCharge::print(std::ostream& out) const {
 }
 
 void PixelCharge::loadHistory() {
-    std::for_each(propagated_charges_.begin(), propagated_charges_.end(), [](auto& n) { n.get(); });
-    std::for_each(mc_particles_.begin(), mc_particles_.end(), [](auto& n) { n.get(); });
+    std::ranges::for_each(propagated_charges_, [](auto& n) { n.get(); });
+    std::ranges::for_each(mc_particles_, [](auto& n) { n.get(); });
 }
 void PixelCharge::petrifyHistory() {
-    std::for_each(propagated_charges_.begin(), propagated_charges_.end(), [](auto& n) { n.store(); });
-    std::for_each(mc_particles_.begin(), mc_particles_.end(), [](auto& n) { n.store(); });
+    std::ranges::for_each(propagated_charges_, [](auto& n) { n.store(); });
+    std::ranges::for_each(mc_particles_, [](auto& n) { n.store(); });
 }

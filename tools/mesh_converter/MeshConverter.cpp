@@ -61,7 +61,7 @@ void interrupt_handler(int /*unused*/);
 void interrupt_handler(int /*unused*/) {
     LOG(STATUS) << "Interrupted! Aborting conversion...";
     Log::finish();
-    std::exit(0);
+    std::quick_exit(0);
 }
 
 int main(int argc, char** argv) {

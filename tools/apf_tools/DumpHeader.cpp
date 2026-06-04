@@ -25,23 +25,25 @@
 
 using namespace allpix;
 
-template <typename T> static void print_info(allpix::FieldData<T> field_data, size_t n, std::string units) {
-    std::cout << "Header:     \"" << field_data.getHeader() << "\"" << std::endl;
-    std::cout << "Field size: " << Units::display(field_data.getSize()[0], "um") << " x "
-              << Units::display(field_data.getSize()[1], "um") << " x " << Units::display(field_data.getSize()[2], "um")
-              << std::endl;
-    std::cout << "Dimensions: " << field_data.getDimensions()[0] << " x " << field_data.getDimensions()[1] << " x "
-              << field_data.getDimensions()[2] << " cells" << std::endl;
-    std::cout << "Field vector with " << field_data.getData()->size() << " entries" << std::endl;
+namespace {
+    template <typename T> void print_info(const allpix::FieldData<T>& field_data, size_t n, const std::string& units) {
+        std::cout << "Header:     \"" << field_data.getHeader() << "\"" << std::endl;
+        std::cout << "Field size: " << Units::display(field_data.getSize()[0], "um") << " x "
+                  << Units::display(field_data.getSize()[1], "um") << " x " << Units::display(field_data.getSize()[2], "um")
+                  << std::endl;
+        std::cout << "Dimensions: " << field_data.getDimensions()[0] << " x " << field_data.getDimensions()[1] << " x "
+                  << field_data.getDimensions()[2] << " cells" << std::endl;
+        std::cout << "Field vector with " << field_data.getData()->size() << " entries" << std::endl;
 
-    if(n > 0) {
-        std::cout << "First " << n << " entries of field data:" << '\n';
-        for(size_t i = 0; i < field_data.getData()->size() && i < n; i++) {
-            std::cout << Units::display(field_data.getData()->at(i), units) << " ";
+        if(n > 0) {
+            std::cout << "First " << n << " entries of field data:" << '\n';
+            for(size_t i = 0; i < field_data.getData()->size() && i < n; i++) {
+                std::cout << Units::display(field_data.getData()->at(i), units) << " ";
+            }
+            std::cout << '\n';
         }
-        std::cout << '\n';
     }
-}
+} // namespace
 
 /**
  * @brief Main function running the application

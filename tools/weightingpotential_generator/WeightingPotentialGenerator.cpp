@@ -65,7 +65,7 @@ bool ROOT::Math::operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Ca
 void interrupt_handler(int /*unused*/) {
     LOG(STATUS) << "Interrupted! Aborting generation...";
     allpix::Log::finish();
-    std::exit(0);
+    std::quick_exit(0);
 }
 
 int main(int argc, char** argv) {

@@ -63,8 +63,14 @@ int main(int argc, const char* argv[]) {
                 }
             } else if(strcmp(argv[i], "--to") == 0 && (i + 1 < argc)) {
                 std::string format = std::string(argv[++i]);
-                std::transform(format.begin(), format.end(), format.begin(), ::tolower);
-                format_to = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
+                std::ranges::transform(format, format.begin(), ::tolower);
+                if(format == "init") {
+                    format_to = FileType::INIT;
+                } else if(format == "apf") {
+                    format_to = FileType::APF;
+                } else {
+                    format_to = FileType::UNKNOWN;
+                }
             } else if(strcmp(argv[i], "--input") == 0 && (i + 1 < argc)) {
                 file_input = std::string(argv[++i]);
             } else if(strcmp(argv[i], "--output") == 0 && (i + 1 < argc)) {

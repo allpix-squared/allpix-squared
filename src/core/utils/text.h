@@ -138,6 +138,6 @@ namespace allpix {
 } // namespace allpix
 
 // Include template definitions
-#include "text.tpp"
+#include "text.tpp" // IWYU pragma: keep
 
 #endif /* ALLPIX_TEXT_H */

@@ -9,9 +9,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "text.h"
-
 #include <cmath>
+#include <stdexcept>
+
+#include "text.h"
 
 namespace allpix {
     /**
