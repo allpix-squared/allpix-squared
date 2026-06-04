@@ -188,7 +188,7 @@ void DepositionGeant4Module::initialize() {
     auto physics_list_up = allpix::transform(config_.get<std::string>("physics_list"), ::toupper);
     auto physics_list = config_.get<std::string>("physics_list");
     G4PhysListFactory physListFactory;
-    G4VModularPhysicsList* physicsList{nullptr};
+    G4VUserPhysicsList* physicsList{nullptr};
 
     try {
         // Check if present in AdditionalPhysicsLists
@@ -196,17 +196,36 @@ void DepositionGeant4Module::initialize() {
 
         // Otherwise, attempt to get the physics list from the factory
         if(physicsList == nullptr) {
+            LOG(DEBUG) << "Looking out for physics list in the physics list factory.";
+            G4VModularPhysicsList* modularPhysicsList{nullptr};
+
             // Geant4 throws an exception if the list is not found
-            physicsList = physListFactory.GetReferencePhysList(physics_list);
-        }
+            modularPhysicsList = physListFactory.GetReferencePhysList(physics_list);
 
-        // Upper-case version of config
-        if(physicsList == nullptr) {
-            physicsList = physListFactory.GetReferencePhysList(physics_list_up);
-        }
+            // Upper-case version of config
+            if(modularPhysicsList == nullptr) {
+                modularPhysicsList = physListFactory.GetReferencePhysList(physics_list_up);
+            }
 
-        if(physicsList == nullptr) {
-            throw ModuleError("");
+            if(modularPhysicsList == nullptr) {
+                throw ModuleError("");
+            }
+
+            // Register a step limiter (uses the user limits defined earlier)
+            LOG(DEBUG) << "Registering Geant4 step limiter physics list";
+            modularPhysicsList->RegisterPhysics(new G4StepLimiterPhysics());
+
+            // Register radioactive decay physics lists unless the list already has it registered:
+            if(physics_list_up.find("HP") == std::string::npos && physics_list.find("Shielding") == std::string::npos) {
+                LOG(DEBUG) << "Registering Geant4 radioactive decay physics list";
+                modularPhysicsList->RegisterPhysics(new G4RadioactiveDecayPhysics());
+            }
+
+            physicsList = dynamic_cast<G4VUserPhysicsList*>(modularPhysicsList);
+
+            if(physicsList == nullptr) {
+                throw ModuleError("");
+            }
         }
     } catch(ModuleError&) {
         std::string message = "specified physics list does not exists";
@@ -231,16 +250,6 @@ void DepositionGeant4Module::initialize() {
     }
 
     LOG(INFO) << "Using G4 physics list \"" << physics_list << "\"";
-
-    // Register a step limiter (uses the user limits defined earlier)
-    LOG(DEBUG) << "Registering Geant4 step limiter physics list";
-    physicsList->RegisterPhysics(new G4StepLimiterPhysics());
-
-    // Register radioactive decay physics lists unless the list already has it registered:
-    if(physics_list_up.find("HP") == std::string::npos && physics_list.find("Shielding") == std::string::npos) {
-        LOG(DEBUG) << "Registering Geant4 radioactive decay physics list";
-        physicsList->RegisterPhysics(new G4RadioactiveDecayPhysics());
-    }
 
     // If the specified physics list is one of the microelec variations, apply a target region to the volumes with silicon
     // materials
