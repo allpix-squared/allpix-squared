@@ -423,10 +423,10 @@ void DepositionGeant4Module::initialize() {
 
             incident_track_position_[detector->getName()] = CreateHistogram<TH2D>(plot_name.c_str(),
                                                                                   "incident track position;X [mm];Y [mm];Z",
-                                                                                  5000,
+                                                                                  500,
                                                                                   -pixel_size.X() / 2,
                                                                                   sensor_size.X() - pixel_size.X() / 2,
-                                                                                  5000,
+                                                                                  500,
                                                                                   -pixel_size.Y() / 2,
                                                                                   sensor_size.Y() - pixel_size.Y() / 2);
         }
