@@ -392,6 +392,45 @@ void DepositionGeant4Module::initialize() {
 
     // Flush the Geant4 stream buffer because some elements in the initialization never do:
     G4cout << G4endl;
+
+    // If requested, prepare output plots
+    if(output_plots_) {
+        for(auto& detector : geo_manager_->getDetectors()) {
+            LOG(TRACE) << "Creating output plots for detector " << detector->getName();
+
+            // Plot axis are in kilo electrons - convert from framework units!
+            int const maximum_charge = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+            double const maximum_energy =
+                (static_cast<int>(maximum_charge / 2. * Units::convert(min_charge_creation_energy, "eV")) / 10) * 10 + 10;
+            int const nbins = 5 * maximum_charge;
+
+            // Get detector model size
+            auto sensor_size = detector->getModel()->getSensorSize();
+            auto pixel_size = detector->getModel()->getPixelSize();
+
+            // Create histograms if needed
+            std::string plot_name = "deposited_charge_" + detector->getName();
+
+            charge_per_event_[detector->getName()] = CreateHistogram<TH1D>(
+                plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum_charge);
+
+            plot_name = "deposited_energy_" + detector->getName();
+
+            energy_per_event_[detector->getName()] = CreateHistogram<TH1D>(
+                plot_name.c_str(), "deposited energy per event;deposited energy [keV];events", nbins, 0, maximum_energy);
+
+            plot_name = "incident_track_position_" + detector->getName();
+
+            incident_track_position_[detector->getName()] = CreateHistogram<TH2D>(plot_name.c_str(),
+                                                                                  "incident track position;X [mm];Y [mm];Z",
+                                                                                  5000,
+                                                                                  -pixel_size.X() / 2,
+                                                                                  sensor_size.X() - pixel_size.X() / 2,
+                                                                                  5000,
+                                                                                  -pixel_size.Y() / 2,
+                                                                                  sensor_size.Y() - pixel_size.Y() / 2);
+        }
+    }
 }
 
 void DepositionGeant4Module::initialize_g4_action() {
@@ -544,61 +583,6 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
         }
 
         sensors_.push_back(sensitive_detector_action);
-
-        // If requested, prepare output plots
-        if(output_plots_) {
-            LOG(TRACE) << "Creating output plots for detector " << sensitive_detector_action->getName();
-
-            // Plot axis are in kilo electrons - convert from framework units!
-            int const maximum_charge = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
-            double const maximum_energy =
-                (static_cast<int>(maximum_charge / 2. * Units::convert(charge_creation_energy, "eV")) / 10) * 10 + 10;
-            int const nbins = 5 * maximum_charge;
-
-            // Get detector model size
-            auto sensor_size = detector->getModel()->getSensorSize();
-            auto pixel_size = detector->getModel()->getPixelSize();
-
-            // Create histograms if needed
-            {
-                std::lock_guard<std::mutex> const lock(histogram_mutex_);
-                std::string plot_name = "deposited_charge_" + sensitive_detector_action->getName();
-
-                if(charge_per_event_.find(sensitive_detector_action->getName()) == charge_per_event_.end()) {
-                    charge_per_event_[sensitive_detector_action->getName()] =
-                        CreateHistogram<TH1D>(plot_name.c_str(),
-                                              "deposited charge per event;deposited charge [ke];events",
-                                              nbins,
-                                              0,
-                                              maximum_charge);
-                }
-
-                plot_name = "deposited_energy_" + sensitive_detector_action->getName();
-
-                if(energy_per_event_.find(sensitive_detector_action->getName()) == energy_per_event_.end()) {
-                    energy_per_event_[sensitive_detector_action->getName()] =
-                        CreateHistogram<TH1D>(plot_name.c_str(),
-                                              "deposited energy per event;deposited energy [keV];events",
-                                              nbins,
-                                              0,
-                                              maximum_energy);
-                }
-
-                plot_name = "incident_track_position_" + sensitive_detector_action->getName();
-
-                if(incident_track_position_.find(sensitive_detector_action->getName()) == incident_track_position_.end()) {
-                    incident_track_position_[sensitive_detector_action->getName()] =
-                        CreateHistogram<TH2D>(plot_name.c_str(),
-                                              "incident track position;X [mm];Y [mm];Z",
-                                              5000,
-                                              -pixel_size.X() / 2,
-                                              sensor_size.X() - pixel_size.X() / 2,
-                                              5000,
-                                              -pixel_size.Y() / 2,
-                                              sensor_size.Y() - pixel_size.Y() / 2);
-                }
-            }
-        }
     }
 }
 
