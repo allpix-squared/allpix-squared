@@ -401,7 +401,7 @@ void DepositionGeant4Module::initialize() {
             // Plot axis are in kilo electrons - convert from framework units!
             int const maximum_charge = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
             double const maximum_energy =
-                (static_cast<int>(maximum_charge / 2. * Units::convert(min_charge_creation_energy, "eV")) / 10) * 10 + 10;
+                std::ceil((maximum_charge / 2. * Units::convert(min_charge_creation_energy, "eV")) / 10) * 10;
             int const nbins = 5 * maximum_charge;
 
             // Get detector model size
@@ -425,10 +425,10 @@ void DepositionGeant4Module::initialize() {
                                                                                   "incident track position;X [mm];Y [mm];Z",
                                                                                   500,
                                                                                   -pixel_size.X() / 2,
-                                                                                  sensor_size.X() - pixel_size.X() / 2,
+                                                                                  sensor_size.X() - (pixel_size.X() / 2),
                                                                                   500,
                                                                                   -pixel_size.Y() / 2,
-                                                                                  sensor_size.Y() - pixel_size.Y() / 2);
+                                                                                  sensor_size.Y() - (pixel_size.Y() / 2));
         }
     }
 }
