@@ -401,7 +401,8 @@ void DepositionGeant4Module::initialize() {
             // Plot axis are in kilo electrons - convert from framework units!
             int const maximum_charge = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
             double const maximum_energy =
-                std::ceil((maximum_charge / 2. * Units::convert(min_charge_creation_energy, "eV")) / 10) * 10;
+                std::ceil(static_cast<double>(maximum_charge / 2. * Units::convert(min_charge_creation_energy, "eV")) / 10) *
+                10;
             int const nbins = 5 * maximum_charge;
 
             // Get detector model size
