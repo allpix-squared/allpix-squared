@@ -130,8 +130,8 @@ namespace allpix {
                 }
                 // Plot all lines with at least three points with different color
                 if(line->GetN() >= 2) {
-                    EColor plot_color = (path.getType() == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
-                    current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
+                    const EColor plot_color = (path.getType() == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
+                    current_color = static_cast<short int>(plot_color - 9 + ((static_cast<int>(current_color) + 1) % 19));
                     line->SetLineColor(current_color);
                     line->Draw("same");
                 }
