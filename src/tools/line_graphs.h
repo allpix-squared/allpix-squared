@@ -35,12 +35,12 @@ namespace allpix {
         class CarrierPath {
         public:
             CarrierPath(double deposition_time, unsigned int total_charge, CarrierType type, CarrierState state) noexcept
-                : time_(deposition_time), charge_(total_charge), type_(type), state_(state) {}
+                : deposition_time_(deposition_time), charge_(total_charge), type_(type), state_(state) {}
 
             void updateState(CarrierState state) { state_ = state; }
             void addPoint(ROOT::Math::XYZPoint position, double time) { points_.emplace_back(std::move(position), time); }
 
-            double getTime() const { return time_; }
+            double getDepositionTime() const { return deposition_time_; }
             unsigned int getCharge() const { return charge_; }
             CarrierType getType() const { return type_; }
             CarrierState getState() const { return state_; }
@@ -49,7 +49,7 @@ namespace allpix {
             size_t getNPoints() const { return points_.size(); }
 
         private:
-            double time_;
+            double deposition_time_;
             unsigned int charge_;
             CarrierType type_;
             CarrierState state_;
@@ -303,7 +303,7 @@ namespace allpix {
                     const auto& points = path.getPoints();
 
                     auto diff = static_cast<unsigned long>(
-                        std::lround((path.getTime() - start_time) / config.get<long double>("output_plots_step")));
+                        std::lround((path.getDepositionTime() - start_time) / config.get<long double>("output_plots_step")));
                     if(plot_idx < diff) {
                         min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
                         continue;
@@ -429,7 +429,7 @@ namespace allpix {
                     minY = std::min(minY, point.y() / scale_y);
                     maxY = std::max(maxY, point.y() / scale_y);
                 }
-                start_time = std::min(start_time, path.getTime());
+                start_time = std::min(start_time, path.getDepositionTime());
                 total_charge += path.getCharge();
                 max_charge = std::max(max_charge, path.getCharge());
 
