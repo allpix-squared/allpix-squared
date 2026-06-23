@@ -146,7 +146,7 @@ namespace allpix {
 
         // Variable storing state, time, position
         // Let's make a vector of tuples
-        std::vector<PropagationHistory> propagation_history_{};
+        std::vector<PropagationHistory> propagation_history_;
     };
 
     /**
