@@ -149,7 +149,7 @@ void DetectorHistogrammerModule::initialize() {
                                               model->getMatrixSize().x() - (model->getPixelSize().x() / 2),
                                               static_cast<int>(model->getMatrixSize().y() / model->getPixelSize().y()),
                                               -model->getPixelSize().y() / 2,
-                                              model->getMatrixSize().y()(-model->getPixelSize().y() / 2));
+                                              model->getMatrixSize().y() - (model->getPixelSize().y() / 2));
         hit_map_local->SetOption("colz");
 
         std::string const hit_map_local_mc_title =
@@ -159,10 +159,10 @@ void DetectorHistogrammerModule::initialize() {
             hit_map_local_mc_title.c_str(),
             static_cast<int>(model->getMatrixSize().x() / model->getPixelSize().x()) * local_inpixel_bins.x(),
             -model->getPixelSize().x() / 2,
-            model->getMatrixSize().x()(-model->getPixelSize().x() / 2),
+            model->getMatrixSize().x() - (model->getPixelSize().x() / 2),
             static_cast<int>(model->getMatrixSize().y() / model->getPixelSize().y()) * local_inpixel_bins.y(),
             -model->getPixelSize().y() / 2,
-            model->getMatrixSize().y()(-model->getPixelSize().y() / 2));
+            model->getMatrixSize().y() - (model->getPixelSize().y() / 2));
         hit_map_local_mc->SetOption("colz");
 
         std::string const charge_map_title =
