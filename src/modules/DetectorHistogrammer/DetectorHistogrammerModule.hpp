@@ -89,6 +89,9 @@ namespace allpix {
         // Reference track resolution
         ROOT::Math::XYVector track_resolution_;
 
+        // Plotting option
+        bool output_maps_;
+
         // Histograms to output
         Histogram<TH2D> hit_map, hit_map_global, hit_map_global_mc, hit_map_local, hit_map_local_mc, charge_map, cluster_map,
             polar_hit_map;
