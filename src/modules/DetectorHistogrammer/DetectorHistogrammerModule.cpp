@@ -146,10 +146,10 @@ void DetectorHistogrammerModule::initialize() {
                                               hit_map_local_title.c_str(),
                                               static_cast<int>(model->getMatrixSize().x() / model->getPixelSize().x()),
                                               -model->getPixelSize().x() / 2,
-                                              model->getMatrixSize().x() - model->getPixelSize().x() / 2,
+                                              model->getMatrixSize().x() - (model->getPixelSize().x() / 2),
                                               static_cast<int>(model->getMatrixSize().y() / model->getPixelSize().y()),
                                               -model->getPixelSize().y() / 2,
-                                              model->getMatrixSize().y() - model->getPixelSize().y() / 2);
+                                              model->getMatrixSize().y()(-model->getPixelSize().y() / 2));
         hit_map_local->SetOption("colz");
 
         std::string const hit_map_local_mc_title =
@@ -159,10 +159,10 @@ void DetectorHistogrammerModule::initialize() {
             hit_map_local_mc_title.c_str(),
             static_cast<int>(model->getMatrixSize().x() / model->getPixelSize().x()) * local_inpixel_bins.x(),
             -model->getPixelSize().x() / 2,
-            model->getMatrixSize().x() - model->getPixelSize().x() / 2,
+            model->getMatrixSize().x()(-model->getPixelSize().x() / 2),
             static_cast<int>(model->getMatrixSize().y() / model->getPixelSize().y()) * local_inpixel_bins.y(),
             -model->getPixelSize().y() / 2,
-            model->getMatrixSize().y() - model->getPixelSize().y() / 2);
+            model->getMatrixSize().y()(-model->getPixelSize().y() / 2));
         hit_map_local_mc->SetOption("colz");
 
         std::string const charge_map_title =
@@ -188,10 +188,10 @@ void DetectorHistogrammerModule::initialize() {
             cluster_size_map_local_title.c_str(),
             static_cast<int>(model->getMatrixSize().x() / model->getPixelSize().x()) * local_inpixel_bins.x(),
             -model->getPixelSize().x() / 2,
-            model->getMatrixSize().x() - model->getPixelSize().x() / 2,
+            model->getMatrixSize().x() - (model->getPixelSize().x() / 2),
             static_cast<int>(model->getMatrixSize().y() / model->getPixelSize().y()) * local_inpixel_bins.y(),
             -model->getPixelSize().y() / 2,
-            model->getMatrixSize().y() - model->getPixelSize().y() / 2);
+            model->getMatrixSize().y() - (model->getPixelSize().y() / 2));
         cluster_size_map_local->SetOption("colz");
 
         std::string const cluster_size_map_title = "Cluster size as function of in-pixel impact position (" +
@@ -411,10 +411,10 @@ void DetectorHistogrammerModule::initialize() {
             efficiency_local_title.c_str(),
             static_cast<int>(model->getMatrixSize().x() / model->getPixelSize().x()) * local_inpixel_bins.x(),
             -model->getPixelSize().x() / 2,
-            model->getMatrixSize().x() - model->getPixelSize().x() / 2,
+            model->getMatrixSize().x() - (model->getPixelSize().x() / 2),
             static_cast<int>(model->getMatrixSize().y() / model->getPixelSize().y()) * local_inpixel_bins.y(),
             -model->getPixelSize().y() / 2,
-            model->getMatrixSize().y() - model->getPixelSize().y() / 2,
+            model->getMatrixSize().y() - (model->getPixelSize().y() / 2),
             0,
             1);
 
@@ -688,7 +688,7 @@ void DetectorHistogrammerModule::run(Event* event) {
                 residual_x_map->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_x));
                 residual_y_map->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_y));
                 residual_detector->Fill(
-                    xpixel, ypixel, std::sqrt(residual_um_x * residual_um_x + residual_um_y * residual_um_y));
+                    xpixel, ypixel, std::sqrt((residual_um_x * residual_um_x) + (residual_um_y * residual_um_y)));
                 residual_x_detector->Fill(xpixel, ypixel, std::fabs(residual_um_x));
                 residual_y_detector->Fill(xpixel, ypixel, std::fabs(residual_um_y));
             }
