@@ -36,6 +36,8 @@ Here, the `.grd` file contains the vertex coordinates (3D or 2D) of each mesh no
 
 For Silvaco TCAD, the data has to be extracted from the TCAD data, and `parser = silvaco` has to be selected. The required input files are a `.grd` file containing the list of mesh points and `.dat` file holding the corresponding values.
 
+Alternatively, raw Silvaco structure/solution files (`.str` / `.sta`) written by ATHENA and ATLAS can be read directly by selecting `parser = silvaco-ssf`. In this mode the mesh points and field values are taken straight from the tagged `c` (coordinate), `s` (solution specification) and `n` (nodal value) records, so no prior extraction to `.grd`/`.dat` is required: the `<file_prefix>` is expected to resolve to a `<file_prefix>.sta` or `<file_prefix>.str` file. The parser resolves duplicated interface nodes shared between regions by keeping the value with the largest absolute electrostatic potential. The supported observables and their Silvaco quantity codes are `ElectricField` (120/121/122), `ElectrostaticPotential` (100), `DopingConcentration`/`NetDoping` (115), `DonorConcentration` (71) and `AcceptorConcentration` (72). A small example file is provided in `examples/example_silvaco_ssf.sta`.
+
 
 ### Output Data
 
@@ -96,7 +98,7 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 ### Parameters
 
 * `model`: Field file format to use, can be **INIT** or **APF**, defaults to **APF** (binary format).
-* `parser`: Parser class to interpret input data in. Supported values are **DF-ISE** (default) and **Silvaco**.
+* `parser`: Parser class to interpret input data in. Supported values are **DF-ISE** (default), **Silvaco** (pre-extracted `.grd`/`.dat`) and **Silvaco-SSF** (raw `.str`/`.sta`).
 * `region`: Region name or list of region names to be meshed, such as `bulk` or `"bulk","epi"` (No default value; required parameter).
 * `observable`: Observable to be interpolated, such as `ElectricField` (No default value; required parameter).
 * `observable_units`: Units in which the observable is stored in the input file (No default value; required parameter).

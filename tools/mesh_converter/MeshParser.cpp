@@ -24,6 +24,7 @@
 #include "core/utils/log.h"
 #include "parsers/DFISEParser.hpp"
 #include "parsers/SilvacoParser.hpp"
+#include "parsers/SilvacoSSFParser.hpp"
 
 using namespace mesh_converter;
 
@@ -36,6 +37,9 @@ std::shared_ptr<MeshParser> MeshParser::factory(const allpix::Configuration& con
     }
     if(parser == "silvaco") {
         return std::make_shared<SilvacoParser>();
+    }
+    if(parser == "silvaco-ssf" || parser == "silvaco-raw") {
+        return std::make_shared<SilvacoSSFParser>();
     }
 
     throw allpix::InvalidValueError(config, "parser", "Unknown parser type");
