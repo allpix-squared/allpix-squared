@@ -26,7 +26,8 @@ namespace {
     // Silvaco quantity codes for the observables supported by the mesh converter
     const std::map<std::string, std::vector<int>>& observable_codes() {
         static const std::map<std::string, std::vector<int>> codes = {
-            {"ElectricField", {120, 121, 122}},
+            // E Field Z is code 122 in ATLAS output but 613 in Victory Device output:
+            {"ElectricField", {120, 121, 122, 613}},
             {"ElectrostaticPotential", {100}},
             {"DopingConcentration", {115}},
             {"NetDoping", {115}},
