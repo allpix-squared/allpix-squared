@@ -80,5 +80,6 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Andy Wharton, Lancaster University, [awharton](https://gitlab.cern.ch/awharton)
 * Morag Williams, University of Glasgow, [williamm](https://gitlab.cern.ch/williamm)
 * Koen Wolters, [kwolters](https://gitlab.cern.ch/kwolters)
+* Don C. Wong, Brown University, CERN, [dwong](https://gitlab.cern.ch/dwong)
 * Samuel Wood, University of Oxford, [sam-sw](https://github.com/sam-sw)
 * Jixing Ye, University of Trento, [jiye](https://gitlab.cern.ch/jiye)
