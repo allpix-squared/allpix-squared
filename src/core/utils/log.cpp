@@ -11,6 +11,7 @@
 
 #include "log.h"
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cstddef>
@@ -119,7 +120,7 @@ DefaultLogger::~DefaultLogger() {
     out_no_special += out.substr(prev);
 
     // Replace carriage return by newline:
-    std::replace(out_no_special.begin(), out_no_special.end(), '\r', '\n');
+    std::ranges::replace(out_no_special, '\r', '\n');
 
     // Print output to streams
     for(auto* stream : get_streams()) {
