@@ -144,6 +144,7 @@ namespace allpix {
         // Log file if specified
         std::ofstream log_file_;
         LogLevel log_level_{LogLevel::WARNING};
+        LogFormat log_format_{LogFormat::DEFAULT};
 
         // All managers in the framework
         std::unique_ptr<Messenger> msg_;
