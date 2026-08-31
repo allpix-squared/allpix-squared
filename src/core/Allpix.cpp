@@ -74,6 +74,8 @@ Allpix::Allpix(std::filesystem::path config_file_name,
                        << "\" specified in the configuration is invalid, defaulting to WARNING instead";
             log_level_ = LogLevel::WARNING;
         }
+    } else {
+        log_level_ = Log::getReportingLevel();
     }
     Log::setReportingLevel(log_level_);
 
