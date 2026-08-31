@@ -22,7 +22,6 @@
 #include <iostream>
 #include <mutex>
 #include <ostream>
-#include <regex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -120,10 +119,7 @@ DefaultLogger::~DefaultLogger() {
     out_no_special += out.substr(prev);
 
     // Replace carriage return by newline:
-    try {
-        out_no_special = std::regex_replace(out_no_special, std::regex("\\\r"), "\n");
-    } catch(std::regex_error&) { // NOLINT(bugprone-empty-catch)
-    }
+    std::replace(out_no_special.begin(), out_no_special.end(), '\r', '\n');
 
     // Print output to streams
     for(auto* stream : get_streams()) {
