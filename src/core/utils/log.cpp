@@ -11,6 +11,7 @@
 
 #include "log.h"
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cstddef>
@@ -22,7 +23,6 @@
 #include <iostream>
 #include <mutex>
 #include <ostream>
-#include <regex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -120,10 +120,7 @@ DefaultLogger::~DefaultLogger() {
     out_no_special += out.substr(prev);
 
     // Replace carriage return by newline:
-    try {
-        out_no_special = std::regex_replace(out_no_special, std::regex("\\\r"), "\n");
-    } catch(std::regex_error&) { // NOLINT(bugprone-empty-catch)
-    }
+    std::ranges::replace(out_no_special, '\r', '\n');
 
     // Print output to streams
     for(auto* stream : get_streams()) {
@@ -173,15 +170,17 @@ void DefaultLogger::finish() {
  */
 std::ostringstream&
 DefaultLogger::getStream(LogLevel level, const std::string& file, const std::string& function, uint32_t line) {
+    const auto format = get_format();
+
     // Add date in all except short format
-    if(get_format() != LogFormat::SHORT) {
+    if(format != LogFormat::SHORT) {
         os_ << "\x1B[1m"; // BOLD
         os_ << "|" << get_current_date() << "| ";
         os_ << "\x1B[0m"; // RESET
     }
 
     // Add thread id only in long format
-    if(get_format() == LogFormat::LONG) {
+    if(format == LogFormat::LONG) {
         os_ << "\x1B[1m"; // BOLD
         os_ << "=" << std::this_thread::get_id() << "= ";
         os_ << "\x1B[0m"; // RESET
@@ -203,7 +202,7 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     }
 
     // Add log level (shortly in the short format)
-    if(get_format() != LogFormat::SHORT) {
+    if(format != LogFormat::SHORT) {
         std::string level_str = "(";
         level_str += getStringFromLevel(level);
         level_str += ")";
@@ -215,7 +214,7 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
 
     // Add event number if any (shortly in the short format)
     if(getEventNum() != 0) {
-        if(get_format() != LogFormat::SHORT) {
+        if(format != LogFormat::SHORT) {
             os_ << "(Event " << getEventNum() << ") ";
         } else {
             os_ << "(E: " << getEventNum() << ") ";
@@ -230,7 +229,7 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     }
 
     // Print function name and line number information in debug format
-    if(get_format() == LogFormat::LONG) {
+    if(format == LogFormat::LONG) {
         os_ << "\x1B[1m"; // BOLD
         os_ << "<" << file << "/" << function << ":L" << line << "> ";
         os_ << "\x1B[0m"; // RESET
