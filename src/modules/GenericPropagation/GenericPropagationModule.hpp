@@ -25,6 +25,7 @@
 #include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
+#include "objects/CarrierPath.hpp"
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
 
@@ -89,7 +90,7 @@ namespace allpix {
          * @param initial_time_global Initial global time with respect to the start of the event
          * @param level               Current level depth of the generated shower
          * @param propagated_charges  Reference to vector with all produced final PropagatedCharge objects
-         * @param output_plot_points Reference to vector to hold points for line graph output plots
+         * @param carrier_paths       Reference to vector with all produced final CarrierPath objects
          *
          * @return Total recombined, trapped and propagated charge for statistics purposes
          */
@@ -103,7 +104,7 @@ namespace allpix {
                   double initial_time_global,
                   unsigned int level,
                   std::vector<PropagatedCharge>& propagated_charges,
-                  LineGraph::OutputPlotPoints& output_plot_points) const;
+                  std::vector<CarrierPath>& carrier_paths) const;
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},
