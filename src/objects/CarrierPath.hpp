@@ -31,6 +31,7 @@ namespace allpix {
          * @param charge Total charge propagated
          * @param type Type of the carrier to propagate
          * @param state State of the charge carrier when reaching its position
+         * @param deposited_charge Optional pointer to related deposited charge
          */
         CarrierPath(unsigned int charge,
                     CarrierType type,
