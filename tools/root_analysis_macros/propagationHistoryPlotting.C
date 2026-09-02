@@ -17,30 +17,30 @@
 
 #include <memory>
 
-#include "../../src/objects/PropagatedCharge.hpp"
+#include "../../src/objects/CarrierPath.hpp"
 
 /**
  * An example of how to plot the full propagation history of charge carriers, and make an animation for a single event.
- * Takes a TFile (containing PropagatedCharge objects), a detector name, the event number to simulate, and
+ * Takes a TFile (containing CarrierPath objects), a detector name, the event number to simulate, and
  * whether or not to save the animation as a result as input. Note: saving the animations as .gif files takes a long time.
  */
 void propagationHistoryPlotting(TFile* file, std::string detector, int animEventNo = 0, bool save_gif_output = false) {
 
-    // Initialise reading of the PropagatedCharge TTrees
-    TTree* propagated_charge_tree = static_cast<TTree*>(file->Get("PropagatedCharge"));
-    if(!propagated_charge_tree) {
-        std::cout << "Could not read tree PropagatedCharge, cannot continue." << std::endl;
+    // Initialise reading of the CarrierPath TTrees
+    TTree* carrier_path_tree = static_cast<TTree*>(file->Get("CarrierPath"));
+    if(!carrier_path_tree) {
+        std::cout << "Could not read tree CarrierPath, cannot continue." << std::endl;
         return;
     }
-    TBranch* propagated_charge_branch = propagated_charge_tree->FindBranch(detector.c_str());
-    if(!propagated_charge_branch) {
-        std::cout << "Could not find the branch on tree PropagatedCharge for the corresponding detector, cannot continue."
+    TBranch* carrier_path_branch = carrier_path_tree->FindBranch(detector.c_str());
+    if(!carrier_path_branch) {
+        std::cout << "Could not find the branch on tree CarrierPath for the corresponding detector, cannot continue."
                   << std::endl;
         return;
     }
     // Bind the information to a predefined vector
-    std::vector<allpix::PropagatedCharge*> propagated_charges;
-    propagated_charge_branch->SetObject(&propagated_charges);
+    std::vector<allpix::CarrierPath*> carrier_paths;
+    carrier_path_branch->SetObject(&carrier_paths);
 
     // Vector to store plot markers. Needed so that they aren't deleted automatically.
     std::vector<TMarker*> markers = {};
@@ -64,7 +64,7 @@ void propagationHistoryPlotting(TFile* file, std::string detector, int animEvent
         timeCounter += timeStepSize;
         return timeCounter;
     });
-    // For each of these timestamps, we want to plot *each* propagatedcharge object's position.
+    // For each of these timestamps, we want to plot *each* carrier path object's position.
 
     // Set up the drawing, to have axes. 3x the pixel pitch in this case
     TH2D* propagation_map_xz_animation = new TH2D("propagation_map_xz_animation",
@@ -86,7 +86,7 @@ void propagationHistoryPlotting(TFile* file, std::string detector, int animEvent
     gStyle->SetOptStat(false);
 
     // Access selected event
-    propagated_charge_tree->GetEntry(animEventNo);
+    carrier_path_tree->GetEntry(animEventNo);
 
     // Animate the requested event
     for(auto& ts : animTimes) {
@@ -98,33 +98,33 @@ void propagationHistoryPlotting(TFile* file, std::string detector, int animEvent
         propagation_map_xz_animation->Draw();
 
         int current_color = 1;
-        for(auto& propagated_charge : propagated_charges) {
+        for(auto& carrier_path : carrier_paths) {
 
             // Set the colour for this charge carrier
             EColor plot_color =
-                (propagated_charge->getType() == allpix::CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
+                (carrier_path->getType() == allpix::CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
             current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
             auto marker = new TMarker();
             marker->SetMarkerStyle(kFullCircle);
             // Marker size dependnet on charge carrier group size
-            marker->SetMarkerSize(static_cast<float>(propagated_charge->getCharge() * 0.1));
+            marker->SetMarkerSize(static_cast<float>(carrier_path->getCharge() * 0.1));
             marker->SetMarkerColor(current_color);
 
             // Retrieve the history for this PropagatedCharge object
-            std::vector<allpix::PropagatedCharge::PropagationHistory> history = propagated_charge->getPropagationHistory();
+            const auto history = carrier_path.getPoints();
             // Get the first item that has a higher time than the timestamp
             auto it = find_if(history.begin(), history.end(), [=](auto&& item) { return std::get<0>(item) * 1000.0 > ts; });
             ROOT::Math::XYZPoint markerPosition;
             double markerTime = 0.0;
             if(it != history.begin() && it != history.end() && (it != history.begin() + 1)) {
-                markerPosition = std::get<1>(*(std::prev(it)));
-                markerTime = std::get<0>(*(std::prev(it))) * 1000.0;
+                markerPosition = std::get<0>(*(std::prev(it)));
+                markerTime = std::get<1>(*(std::prev(it))) * 1000.0;
                 // In the event that the times are exactly equal:
-                if((std::abs(ts - std::get<0>(*(it)) * 1000.0)) <
+                if((std::abs(ts - std::get<1>(*(it)) * 1000.0)) <
                    std::numeric_limits<double>::epsilon()) { // Floaty magic... We're not so bothered for this
                                                              // particular thing, as it's just visualisation
-                    markerPosition = std::get<1>(*it);
-                    markerTime = std::get<0>(*it) * 1000.0;
+                    markerPosition = std::get<0>(*it);
+                    markerTime = std::get<1>(*it) * 1000.0;
                 }
             } else {
                 // Skip this, the begin can be silly, and end means that we don't find a point corresponding to the time
@@ -205,18 +205,17 @@ void propagationHistoryPlotting(TFile* file, std::string detector, int animEvent
                                                 pitch_y);
 
         // Iterate over all events
-        for(int i = 0; i < propagated_charge_tree->GetEntries(); ++i) {
+        for(int i = 0; i < carrier_path_tree->GetEntries(); ++i) {
             if(i % 100 == 0) {
                 std::cout << "Processing event " << i << std::endl;
             }
 
             // Access next event. Pushes information into input_*
-            propagated_charge_tree->GetEntry(i);
+            carrier_path_tree->GetEntry(i);
 
-            for(auto& propagated_charge : propagated_charges) {
-                std::vector<allpix::PropagatedCharge::PropagationHistory> history =
-                    propagated_charge->getPropagationHistory();
-                for(auto& [time, position] : history) {
+            for(auto& carrier_path : carrier_paths) {
+                const auto history = carrier_path->getPoints();
+                for(auto& [position, time] : history) {
                     auto inPixelPos = ROOT::Math::XYVector(std::fmod(position.x() + pitch_x_mm / 2, pitch_x_mm) * 1000,
                                                            std::fmod(position.y() + pitch_y_mm / 2, pitch_y_mm) * 1000);
                     // std::cout << "In-pixel position: " << inPixelPos << std::endl;

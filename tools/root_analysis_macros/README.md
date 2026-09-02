@@ -59,7 +59,7 @@ The script also has options for specifying the event number to plot, and whether
 
 ## Propagation and pulse animation example
 
-Analysis example demonstrating how to plot the propagation history, and make an animation of charge carrier motion in a weighting potential, also showing the growing cumulative cahrge and the induced current. Requires the flag `store_full_propagation_history` in the propagation module, and saving the `PropagatedCharge` object in `ROOTObjectWriter`, as well as using `PulseTransfer` so that pulses are available. If the `modules` file is included in the call, a field or weighting potential can be loaded (if an output plot of it exists).
+Analysis example demonstrating how to plot the propagation history, and make an animation of charge carrier motion in a weighting potential, also showing the growing cumulative cahrge and the induced current. Requires the flag `store_full_propagation_history` in the propagation module, and saving the `CarrierPath` object in `ROOTObjectWriter`, as well as using `PulseTransfer` so that pulses are available. If the `modules` file is included in the call, a field or weighting potential can be loaded (if an output plot of it exists).
 
 Usage:
 
