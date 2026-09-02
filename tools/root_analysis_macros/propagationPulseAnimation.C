@@ -17,6 +17,7 @@
 
 #include <memory>
 
+#include "../../src/objects/CarrierPath.hpp"
 #include "../../src/objects/PixelCharge.hpp"
 #include "../../src/objects/PropagatedCharge.hpp"
 

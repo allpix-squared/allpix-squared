@@ -51,10 +51,10 @@ namespace allpix {
 
         /**
          * @brief Set the propagated charge
-         * @param mc_particle The propagated charge
+         * @param propagated_charge The propagated charge
          * @warning Special method because PropagatedCharge is only known after deposit creation, do not be replaced later.
          */
-        void setPropagatedCharge(const PropagatedCharge* mc_particle);
+        void setPropagatedCharge(const PropagatedCharge* propagated_charge);
 
         /**
          * @brief Update the current state of the carrier
@@ -126,9 +126,9 @@ namespace allpix {
         void petrifyHistory() override;
 
     private:
-        unsigned int charge_;
-        CarrierType type_;
-        CarrierState state_;
+        unsigned int charge_{};
+        CarrierType type_{};
+        CarrierState state_{};
         PointerWrapper<DepositedCharge> deposited_charge_;
         PointerWrapper<PropagatedCharge> propagated_charge_;
         std::vector<std::pair<ROOT::Math::XYZPoint, double>> points_;

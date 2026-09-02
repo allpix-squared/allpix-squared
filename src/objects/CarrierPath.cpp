@@ -66,7 +66,7 @@ void CarrierPath::setPropagatedCharge(const PropagatedCharge* propagated_charge)
 double CarrierPath::getDepositionTime() const {
     try {
         return getDepositedCharge()->getLocalTime();
-    } catch(MissingReferenceException) {
+    } catch(MissingReferenceException&) {
         if(!points_.empty()) {
             return points_.front().second;
         }
