@@ -180,6 +180,42 @@ generated for every electron and hole in the event, storing them will lead to la
 
 For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1propagatedcharge/).
 
+## CarrierPath
+
+The full trajectory from [DepositedCharge](#depositedcharge) to [PropagatedCharge](#propagatedcharge) with all positions and
+time steps of the path. The object contains references to its start and end points, via references to the respective objects,
+and a vector of all way points of the trajectory in local coordinates.
+
+Main parameters:
+
+- The associated [PropagatedCharge](#depositedcharge) object
+  ([`getDepositedCharge()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1carrierpath/#function-getdepositedcharge))
+
+- The associated [DepositedCharge](#propagatedcharge) object
+  ([`getPropagatedCharge()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1carrierpath/#function-getpropagatedcharges))
+
+- The associated induced [pulses](#pulse), if any
+  ([`getPulses()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1carrierpath/#function-getpulses))
+
+- The carrier state of the charge carriers described above
+  ([`getState()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1carrierpath/#function-getstate))
+
+- The amount of charges in the set
+  ([`getCharge()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1carrierpath/#function-getcharge))
+
+- The carrier type to check if the charge carriers are electrons or holes
+  ([`getType()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1carrierpath/#function-gettype))
+
+- The list of way points of the trajector
+  ([`getPoints()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1carrierpath/#function-getpoints))
+
+- The number of points stored on the path
+  ([`getNPoints()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1carrierpath/#function-getnpoints))
+
+- The time of deposition of the carriers associated with the path
+  ([`getDepositionTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1carrierpath/#function-getdepositiontime))
+
+
 ## PixelCharge
 
 The set of charge carriers collected at a single pixel. The pixel indices are stored in both the x and y direction, starting
