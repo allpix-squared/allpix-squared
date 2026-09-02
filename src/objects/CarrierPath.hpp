@@ -14,6 +14,7 @@
 
 #include <map>
 
+#include "DepositedCharge.hpp"
 #include "Object.hpp"
 #include "PropagatedCharge.hpp"
 
@@ -41,6 +42,19 @@ namespace allpix {
          * @return Pointer to possible deposited charge
          */
         const DepositedCharge* getDepositedCharge() const;
+
+        /**
+         * @brief Get related propagated charge
+         * @return Pointer to possible propagated charge
+         */
+        const PropagatedCharge* getPropagatedCharge() const;
+
+        /**
+         * @brief Set the propagated charge
+         * @param mc_particle The propagated charge
+         * @warning Special method because PropagatedCharge is only known after deposit creation, do not be replaced later.
+         */
+        void setPropagatedCharge(const PropagatedCharge* mc_particle);
 
         /**
          * @brief Update the current state of the carrier
@@ -116,6 +130,7 @@ namespace allpix {
         CarrierType type_;
         CarrierState state_;
         PointerWrapper<DepositedCharge> deposited_charge_;
+        PointerWrapper<PropagatedCharge> propagated_charge_;
         std::vector<std::pair<ROOT::Math::XYZPoint, double>> points_;
     };
 

@@ -25,6 +25,7 @@
 #endif
 
 #include "objects/DepositedCharge.hpp"
+#include "objects/PropagatedCharge.hpp"
 #include "objects/exceptions.h"
 
 using namespace allpix;
@@ -45,6 +46,23 @@ const DepositedCharge* CarrierPath::getDepositedCharge() const {
     return deposited_charge;
 }
 
+/**
+ * @throws MissingReferenceException If the pointed object is not in scope
+ *
+ * Object is stored as TRef and can only be accessed if pointed object is in scope
+ */
+const PropagatedCharge* CarrierPath::getPropagatedCharge() const {
+    auto* propagated_charge = propagated_charge_.get();
+    if(propagated_charge == nullptr) {
+        throw MissingReferenceException(typeid(*this), typeid(PropagatedCharge));
+    }
+    return propagated_charge;
+}
+
+void CarrierPath::setPropagatedCharge(const PropagatedCharge* propagated_charge) {
+    propagated_charge_ = PointerWrapper<PropagatedCharge>(propagated_charge);
+}
+
 double CarrierPath::getDepositionTime() const {
     try {
         return getDepositedCharge()->getLocalTime();
@@ -61,6 +79,12 @@ void CarrierPath::print(std::ostream& out) const {
     out << "State: " << magic_enum::enum_name(state_) << "\n";
 }
 
-void CarrierPath::loadHistory() { deposited_charge_.get(); }
+void CarrierPath::loadHistory() {
+    deposited_charge_.get();
+    propagated_charge_.get();
+}
 
-void CarrierPath::petrifyHistory() { deposited_charge_.store(); }
+void CarrierPath::petrifyHistory() {
+    deposited_charge_.store();
+    propagated_charge_.store();
+}
