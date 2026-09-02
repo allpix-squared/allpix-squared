@@ -200,8 +200,11 @@ namespace allpix {
             } else {
                 success = queue_.push(n, std::make_unique<std::packaged_task<void()>>(std::move(task_function)), false);
             }
-            // Increment run count:
-            ++run_cnt_;
+
+            if(success) {
+                // Increment run count:
+                ++run_cnt_;
+            }
         }
         if(success) {
             return future;
