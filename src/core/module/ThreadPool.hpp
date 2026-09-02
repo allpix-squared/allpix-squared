@@ -17,7 +17,6 @@
 #include <exception>
 #include <functional>
 #include <future>
-#include <map>
 #include <memory>
 #include <queue>
 #include <set>
@@ -310,7 +309,7 @@ namespace allpix {
         std::atomic_flag has_exception_{false};
         std::exception_ptr exception_ptr_{nullptr};
 
-        static std::map<std::thread::id, unsigned int> thread_nums_;
+        static thread_local unsigned int thread_num_;
         static std::atomic_uint thread_cnt_;
         static std::atomic_uint thread_total_;
     };
