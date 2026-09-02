@@ -33,8 +33,6 @@ namespace allpix {
     class LineGraph {
 
     public:
-        using OutputPlotPoints = std::vector<CarrierPath>;
-
         /**
          * @brief Generate line graphs of charge carrier drift paths
          *
@@ -48,7 +46,7 @@ namespace allpix {
         static void Create(uint64_t event_num, // NOLINT
                            Module* module,
                            const Configuration& config,
-                           const OutputPlotPoints& output_plot_points,
+                           const std::vector<CarrierPath>& output_plot_points,
                            CarrierState plotting_state) {
 
             auto model = module->getDetector()->getModel();
@@ -132,7 +130,7 @@ namespace allpix {
         static void Animate(uint64_t event_num, // NOLINT
                             Module* module,
                             const Configuration& config,
-                            const OutputPlotPoints& output_plot_points) {
+                            const std::vector<CarrierPath>& output_plot_points) {
 
             LOG(TRACE) << "Writing animation for all charge carriers";
             auto model = module->getDetector()->getModel();
@@ -386,7 +384,7 @@ namespace allpix {
         static std::tuple<double, double, double, double, double, double, double, double, unsigned long, double>
         get_plot_settings(const std::shared_ptr<const DetectorModel>& model,
                           const Configuration& config,
-                          const OutputPlotPoints& output_plot_points) {
+                          const std::vector<CarrierPath>& output_plot_points) {
 
             // Convert to pixel units if necessary
             const double scale_x = (config.get<bool>("output_plots_use_pixel_units") ? model->getPixelSize().x() : 1);

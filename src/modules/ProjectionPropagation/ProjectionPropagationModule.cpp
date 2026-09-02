@@ -192,14 +192,12 @@ void ProjectionPropagationModule::run(Event* event) {
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
+    std::vector<CarrierPath> carrier_paths;
 
     unsigned int charge_lost = 0;
     unsigned int total_charge = 0;
     unsigned int total_projected_charge = 0;
     unsigned int recombined_charges_count = 0;
-
-    // List of points to plot to plot for output plots
-    LineGraph::OutputPlotPoints output_plot_points;
 
     // Loop over all deposits for propagation
     for(const auto& deposit : deposits_message->getData()) {
@@ -235,11 +233,12 @@ void ProjectionPropagationModule::run(Event* event) {
             charges_remaining -= charge_per_step;
 
             auto position = initial_position;
+            CarrierPath carrier_path;
 
             // Add point of deposition to the output plots if requested
             if(output_linegraphs_) {
-                output_plot_points.emplace_back(charge_per_step, deposit.getType(), CarrierState::HALTED, &deposit);
-                output_plot_points.back().addPoint(initial_position, deposit.getGlobalTime());
+                carrier_path = CarrierPath(charge_per_step, deposit.getType(), CarrierState::HALTED, &deposit);
+                carrier_path.addPoint(initial_position, deposit.getGlobalTime());
             }
 
             // Get the electric field at the position of the deposited charge and the top of the sensor:
@@ -278,7 +277,7 @@ void ProjectionPropagationModule::run(Event* event) {
                     // Add position after diffusion to line graphs:
                     if(output_linegraphs_) {
                         // FIXME time
-                        output_plot_points.back().addPoint(local_position_diffusion, deposit.getGlobalTime());
+                        carrier_path.addPoint(local_position_diffusion, deposit.getGlobalTime());
                     }
 
                     continue;
@@ -311,7 +310,7 @@ void ProjectionPropagationModule::run(Event* event) {
                     // Add position at sensor intercept:
                     if(output_linegraphs_) {
                         auto intercept = getDetector()->getModel()->getSensorIntercept(initial_position, position);
-                        output_plot_points.back().addPoint(intercept, deposit.getGlobalTime() + diffusion_time);
+                        carrier_path.addPoint(intercept, deposit.getGlobalTime() + diffusion_time);
                     }
 
                     continue;
@@ -319,7 +318,7 @@ void ProjectionPropagationModule::run(Event* event) {
 
                 // Add potential position after diffusion to line graphs:
                 if(output_linegraphs_) {
-                    output_plot_points.back().addPoint(position, deposit.getGlobalTime() + diffusion_time);
+                    carrier_path.addPoint(position, deposit.getGlobalTime() + diffusion_time);
                 }
 
                 LOG(TRACE) << "Charge diffused to position: " << Units::display(position, {"mm", "um"});
@@ -401,7 +400,8 @@ void ProjectionPropagationModule::run(Event* event) {
 
             // Finalize line graph by adding final position
             if(output_linegraphs_) {
-                output_plot_points.back().addPoint(local_position, global_time);
+                carrier_path.addPoint(local_position, global_time);
+                carrier_paths.push_back(std::move(carrier_path));
             }
 
             if(output_plots_) {
@@ -439,7 +439,7 @@ void ProjectionPropagationModule::run(Event* event) {
 
     // Output plots if required
     if(output_linegraphs_) {
-        LineGraph::Create(event->number, this, config_, output_plot_points, CarrierState::UNKNOWN);
+        LineGraph::Create(event->number, this, config_, carrier_paths, CarrierState::UNKNOWN);
     }
 
     if(output_plots_) {
