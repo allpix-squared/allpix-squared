@@ -436,12 +436,11 @@ void TransientPropagationModule::run(Event* event) {
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
+    std::vector<CarrierPath> carrier_paths;
+
     unsigned int propagated_charges_count = 0;
     unsigned int recombined_charges_count = 0;
     unsigned int trapped_charges_count = 0;
-
-    // List of points to plot to plot for output plots
-    LineGraph::OutputPlotPoints output_plot_points;
 
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
@@ -487,7 +486,7 @@ void TransientPropagationModule::run(Event* event) {
                                                                deposit.getGlobalTime(),
                                                                0,
                                                                propagated_charges,
-                                                               output_plot_points);
+                                                               carrier_paths);
 
             // Update statistics:
             recombined_charges_count += recombined;
@@ -500,18 +499,18 @@ void TransientPropagationModule::run(Event* event) {
 
     // Output plots if required
     if(output_linegraphs_) {
-        LineGraph::Create(event->number, this, config_, output_plot_points, CarrierState::UNKNOWN);
+        LineGraph::Create(event->number, this, config_, carrier_paths, CarrierState::UNKNOWN);
         if(output_linegraphs_collected_) {
-            LineGraph::Create(event->number, this, config_, output_plot_points, CarrierState::HALTED);
+            LineGraph::Create(event->number, this, config_, carrier_paths, CarrierState::HALTED);
         }
         if(output_linegraphs_recombined_) {
-            LineGraph::Create(event->number, this, config_, output_plot_points, CarrierState::RECOMBINED);
+            LineGraph::Create(event->number, this, config_, carrier_paths, CarrierState::RECOMBINED);
         }
         if(output_linegraphs_trapped_) {
-            LineGraph::Create(event->number, this, config_, output_plot_points, CarrierState::TRAPPED);
+            LineGraph::Create(event->number, this, config_, carrier_paths, CarrierState::TRAPPED);
         }
         if(config_.get<bool>("output_animations")) {
-            LineGraph::Animate(event->number, this, config_, output_plot_points);
+            LineGraph::Animate(event->number, this, config_, carrier_paths);
         }
     }
 
@@ -523,6 +522,14 @@ void TransientPropagationModule::run(Event* event) {
         auto total = (propagated_charges_count + recombined_charges_count + trapped_charges_count);
         recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / (total == 0 ? 1 : total));
         trapped_histo_->Fill(static_cast<double>(trapped_charges_count) / (total == 0 ? 1 : total));
+    }
+
+    if(store_full_propagation_history_) {
+        // Create a new message with propagated charges
+        auto carrier_path_message = std::make_shared<CarrierPathMessage>(std::move(carrier_paths), detector_);
+
+        // Dispatch the message with propagated charges
+        messenger_->dispatchMessage(this, std::move(carrier_path_message), event);
     }
 
     // Create a new message with propagated charges
@@ -547,7 +554,7 @@ TransientPropagationModule::propagate(Event* event,
                                       const double initial_time_global,
                                       const unsigned int level,
                                       std::vector<PropagatedCharge>& propagated_charges,
-                                      LineGraph::OutputPlotPoints& output_plot_points) const {
+                                      std::vector<CarrierPath>& carrier_paths) const {
 
     if(level > max_multiplication_level_) {
         LOG(WARNING) << "Found impact ionization shower with level larger than " << max_multiplication_level_
@@ -555,8 +562,8 @@ TransientPropagationModule::propagate(Event* event,
         return {};
     }
 
-    // Vector holding the full history for this propagation
-    std::vector<PropagatedCharge::PropagationHistory> propagation_history{};
+    // Object holding the full history for this propagation
+    CarrierPath carrier_path;
 
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
     std::map<Pixel::Index, Pulse> pixel_map;
@@ -566,13 +573,9 @@ TransientPropagationModule::propagate(Event* event,
     unsigned int trapped_charges_count = 0;
 
     // Add point of deposition to the output plots if requested
-    if(output_linegraphs_) {
-        output_plot_points.emplace_back(charge, type, CarrierState::MOTION, &deposit);
+    if(output_linegraphs_ || store_full_propagation_history_) {
+        carrier_path = CarrierPath(charge, type, CarrierState::MOTION, &deposit);
     }
-    if(store_full_propagation_history_) {
-        propagation_history.emplace_back(deposit.getLocalTime(), deposit.getLocalPosition());
-    }
-    auto output_plot_index = output_plot_points.size() - 1;
 
     // Store initial charge
     const unsigned int initial_charge = charge;
@@ -637,19 +640,9 @@ TransientPropagationModule::propagate(Event* event,
     ROOT::Math::XYZVector last_efield{};
     // Initialize last_efield for first pass through the while loop
     last_efield = getDetector()->getElectricField(static_cast<ROOT::Math::XYZPoint>(last_position));
-    size_t next_idx = 0;
+
     auto state = CarrierState::MOTION;
     while(state == CarrierState::MOTION && (initial_time_local + runge_kutta.getTime()) < integration_time_) {
-        // Update output plots if necessary (depending on the plot step)
-        if(output_linegraphs_) { // Set final state of charge carrier for plotting:
-            auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
-            while(next_idx <= time_idx) {
-                output_plot_points.at(output_plot_index)
-                    .addPoint(static_cast<ROOT::Math::XYZPoint>(position), initial_time_local + runge_kutta.getTime());
-                next_idx = output_plot_points.at(output_plot_index).getNPoints();
-            }
-        }
-
         // Get electric field at current (pre-step) position
         efield = getDetector()->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
         auto doping = getDetector()->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
@@ -717,9 +710,8 @@ TransientPropagationModule::propagate(Event* event,
             step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
         }
 
-        if(store_full_propagation_history_) {
-            propagation_history.emplace_back(initial_time_local + runge_kutta.getTime(),
-                                             static_cast<ROOT::Math::XYZPoint>(position));
+        if(output_linegraphs_ || store_full_propagation_history_) {
+            carrier_path.addPoint(static_cast<ROOT::Math::XYZPoint>(position), initial_time_local + runge_kutta.getTime());
         }
 
         // Physics effects:
@@ -798,7 +790,7 @@ TransientPropagationModule::propagate(Event* event,
                                                                    initial_time_global + runge_kutta.getTime(),
                                                                    level + 1,
                                                                    propagated_charges,
-                                                                   output_plot_points);
+                                                                   carrier_paths);
 
                 // Update statistics:
                 recombined_charges_count += recombined;
@@ -932,12 +924,12 @@ TransientPropagationModule::propagate(Event* event,
     }
 
     // Set final state of charge carrier for plotting:
-    if(output_linegraphs_) {
+    if(output_linegraphs_ || store_full_propagation_history_) {
         // If drift time is larger than integration time or the charge carriers have been collected at the backside, reset:
         if(runge_kutta.getTime() >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
-            output_plot_points.at(output_plot_index).updateState(CarrierState::UNKNOWN);
+            carrier_path.updateState(CarrierState::UNKNOWN);
         } else {
-            output_plot_points.at(output_plot_index).updateState(state);
+            carrier_path.updateState(state);
         }
     }
 
@@ -958,8 +950,8 @@ TransientPropagationModule::propagate(Event* event,
                << " time, induced " << Units::display(propagated_charge.getCharge(), {"e"})
                << ", final state: " << allpix::to_string(state);
 
-    if(store_full_propagation_history_) {
-        propagated_charge.setPropagationHistory(std::move(propagation_history));
+    if(output_linegraphs_ || store_full_propagation_history_) {
+        carrier_paths.push_back(std::move(carrier_path));
     }
 
     propagated_charges.push_back(std::move(propagated_charge));

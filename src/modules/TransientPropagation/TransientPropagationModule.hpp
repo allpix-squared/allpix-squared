@@ -23,6 +23,7 @@
 #include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
+#include "objects/CarrierPath.hpp"
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
 #include "objects/Pulse.hpp"
@@ -87,21 +88,20 @@ namespace allpix {
          * @param initial_time_global Initial global time with respect to the start of the event
          * @param level               Current level depth of the generated shower
          * @param propagated_charges  Reference to vector with all produced final PropagatedCharge objects
-         * @param output_plot_points Reference to vector to hold points for line graph output plots
+         * @param carrier_paths       Reference to vector with all produced CarrierPath objects
          *
          * @return Total recombined, trapped and propagated charge for statistics purposes
          */
-        std::tuple<unsigned int, unsigned int, unsigned int>
-        propagate(Event* event,
-                  const DepositedCharge& deposit,
-                  const ROOT::Math::XYZPoint& pos,
-                  const CarrierType& type,
-                  unsigned int charge,
-                  double initial_time_local,
-                  double initial_time_global,
-                  unsigned int level,
-                  std::vector<PropagatedCharge>& propagated_charges,
-                  LineGraph::OutputPlotPoints& output_plot_points) const;
+        std::tuple<unsigned int, unsigned int, unsigned int> propagate(Event* event,
+                                                                       const DepositedCharge& deposit,
+                                                                       const ROOT::Math::XYZPoint& pos,
+                                                                       const CarrierType& type,
+                                                                       unsigned int charge,
+                                                                       double initial_time_local,
+                                                                       double initial_time_global,
+                                                                       unsigned int level,
+                                                                       std::vector<PropagatedCharge>& propagated_charges,
+                                                                       std::vector<CarrierPath>& carrier_paths) const;
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{}, output_plots_step_{};
