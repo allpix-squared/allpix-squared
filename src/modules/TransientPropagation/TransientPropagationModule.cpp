@@ -950,12 +950,14 @@ TransientPropagationModule::propagate(Event* event,
                << " time, induced " << Units::display(propagated_charge.getCharge(), {"e"})
                << ", final state: " << allpix::to_string(state);
 
-    if(output_linegraphs_ || store_full_propagation_history_) {
-        carrier_paths.push_back(std::move(carrier_path));
-    }
-
     propagated_charges.push_back(std::move(propagated_charge));
     propagated_charges_count += charge;
+
+    if(output_linegraphs_ || store_full_propagation_history_) {
+        // Add reference to propagated charge:
+        carrier_path.setPropagatedCharge(&propagated_charges.back());
+        carrier_paths.push_back(std::move(carrier_path));
+    }
 
     if(state == CarrierState::RECOMBINED) {
         recombined_charges_count += charge;

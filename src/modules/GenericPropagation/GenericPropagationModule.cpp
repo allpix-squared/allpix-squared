@@ -836,11 +836,13 @@ GenericPropagationModule::propagate(Event* event,
                                        state,
                                        &deposit);
 
+    propagated_charges.push_back(std::move(propagated_charge));
+
     if(output_linegraphs_ || store_full_propagation_history_) {
+        // Add reference to propagated charge:
+        carrier_path.setPropagatedCharge(&propagated_charges.back());
         carrier_paths.push_back(std::move(carrier_path));
     }
-
-    propagated_charges.push_back(std::move(propagated_charge));
 
     if(output_plots_) {
         drift_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge);
