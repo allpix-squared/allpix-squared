@@ -50,6 +50,10 @@
 #pragma link C++ class allpix::Object::PointerWrapper < allpix::PropagatedCharge> + ;
 #pragma link C++ class allpix::Object::BaseWrapper < allpix::PropagatedCharge> + ;
 
+#pragma link C++ class allpix::CarrierPath + ;
+#pragma link C++ class allpix::Object::PointerWrapper < allpix::CarrierPath> + ;
+#pragma link C++ class allpix::Object::BaseWrapper < allpix::CarrierPath> + ;
+
 #pragma link C++ class allpix::PixelCharge + ;
 #pragma link C++ class allpix::Object::PointerWrapper < allpix::PixelCharge> + ;
 #pragma link C++ class allpix::Object::BaseWrapper < allpix::PixelCharge> + ;

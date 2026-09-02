@@ -28,6 +28,7 @@ ADD_LIBRARY(
     PixelCharge.cpp
     DepositedCharge.cpp
     PropagatedCharge.cpp
+    CarrierPath.cpp
     PixelHit.cpp
     PixelPulse.cpp
     MCParticle.cpp
@@ -53,6 +54,7 @@ ROOT_GENERATE_DICTIONARY(
     ${CMAKE_CURRENT_SOURCE_DIR}/Pulse.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PropagatedCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CarrierPath.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PixelCharge.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PixelHit.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PixelPulse.hpp
