@@ -13,6 +13,7 @@
 #define ALLPIX_LINE_GRAPHS_H
 
 #include "core/module/Module.hpp"
+#include "objects/CarrierPath.hpp"
 #include "objects/PropagatedCharge.hpp"
 
 #include <fstream>
@@ -32,30 +33,6 @@ namespace allpix {
     class LineGraph {
 
     public:
-        class CarrierPath {
-        public:
-            CarrierPath(double deposition_time, unsigned int total_charge, CarrierType type, CarrierState state) noexcept
-                : deposition_time_(deposition_time), charge_(total_charge), type_(type), state_(state) {}
-
-            void updateState(CarrierState state) { state_ = state; }
-            void addPoint(ROOT::Math::XYZPoint position, double time) { points_.emplace_back(position, time); }
-
-            double getDepositionTime() const { return deposition_time_; }
-            unsigned int getCharge() const { return charge_; }
-            CarrierType getType() const { return type_; }
-            CarrierState getState() const { return state_; }
-
-            const std::vector<std::pair<ROOT::Math::XYZPoint, double>>& getPoints() const { return points_; }
-            size_t getNPoints() const { return points_.size(); }
-
-        private:
-            double deposition_time_;
-            unsigned int charge_;
-            CarrierType type_;
-            CarrierState state_;
-            std::vector<std::pair<ROOT::Math::XYZPoint, double>> points_;
-        };
-
         using OutputPlotPoints = std::vector<CarrierPath>;
 
         /**
@@ -300,10 +277,13 @@ namespace allpix {
 
                 // Plot all the required points
                 for(const auto& path : output_plot_points) {
+                    // Get deposition time:
+                    const auto deposition_time = path.getDepositionTime();
+
                     const auto& points = path.getPoints();
 
                     auto diff = static_cast<unsigned long>(
-                        std::lround((path.getDepositionTime() - start_time) / config.get<long double>("output_plots_step")));
+                        std::lround((deposition_time - start_time) / config.get<long double>("output_plots_step")));
                     if(plot_idx < diff) {
                         min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
                         continue;
