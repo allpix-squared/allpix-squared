@@ -67,7 +67,7 @@ This module requires an installation of Eigen3.
 * `integration_time` : Time within which charge carriers are propagated. After exceeding this time, no further propagation is performed for the respective carriers. Defaults to the LHC bunch crossing time of 25ns.
 * `propagate_electrons` : Select whether electron-type charge carriers should be propagated to the electrodes. Defaults to true.
 * `propagate_holes` :  Select whether hole-type charge carriers should be propagated to the electrodes. Defaults to false.
-* `store_full_propagation_history` :  Select whether the full propagation history (time and position for each step) should be stored in the `PropagatedCharge` object. Note: significantly increases memory footprint of simulation. Defaults to `false`.
+* `store_full_propagation_history` :  Select whether the full propagation history (time and position for each step) should be stored as `CarrierPath` objects. Note: significantly increases memory footprint of simulation. Defaults to `false`.
 * `ignore_magnetic_field`: The magnetic field, if present, is ignored for this module. Defaults to false.
 * `multiplication_model`: Model used to calculate impact ionization parameters and charge multiplication. Defaults to `none` which corresponds to unity gain, a list of available models can be found in the documentation.
 * `multiplication_threshold`: Threshold field above which charge multiplication is calculated. Defaults to `100kV/cm`.

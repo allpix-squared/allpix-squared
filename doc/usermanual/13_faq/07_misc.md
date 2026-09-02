@@ -47,7 +47,7 @@ implant side of the sensor are drawn.*
 
 ##### How can I create nice animations of charge movement?
 
-The GenericPropagation and TransientPropagation modules offer the possibility to produce animations intrinsically using the `output_animations` keyword. However, if more customisation of the animation is desired, the full propagation history can be saved for each `PropagatedCharge` object by using the `store_full_propagation_history` keyword. Note that this uses a lot of memory. Example scripts for reading back and animating the propagation history can be found in `tools/root_analysis_macros`.
+The GenericPropagation and TransientPropagation modules offer the possibility to produce animations intrinsically using the `output_animations` keyword. However, if more customisation of the animation is desired, the full propagation history can be saved for each charge carrier group by using the `store_full_propagation_history` keyword. A `CarrierPath` object is created and stored to the output file. It should be noted that this uses a lot of memory. Example scripts for reading back and animating the propagation history can be found in `tools/root_analysis_macros`.
 
 #### Why does GeometryBuilderGeant4 warn me about reduced performance with disabled multithreading?
 
