@@ -238,8 +238,7 @@ void ProjectionPropagationModule::run(Event* event) {
 
             // Add point of deposition to the output plots if requested
             if(output_linegraphs_) {
-                output_plot_points.emplace_back(
-                    deposit.getGlobalTime(), charge_per_step, deposit.getType(), CarrierState::HALTED);
+                output_plot_points.emplace_back(charge_per_step, deposit.getType(), CarrierState::HALTED, &deposit);
                 output_plot_points.back().addPoint(initial_position, deposit.getGlobalTime());
             }
 

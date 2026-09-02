@@ -567,7 +567,7 @@ TransientPropagationModule::propagate(Event* event,
 
     // Add point of deposition to the output plots if requested
     if(output_linegraphs_) {
-        output_plot_points.emplace_back(deposit.getGlobalTime(), charge, type, CarrierState::MOTION);
+        output_plot_points.emplace_back(charge, type, CarrierState::MOTION, &deposit);
     }
     if(store_full_propagation_history_) {
         propagation_history.emplace_back(deposit.getLocalTime(), deposit.getLocalPosition());
