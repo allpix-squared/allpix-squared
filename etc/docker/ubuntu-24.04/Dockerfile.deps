@@ -7,16 +7,15 @@ LABEL maintainer="Simon Spannagel <simon.spannagel@cern.ch>"
 SHELL ["/bin/bash", "-c"]
 
 # Install basic build requirements
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl cmake g++ gcc binutils unzip doxygen git
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl cmake g++-14 gcc-14 binutils unzip doxygen git
 
 # Install ROOT dependencies
-RUN apt-get install -y dpkg-dev libx11-dev libxpm-dev libxft-dev libxext-dev libssl-dev python3 python3-dev python3-pip python3-tk python-is-python3 git
-
+RUN apt-get install -y dpkg-dev libx11-dev libxpm-dev libxft-dev libxext-dev libvdt-dev libtbb-dev libssl-dev libgif-dev liblzma-dev libjpeg-dev liblz4-dev libzstd-dev python3 python3-dev python3-pip python3-tk python-is-python3 git
 # Install helpful Python packages
 RUN apt-get install -y python3-numpy python3-matplotlib python3-scipy python3-pandas
 
 # Add layer for ROOT6
-ENV ROOT6_VERSION=6.36.04
+ENV ROOT6_VERSION=6.40.02
 ENV PYTHONPATH="/usr/local/lib:$PYTHONPATH"
 
 ENV ROOTSYS="/tmp/root6"
@@ -56,7 +55,7 @@ RUN mkdir -p ${ROOTSYS}/src ${ROOTSYS}/build && \
 RUN apt-get install -y zlib1g-dev
 
 # Add layer for LCIO
-ENV LCIO_VERSION=02-22-06
+ENV LCIO_VERSION=02-23-02
 
 ENV LCIODIR="/tmp/lcio"
 RUN mkdir -p ${LCIODIR}/src ${LCIODIR}/build && \
@@ -76,7 +75,7 @@ RUN mkdir -p ${LCIODIR}/src ${LCIODIR}/build && \
 RUN apt-get install -y libxerces-c-dev
 
 # Add layer for Geant4
-ENV GEANT4_VERSION=11.3.2
+ENV GEANT4_VERSION=11.4.1
 
 ENV GEANT4DIR="/tmp/geant4"
 RUN mkdir -p ${GEANT4DIR}/src ${GEANT4DIR}/build && \
@@ -139,7 +138,7 @@ RUN mkdir -p ${PQXXDIR}/src ${PQXXDIR}/build && \
 
 
 # Add layer for libapx
-ENV APX_VERSION=0.4.9
+ENV APX_VERSION=0.4.10
 
 ENV APXDIR="/tmp/libapx"
 RUN mkdir -p ${APXDIR}/src ${APXDIR}/build && \
