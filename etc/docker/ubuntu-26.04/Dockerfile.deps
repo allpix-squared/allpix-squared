@@ -1,0 +1,156 @@
+# SPDX-FileCopyrightText: 2018-2025 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
+FROM ubuntu:26.04
+LABEL maintainer="Simon Spannagel <simon.spannagel@cern.ch>"
+
+SHELL ["/bin/bash", "-c"]
+
+# Install basic build requirements
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl cmake g++ gcc binutils unzip doxygen git
+
+# Install ROOT dependencies
+RUN apt-get install -y dpkg-dev libx11-dev libxpm-dev libxft-dev libxext-dev libvdt-dev libtbb-dev libssl-dev libgif-dev liblzma-dev libjpeg-dev liblz4-dev libzstd-dev python3 python3-dev python3-pip python3-tk python-is-python3 git
+# Install helpful Python packages
+RUN apt-get install -y python3-numpy python3-matplotlib python3-scipy python3-pandas
+
+# Add layer for ROOT6
+ENV ROOT6_VERSION=6.40.02
+ENV PYTHONPATH="/usr/local/lib:$PYTHONPATH"
+
+ENV ROOTSYS="/tmp/root6"
+RUN mkdir -p ${ROOTSYS}/src ${ROOTSYS}/build && \
+    curl -o ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz \
+            https://root.cern.ch/download/root_v${ROOT6_VERSION}.source.tar.gz && \
+    tar zxf ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz -C ${ROOTSYS}/src && \
+    rm -f ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz && \
+    cd ${ROOTSYS}/build && \
+    cmake -Dgdml=ON \
+           -Dgenvector=ON \
+           -Dmathmore=ON \
+           -Dthread=ON \
+           -Dx11=OFF \
+           -Dopengl=OFF \
+           -Dtmva=OFF -Dtmva-cpu=OFF -Dtmva-pymva=OFF \
+           -Dhttp=OFF \
+           -Dwebgui=OFF \
+           -Droot7=OFF \
+           -Dfftw3=OFF \
+           -Dfitsio=OFF \
+           -Dclad=OFF \
+           -Dspectrum=OFF \
+           -Dvdt=OFF \
+           -Dxrootd=OFF \
+           -Droofit=OFF \
+           -Ddataframe=OFF \
+           -Dpython3=ON \
+           -DPYTHON_EXECUTABLE=/usr/bin/python3 \
+           -DCMAKE_CXX_STANDARD=20 \
+           ../src/root-${ROOT6_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${ROOTSYS}
+
+# Install LCIO dependencies
+RUN apt-get install -y zlib1g-dev
+
+# Add layer for LCIO
+ENV LCIO_VERSION=02-23-02
+
+ENV LCIODIR="/tmp/lcio"
+RUN mkdir -p ${LCIODIR}/src ${LCIODIR}/build && \
+    curl -o ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz \
+            https://codeload.github.com/iLCSoft/LCIO/tar.gz/v${LCIO_VERSION} && \
+    tar zxf ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz -C ${LCIODIR}/src && \
+    rm -f ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz && \
+    cd ${LCIODIR}/build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local/ \
+        -DBUILD_TESTING=OFF \
+          ../src/LCIO-${LCIO_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${LCIODIR}
+
+# Install Geant4 dependencies
+RUN apt-get install -y libxerces-c-dev
+
+# Add layer for Geant4
+ENV GEANT4_VERSION=11.4.1
+
+ENV GEANT4DIR="/tmp/geant4"
+RUN mkdir -p ${GEANT4DIR}/src ${GEANT4DIR}/build && \
+    curl -o ${GEANT4DIR}/geant4.${GEANT4_VERSION}.tar.gz \
+            https://geant4-data.web.cern.ch/geant4-data/releases/source/geant4-v${GEANT4_VERSION}.tar.gz && \
+    tar zxf ${GEANT4DIR}/geant4.${GEANT4_VERSION}.tar.gz -C ${GEANT4DIR}/src && \
+    rm -f ${GEANT4DIR}/geant4.${GEANT4_VERSION}.tar.gz && \
+    cd ${GEANT4DIR}/build && \
+    cmake -DGEANT4_INSTALL_DATA=ON \
+          -DGEANT4_USE_GDML=ON \
+          -DGEANT4_USE_SYSTEM_CLHEP=OFF \
+          -DGEANT4_BUILD_MULTITHREADED=ON \
+          -DGEANT4_BUILD_CXXSTD=20 \
+          -DGEANT4_BUILD_BUILTIN_BACKTRACE=OFF \
+          ../src/geant4-v${GEANT4_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${GEANT4DIR} && \
+    rm -rf /usr/local/share/Geant4-${GEANT4_VERSION_PATH}/examples
+
+# Add layer for HepMC3
+ENV HEPMC3_VERSION=3.3.1
+
+ENV HEPMC3DIR="/tmp/hepmc3"
+RUN mkdir -p ${HEPMC3DIR}/src ${HEPMC3DIR}/build && \
+    curl -o ${HEPMC3DIR}/hepmc3.${HEPMC3_VERSION}.tar.gz \
+            https://gitlab.cern.ch/hepmc/HepMC3/-/archive/${HEPMC3_VERSION}/HepMC3-${HEPMC3_VERSION}.tar.gz && \
+    tar zxf ${HEPMC3DIR}/hepmc3.${HEPMC3_VERSION}.tar.gz -C ${HEPMC3DIR}/src && \
+    rm -f ${HEPMC3DIR}/hepmc3.${HEPMC3_VERSION}.tar.gz && \
+    cd ${HEPMC3DIR}/build && \
+    cmake -DHEPMC3_ENABLE_ROOTIO=ON \
+          -DHEPMC3_ENABLE_PYTHON=ON \
+           ../src/HepMC3-${HEPMC3_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${HEPMC3DIR}
+
+# Install Allpix Squared dependencies
+RUN apt-get install -y postgresql-server-dev-all libeigen3-dev libboost-random-dev python3-lxml
+
+# Add layer for libpqxx, we need a newer version than available in the repos
+ENV PQXX_VERSION=7.10.1
+
+ENV PQXXDIR="/tmp/pqxx"
+RUN mkdir -p ${PQXXDIR}/src ${PQXXDIR}/build && \
+    curl -o ${PQXXDIR}/libpqxx.${PQXX_VERSION}.tar.gz \
+            https://codeload.github.com/jtv/libpqxx/tar.gz/${PQXX_VERSION} && \
+    tar zxf ${PQXXDIR}/libpqxx.${PQXX_VERSION}.tar.gz -C ${PQXXDIR}/src && \
+    rm -f ${PQXXDIR}/libpqxx.${PQXX_VERSION}.tar.gz && \
+    cd ${PQXXDIR}/build && \
+    cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+          -DCMAKE_CXX_STANDARD=20 \
+          -DBUILD_SHARED_LIBS=ON \
+          -DSKIP_BUILD_TEST=ON \
+          -DBUILD_DOC=OFF \
+          ../src/libpqxx-${PQXX_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${PQXXDIR}
+
+
+# Add layer for libapx
+ENV APX_VERSION=0.4.10
+
+ENV APXDIR="/tmp/libapx"
+RUN mkdir -p ${APXDIR}/src ${APXDIR}/build && \
+    curl -o ${APXDIR}/libapx.${APX_VERSION}.tar.gz \
+            https://gitlab.cern.ch/allpix-squared/libapx/-/archive/v${APX_VERSION}/libapx-v${APX_VERSION}.tar.gz && \
+    tar zxf ${APXDIR}/libapx.${APX_VERSION}.tar.gz -C ${APXDIR}/src && \
+    rm -f ${APXDIR}/libapx.${APX_VERSION}.tar.gz && \
+    cd ${APXDIR}/build && \
+    cmake -DAPX_BUILD_TESTS=OFF \
+          ../src/libapx-v${APX_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${APXDIR}
+
+CMD ["bash"]
