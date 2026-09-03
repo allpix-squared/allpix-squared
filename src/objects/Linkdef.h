@@ -9,6 +9,9 @@
  * SPDX-License-Identifier: MIT
  */
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
@@ -68,3 +71,5 @@
 
 // Vector of Object for internal storage
 #pragma link C++ class std::vector < allpix::Object*> + ;
+
+#pragma clang diagnostic pop
