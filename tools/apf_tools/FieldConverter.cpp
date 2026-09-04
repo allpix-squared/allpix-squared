@@ -113,7 +113,7 @@ int main(int argc, const char* argv[]) {
         LOG(STATUS) << "Writing output file to " << file_output;
         field_writer.writeFile(field_data, file_output, format_to, (format_to == FileType::INIT ? units : ""));
     } catch(std::exception& e) {
-        LOG(FATAL) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
+        LOG(ERROR) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
         return_code = 127;
     }
 

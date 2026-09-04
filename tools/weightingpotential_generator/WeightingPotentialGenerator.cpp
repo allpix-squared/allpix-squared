@@ -298,7 +298,7 @@ int main(int argc, char** argv) {
         LOG(STATUS) << "Generation completed in " << elapsed_seconds << " seconds.";
 
     } catch(std::exception& e) {
-        LOG(FATAL) << "Failed to generate weighting potential: " << e.what();
+        LOG(ERROR) << "Failed to generate weighting potential: " << e.what();
         allpix::Log::finish();
         return 1;
     }

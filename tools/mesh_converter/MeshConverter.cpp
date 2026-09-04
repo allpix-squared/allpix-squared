@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
     if(!log_file_name.empty()) {
         log_file.open(log_file_name, std::ios_base::out | std::ios_base::trunc);
         if(!log_file.good()) {
-            LOG(FATAL) << "Cannot write to provided log file! Check if permissions are sufficient.";
+            LOG(ERROR) << "Cannot write to provided log file! Check if permissions are sufficient.";
             Log::finish();
             return 1;
         }
@@ -563,12 +563,12 @@ int main(int argc, char** argv) {
         LOG(STATUS) << "Interpolation and conversion completed in " << elapsed_seconds << " seconds.";
 
     } catch(allpix::ConfigurationError& e) {
-        LOG(FATAL) << "Error in the configuration:" << '\n'
+        LOG(ERROR) << "Error in the configuration:" << '\n'
                    << e.what() << '\n'
                    << "The configuration needs to be updated. Cannot continue.";
         return_code = 1;
     } catch(std::exception& e) {
-        LOG(FATAL) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
+        LOG(ERROR) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
         return_code = 127;
     }
 

@@ -311,7 +311,7 @@ int main(int argc, char** argv) {
         allpix::Log::finish();
         return 0;
     } catch(std::exception& e) {
-        LOG(FATAL) << "Failed to plot mesh:\n" << e.what();
+        LOG(ERROR) << "Failed to plot mesh:\n" << e.what();
         allpix::Log::finish();
         return 1;
     }
