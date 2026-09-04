@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: MIT
 
 # Check for supported flags and remove unsupported warnings
-INCLUDE(CheckCXXCompilerFlag)
 FOREACH(flag ${COMPILER_FLAGS})
     STRING(REPLACE "-" "_" FLAG_WORD ${flag})
     STRING(REPLACE "+" "P" FLAG_WORD ${FLAG_WORD})

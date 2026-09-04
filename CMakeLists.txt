@@ -254,6 +254,8 @@ SET(COMPILER_FLAGS
     -Wheader-hygiene
     -Wno-overloaded-virtual)
 
+INCLUDE(CheckCXXCompilerFlag)
+
 INCLUDE("cmake/compiler-flag-checks.cmake")
 
 # Use CCache if available
