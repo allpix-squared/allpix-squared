@@ -40,6 +40,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Daniel Hynds, University of Oxford, [dhynds](https://gitlab.cern.ch/dhynds)
 * Francisco-Jose Iguaz-Gutierrez, Synchrotron SOLEIL, [iguaz-gutierrez](https://github.com/iguaz-gutierrez)
 * Maoqiang Jing, Institute of High Energy Physics Beijing, [mjing](https://gitlab.cern.ch/mjing)
+* Seth Johnson, Oak Ridge National Laboratory, [sethrj](https://github.com/sethrj/)
 * Moritz Kiehn, Université de Genève, [msmk](https://gitlab.cern.ch/msmk)
 * Rafaella Eleni Kotitsa, CERN, [rkotitsa](https://gitlab.cern.ch/rkotitsa)
 * Stephan Lachnit, DESY, [slachnit](https://gitlab.cern.ch/slachnit)
