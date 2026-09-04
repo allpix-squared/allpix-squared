@@ -221,8 +221,9 @@ ENDIF()
 # Define build flags for allpix   #
 ###################################
 
-# Set standard build flags
-SET(COMPILER_FLAGS
+# Set ALLPIX_CXX_FLAGS by default to the subset of these that are valid
+# (Users can override ALLPIX_CXX_FLAGS directly in their CMakeCache)
+SET(DEFAULT_ALLPIX_CXX_FLAGS
     -pedantic
     -Wall
     -Wextra
@@ -254,6 +255,10 @@ SET(COMPILER_FLAGS
     -Wheader-hygiene
     -Wno-overloaded-virtual)
 
+INCLUDE(CheckCXXCompilerFlag)
+
+# Set ALLPIX_CXX_FLAGS to DEFAULT_ALLPIX_CXX_FLAGS unless already defined
+# Set ALLPIX_SHARED_LINKER_FLAGS if not defined
 INCLUDE("cmake/compiler-flag-checks.cmake")
 
 # Use CCache if available

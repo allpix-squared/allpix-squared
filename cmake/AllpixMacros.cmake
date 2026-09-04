@@ -54,8 +54,9 @@ Create the header or provide the alternative class name as first argument")
     # Define the library
     ADD_LIBRARY(${${name}} SHARED "")
 
-    # Set compiler options
+    # Set compiler options and linker flags
     TARGET_COMPILE_OPTIONS(${${name}} PRIVATE ${ALLPIX_CXX_FLAGS})
+    TARGET_LINK_OPTIONS(${${name}} PRIVATE ${ALLPIX_SHARED_LINKER_FLAGS})
 
     # Add the current directory as include directory
     TARGET_INCLUDE_DIRECTORIES(${${name}} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
