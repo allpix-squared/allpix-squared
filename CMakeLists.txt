@@ -322,6 +322,9 @@ ENDIF()
 # Include Threads
 FIND_PACKAGE(Threads REQUIRED)
 
+# Logging backend
+FIND_PACKAGE(spdlog 1.10.0 REQUIRED)
+
 # Include Boost.Random
 FIND_PACKAGE(Boost 1.64.0 REQUIRED COMPONENTS random)
 
@@ -349,6 +352,7 @@ SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
 SET(ALLPIX_DEPS_LIBRARIES
     Threads::Threads
     Boost::random
+    spdlog::spdlog
     ROOT::Core
     ROOT::GenVector
     ROOT::Geom
