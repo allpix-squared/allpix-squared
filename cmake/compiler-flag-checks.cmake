@@ -15,16 +15,20 @@ FOREACH(flag ${COMPILER_FLAGS})
     ENDIF()
 ENDFOREACH()
 
-# Set no undefined symbols flag for the linker if supported
-IF((CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") OR (CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
-    SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
-ELSEIF((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
-    SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
-ENDIF()
-
 # Reduce Wstrict-overflow level for some GCC versions due to false positives:
 IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
         LIST(APPEND ALLPIX_CXX_FLAGS "-Wstrict-overflow=2")
+    ENDIF()
+ENDIF()
+
+IF(NOT DEFINED ALLPIX_SHARED_LINKER_FLAGS)
+    # Set no undefined symbols flag for the linker if supported
+    IF((CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") OR (CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
+        # NOTE: Apple Clang LD (ld-1267) warns undefined-error is deprecated; this
+        # should probably be removed
+        SET(ALLPIX_SHARED_LINKER_FLAGS "-Wl,-undefined,error")
+    ELSEIF((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
+        SET(ALLPIX_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
     ENDIF()
 ENDIF()
