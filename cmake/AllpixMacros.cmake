@@ -163,12 +163,6 @@ FUNCTION(add_default_fail_conditions name)
                 APPEND
                 PROPERTY FAIL_REGULAR_EXPRESSION "ERROR")
         ENDIF()
-        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "FATAL")
-            SET_PROPERTY(
-                TEST ${name}
-                APPEND
-                PROPERTY FAIL_REGULAR_EXPRESSION "FATAL")
-        ENDIF()
     ENDIF()
 ENDFUNCTION()
 

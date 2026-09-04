@@ -28,9 +28,8 @@ namespace allpix {
      * @brief Logging detail level
      */
     enum class LogLevel : std::uint8_t {
-        FATAL = 0, ///< Fatal problems that terminate the framework (typically exceptions)
+        ERROR = 0, ///< Fatal problems that terminate the framework (typically exceptions)
         STATUS,    ///< Only critical progress information
-        ERROR,     ///< Critical problems that usually lead to fatal errors
         WARNING,   ///< Possible issue that could lead to unexpected results
         INFO,      ///< General information about processes (should not be called in run function)
         DEBUG,     ///< Detailed information about physics process

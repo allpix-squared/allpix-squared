@@ -187,7 +187,7 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     }
 
     // Set color for log level
-    if(level == LogLevel::FATAL || level == LogLevel::ERROR) {
+    if(level == LogLevel::ERROR) {
         os_ << "\x1B[31;1m"; // RED
     } else if(level == LogLevel::WARNING) {
         os_ << "\x1B[33;1m"; // YELLOW
@@ -277,8 +277,7 @@ LogLevel DefaultLogger::getReportingLevel() { return get_reporting_level(); }
 
 // String to LogLevel conversions and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {
-    const std::array<std::string, 9> type = {
-        {"FATAL", "STATUS", "ERROR", "WARNING", "INFO", "DEBUG", "NONE", "TRACE", "PRNG"}};
+    const std::array<std::string, 8> type = {{"ERROR", "STATUS", "WARNING", "INFO", "DEBUG", "NONE", "TRACE", "PRNG"}};
     return type.at(static_cast<decltype(type)::size_type>(level));
 }
 /**
@@ -300,14 +299,11 @@ LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
     if(level == "WARNING") {
         return LogLevel::WARNING;
     }
-    if(level == "ERROR") {
-        return LogLevel::ERROR;
-    }
     if(level == "STATUS") {
         return LogLevel::STATUS;
     }
-    if(level == "FATAL") {
-        return LogLevel::FATAL;
+    if(level == "ERROR") {
+        return LogLevel::ERROR;
     }
 
     throw std::invalid_argument("unknown log level");
