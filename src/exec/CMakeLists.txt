@@ -16,6 +16,10 @@ TARGET_COMPILE_OPTIONS(allpix PRIVATE ${ALLPIX_CXX_FLAGS})
 # FIXME: should be removed when we have a better solution
 TARGET_LINK_LIBRARIES(allpix ${_ALLPIX_MODULE_LIBRARIES})
 
+# Access the project name (for install locations) in the source
+TARGET_COMPILE_DEFINITIONS(allpix
+  PRIVATE -DALLPIX_BUILD_TIME="${BUILD_TIME}")
+
 # set install location
 INSTALL(
     TARGETS allpix

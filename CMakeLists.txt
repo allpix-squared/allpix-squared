@@ -34,7 +34,9 @@ GET_VERSION(ALLPIX_VERSION)
 MESSAGE(STATUS "Building Allpix^2 version ${ALLPIX_VERSION}.")
 MESSAGE(STATUS "Building \"${CMAKE_BUILD_TYPE}\"")
 
-# Gather information about build time:
+# Gather information about build time
+# (NOTE: the SOURCE_DATE_EPOCH environment variable will override the current time as of CMake 3.8.
+# See https://reproducible-builds.org/specs/source-date-epoch )
 STRING(TIMESTAMP BUILD_TIME "%Y-%m-%d, %H:%M:%S UTC" UTC)
 STRING(SUBSTRING "${BUILD_TIME}" 0 10 BUILD_DATE)
 
@@ -46,8 +48,7 @@ PROJECT(
     VERSION ${SIMPLE_VERSION}
     LANGUAGES NONE)
 # Access the project name (for install locations) in the source
-ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DALLPIX_PROJECT_VERSION="${ALLPIX_VERSION}"
-                -DALLPIX_BUILD_TIME="${BUILD_TIME}")
+ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DALLPIX_PROJECT_VERSION="${ALLPIX_VERSION}")
 
 # Read possible build environment
 IF(DEFINED ENV{ALLPIX_BUILD_ENV})
