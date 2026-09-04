@@ -293,7 +293,7 @@ void VisualizationGeant4Module::set_visualization_settings() {
     auto viewpoint_angles =
         config_.getArray<double>("viewpoint_thetaphi", {Units::get<double>(-70, "deg"), Units::get<double>(20, "deg")});
     if(viewpoint_angles.size() != 2) {
-        LOG(FATAL)
+        LOG(ERROR)
             << "Parameter viewpoint_thetaphi VisualizationGeant4Module is not valid. Must be two angles (theta, phi).";
         throw InvalidValueError(config_, "viewpoint_thetaphi", "invalid number of parameters given, must be two");
     }

@@ -62,7 +62,7 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(std::string name, const Co
 
     // Assembly type
     if(!config.has("type")) {
-        LOG(FATAL) << "Model " << name << pathinfo << " does not provide a type parameter";
+        LOG(ERROR) << "Model " << name << pathinfo << " does not provide a type parameter";
     }
     auto type = config.get<std::string>("type");
 
@@ -72,7 +72,7 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(std::string name, const Co
     } else if(type == "monolithic") {
         assembly = std::make_shared<MonolithicAssembly>(config);
     } else {
-        LOG(FATAL) << "Model " << name << pathinfo << " type parameter is not valid";
+        LOG(ERROR) << "Model " << name << pathinfo << " type parameter is not valid";
         throw InvalidValueError(config, "type", "model type is not supported");
     }
 
@@ -87,7 +87,7 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(std::string name, const Co
     } else if(geometry == "staggered") {
         model = std::make_shared<StaggeredPixelDetectorModel>(name, assembly, stack, config);
     } else {
-        LOG(FATAL) << "Model " << name << pathinfo << " geometry parameter is not valid";
+        LOG(ERROR) << "Model " << name << pathinfo << " geometry parameter is not valid";
         // FIXME: The model can probably be silently ignored if we have more model readers later
         throw InvalidValueError(config, "geometry", "model geometry is not supported");
     }

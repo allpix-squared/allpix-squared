@@ -189,7 +189,7 @@ int main(int argc, const char* argv[]) {
 
     // Check if we have a configuration file
     if(config_file_name.empty()) {
-        LOG(FATAL) << "No configuration file provided! See usage info with \"allpix -h\"";
+        LOG(ERROR) << "No configuration file provided! See usage info with \"allpix -h\"";
         Log::finish();
         return 1;
     }
@@ -200,7 +200,7 @@ int main(int argc, const char* argv[]) {
     if(!log_file_name.empty()) {
         log_file.open(log_file_name, std::ios_base::out | std::ios_base::trunc);
         if(!log_file.good()) {
-            LOG(FATAL) << "Cannot write to provided log file! Check if permissions are sufficient.";
+            LOG(ERROR) << "Cannot write to provided log file! Check if permissions are sufficient.";
             Log::finish();
             return 1;
         }
@@ -218,7 +218,7 @@ int main(int argc, const char* argv[]) {
             }
 
             if(signal_v == SIGABRT || signal_v == SIGQUIT) {
-                LOG(FATAL) << "Aborting!";
+                LOG(ERROR) << "Aborting!";
                 Log::finish();
                 std::quick_exit(134);
             } else if(signal_v != 0) {
@@ -249,22 +249,22 @@ int main(int argc, const char* argv[]) {
         }
 
     } catch(ConfigurationError& e) {
-        LOG(FATAL) << "Error in the configuration:" << '\n'
+        LOG(ERROR) << "Error in the configuration:" << '\n'
                    << e.what() << '\n'
                    << "The configuration needs to be updated. Cannot continue.";
         return_code = 1;
     } catch(RuntimeError& e) {
-        LOG(FATAL) << "Error during execution of run:" << '\n'
+        LOG(ERROR) << "Error during execution of run:" << '\n'
                    << e.what() << '\n'
                    << "Please check your configuration and modules. Cannot continue.";
         return_code = 1;
     } catch(LogicError& e) {
-        LOG(FATAL) << "Error in the logic of module:" << '\n'
+        LOG(ERROR) << "Error in the logic of module:" << '\n'
                    << e.what() << '\n'
                    << "Module has to be properly defined. Cannot continue.";
         return_code = 1;
     } catch(std::exception& e) {
-        LOG(FATAL) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
+        LOG(ERROR) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
         return_code = 127;
     }
 

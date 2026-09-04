@@ -197,8 +197,8 @@ void GeometryConstructionG4::verify_transforms() const {
         auto local_g4 = static_cast<ROOT::Math::XYZVector>(coord_g4) + detector->getModel()->getSensorCenter();
 
         if((local_g4 - local).mag2() > 0.001) {
-            LOG(FATAL) << "Model \"" << detector->getModel()->getType() << "\" has invalid coordinate transformation";
-            LOG(FATAL) << "Coordinate transformation test for detector " << detector->getName() << '\n'
+            LOG(ERROR) << "Model \"" << detector->getModel()->getType() << "\" has invalid coordinate transformation";
+            LOG(ERROR) << "Coordinate transformation test for detector " << detector->getName() << '\n'
                        << "Global test vector:      " << Units::display(global, {"mm", "um"}) << '\n'
                        << "In local coordinates:    " << Units::display(local, {"mm", "um"}) << '\n'
                        << "In G4 local coordinates: " << Units::display(local_g4, {"mm", "um"});
