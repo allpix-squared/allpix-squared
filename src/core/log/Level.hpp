@@ -47,6 +47,16 @@ namespace allpix {
         return level == Level::PRNG ? spdlog::level::trace : static_cast<spdlog::level::level_enum>(level);
     }
 
+    /**
+     * @brief Format of the logger
+     */
+    enum class Format : int {
+        SHORT = 0,   ///< Only include a single character for the log level, the section header and the message
+        DEFAULT = 1, ///< Also include the time and a full logging level description
+        LONG = 2,    ///< All of the above and also information about the file and line where the message was defined
+    };
+    using enum Format;
+
 } // namespace allpix
 
 #endif /* ALLPIX_LOG_LEVEL_H */
