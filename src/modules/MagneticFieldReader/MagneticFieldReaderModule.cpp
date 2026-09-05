@@ -52,7 +52,7 @@ void MagneticFieldReaderModule::initialize() {
 
         auto b_field = config_.get<ROOT::Math::XYZVector>("magnetic_field", ROOT::Math::XYZVector());
 
-        MagneticFieldFunction const function = [b_field](const ROOT::Math::XYZPoint&) { return b_field; };
+        MagneticFieldFunction const function = [b_field](const ROOT::Math::XYZPoint&) noexcept { return b_field; };
 
         geometryManager_->setMagneticFieldFunction(function, type);
         LOG(INFO) << "Set constant magnetic field: " << Units::display(b_field, {"T", "mT"});

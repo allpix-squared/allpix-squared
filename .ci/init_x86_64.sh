@@ -18,12 +18,12 @@ if [ "$(uname)" = "Linux" ]; then
 elif [ "$(uname)" = "Darwin" ]; then
     MACOS_MAJOR=$(sw_vers -productVersion | awk -F '.' '{print $1}')
     MACOS_MINOR=$(sw_vers -productVersion | awk -F '.' '{print $2}')
-    if [ $MACOS_MAJOR = "15" ]; then
+    if [ $MACOS_MAJOR = "26" ]; then
+        OS=mac26
+    elif [ $MACOS_MAJOR = "15" ]; then
         OS=mac15
     elif [ $MACOS_MAJOR = "14" ]; then
         OS=mac14
-    elif [ $MACOS_MAJOR = "13" ]; then
-        OS=mac13
     else
         echo "Unsupported version of macOS ${MACOS_MAJOR}.${MACOS_MINOR}"
         exit 1
@@ -55,7 +55,7 @@ fi
 
 
 # Determine which LCG version to use
-DEFAULT_LCG="LCG_108"
+DEFAULT_LCG="LCG_110"
 
 if [ -z ${ALLPIX_LCG_VERSION} ]; then
     echo "No explicit LCG version set, using ${DEFAULT_LCG}."
@@ -82,15 +82,15 @@ if [ ${COMPILER_TYPE} = "gcc" ]; then
 fi
 if [ ${COMPILER_TYPE} = "llvm" ]; then
     if [ "$(uname)" = "Darwin" ]; then
-        if [ "$OS" = mac13 ]; then
-            COMPILER_VERSION="clang150"
-        elif [ "$OS" = mac14 ]; then
+        if [ "$OS" = mac14 ]; then
             COMPILER_VERSION="clang160"
+        elif [ "$OS" = mac15 ]; then
+            COMPILER_VERSION="clang170"
         else
             COMPILER_VERSION="clang170"
         fi
     else
-        COMPILER_VERSION="clang19"
+        COMPILER_VERSION="clang22"
     fi
     echo "Compiler type set to LLVM, version ${COMPILER_VERSION}."
 fi
