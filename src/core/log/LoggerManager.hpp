@@ -26,10 +26,9 @@
 
 #include "Level.hpp"
 #include "Logger.hpp"
+#include "Sinks.hpp"
 
 namespace allpix {
-    class StreamSink; // defined in Sinks.hpp; forward-declared here to avoid a header dependency
-
     /**
      * @brief Central registry creating and owning all \ref Logger instances
      *
@@ -88,8 +87,9 @@ namespace allpix {
          * @brief Convenience wrapper around \ref addSink wrapping a plain output stream, formatted with the global
          *        \ref Format
          * @param stream Stream to write log output to; must remain valid for as long as logging may occur
+         * @param style Style of the sink, plain text or colored output
          */
-        void addStream(std::ostream& stream);
+        void addStream(std::ostream& stream, SinkStyle style);
 
         /**
          * @brief Set the level used for the core logger and as the default for loggers created from now on

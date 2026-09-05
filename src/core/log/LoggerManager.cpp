@@ -35,12 +35,11 @@ Logger& LoggerManager::getLogger(const std::string& topic, Level level) {
         return *it->second;
     }
 
-    auto backend = std::make_shared<spdlog::logger>(topic, sinks_.begin(), sinks_.end());
-    backend->set_level(to_spdlog_level(level));
-    // FIXME necessary?
-    // backend->flush_on(spdlog::level::trace);
+    auto spdlog_logger = std::make_shared<spdlog::logger>(topic, sinks_.begin(), sinks_.end());
+    spdlog_logger->set_level(to_spdlog_level(level));
+    spdlog_logger->flush_on(spdlog::level::trace);
 
-    auto [inserted, _] = loggers_.emplace(topic, std::make_shared<Logger>(std::move(backend)));
+    auto [inserted, _] = loggers_.emplace(topic, std::make_shared<Logger>(std::move(spdlog_logger)));
     return *inserted->second;
 }
 
@@ -58,8 +57,8 @@ void LoggerManager::addSink(const spdlog::sink_ptr& sink) {
     }
 }
 
-void LoggerManager::addStream(std::ostream& stream) {
-    auto sink = std::make_shared<StreamSink>(stream, global_format_.load(std::memory_order_relaxed));
+void LoggerManager::addStream(std::ostream& stream, SinkStyle style) {
+    auto sink = std::make_shared<StreamSink>(stream, style, global_format_.load(std::memory_order_relaxed));
     {
         std::scoped_lock const lock(mutex_);
         stream_sinks_.push_back(sink);
