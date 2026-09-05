@@ -23,18 +23,15 @@
 namespace allpix {
     /**
      * @brief Logging detail level
-     *
-     * The numerical values are chosen to allow a direct cast to \ref spdlog::level::level_enum.
      */
     enum class Level : int { // NOLINT(performance-enum-size)
-        PRNG = -1,           ///< Logging level printing every pseudo-random number requested (more verbose than TRACE)
-        TRACE = 0,           ///< Software debugging information about what part is currently running
-        DEBUG = 1,           ///< Detailed information about physics process
-        INFO = 2,            ///< General information about processes (should not be called in run function)
-        WARNING = 3,         ///< Possible issue that could lead to unexpected results
-        STATUS = 4,          ///< Only critical progress information; stays visible up to and including the WARNING threshold
-        ERROR = 5,           ///< Critical problems that usually lead to termination of the framework
-        OFF = 6,             ///< Disables logging
+        PRNG = 0,            ///< Logging level printing every pseudo-random number requested
+        TRACE = 1,           ///< Software debugging information about what part is currently running
+        DEBUG = 2,           ///< Detailed information about physics process
+        INFO = 3,            ///< General information about processes (should not be called in run function)
+        WARNING = 4,         ///< Possible issue that could lead to unexpected results
+        STATUS = 5,          ///< Only critical progress information; stays visible up to and including the WARNING threshold
+        ERROR = 6,           ///< Critical problems that usually lead to termination of the framework
     };
     using enum Level;
 
@@ -44,8 +41,15 @@ namespace allpix {
      * @return spdlog level value
      */
     constexpr spdlog::level::level_enum to_spdlog_level(Level level) {
-        return level == Level::PRNG ? spdlog::level::trace : static_cast<spdlog::level::level_enum>(level);
+        return static_cast<spdlog::level::level_enum>(level);
     }
+
+    /**
+     * @brief Convert a spdlog level back to the corresponding Allpix verbosity level
+     * @param level spdlog level value
+     * @return Allpix verbosity level
+     */
+    constexpr Level from_spdlog_level(spdlog::level::level_enum level) { return static_cast<Level>(level); }
 
     /**
      * @brief Format of the logger
