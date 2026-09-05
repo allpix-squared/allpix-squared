@@ -37,6 +37,7 @@
 #include "core/config/FileParser.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/log/LoggerManager.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/ModuleManager.hpp"
 #include "core/utils/log.h"
