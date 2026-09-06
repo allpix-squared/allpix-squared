@@ -27,6 +27,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/histograms/HistogramManager.hpp"
+#include "core/log/Logger.hpp"
 #include "core/messenger/delegates.h"
 #include "core/module/exceptions.h"
 #include "core/utils/prng.h"
@@ -108,6 +109,12 @@ namespace allpix {
          * @note Can be used to interact with ROOT objects that require an unique name
          */
         std::string getUniqueName() const;
+
+        /**
+         * @brief Get the logger instance of this module
+         * @return Reference to the module's logger, valid for the remainder of the program
+         */
+        Logger& getLogger() const { return logger_; }
 
         /**
          * @brief Create and return an absolute path to be used for output from a relative path
@@ -217,6 +224,7 @@ namespace allpix {
          */
         Configuration& get_configuration() { return config_; }
         Configuration& config_;
+        Logger& logger_;
 
     private:
         /**
@@ -285,6 +293,21 @@ namespace allpix {
          * @brief Checks if object is instance of SequentialModule class
          */
         virtual bool require_sequence() const { return false; }
+
+        /**
+         * @brief Get this module identifier unique name directly from the instance configuration
+         * @note the `identifier` key is set by the \ref ConfigManager when adding the instance configuration
+         */
+        static std::string module_unique_name(const Configuration& config);
+
+        /**
+         * @brief Get or create the module logger, configuring the level via the `log_level` config key.
+         * @note This method is called by the \ref ModuleManager before constructing the module, so construction itself can
+         * be logged through the module logger) and by the \ref Module base constructor.
+         *
+         * @throws InvalidValueError If `log_level` is set to an invalid value
+         */
+        static Logger& generate_logger(const Configuration& config);
     };
 
     /**
