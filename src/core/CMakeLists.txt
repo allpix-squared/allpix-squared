@@ -7,6 +7,10 @@ INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 # Create core library
 ADD_LIBRARY(
     AllpixCore SHARED
+    log/LogContext.cpp
+    log/Logger.cpp
+    log/LoggerManager.cpp
+    log/Sinks.cpp
     utils/text.cpp
     utils/unit.cpp
     module/Module.cpp

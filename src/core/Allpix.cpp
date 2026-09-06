@@ -64,45 +64,42 @@ Allpix::Allpix(std::filesystem::path config_file_name,
     const auto& global_config = conf_mgr_->getGlobalConfiguration();
 
     // Set the log level from config if not specified earlier
-    std::string log_level_string;
-    if(Log::getReportingLevel() == LogLevel::NONE) {
-        log_level_string = global_config.get<std::string>("log_level", "WARNING");
+    if(!LoggerManager::getInstance().hasExplicitGlobalLevel()) {
+        auto log_level_string = global_config.get<std::string>("log_level", "WARNING");
         std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
+        LogLevel log_level = LogLevel::WARNING;
         try {
-            log_level_ = Log::getLevelFromString(log_level_string);
+            log_level = Log::getLevelFromString(log_level_string);
         } catch(std::invalid_argument& e) {
             LOG(ERROR) << "Log level \"" << log_level_string
                        << "\" specified in the configuration is invalid, defaulting to WARNING instead";
-            log_level_ = LogLevel::WARNING;
         }
-    } else {
-        log_level_ = Log::getReportingLevel();
+        LoggerManager::getInstance().setGlobalLevel(log_level);
     }
-    Log::setReportingLevel(log_level_);
 
     // Set the log format from config
     auto log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
     std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
     try {
-        log_format_ = Log::getFormatFromString(log_format_string);
-        Log::setFormat(log_format_);
+        const auto log_format = Log::getFormatFromString(log_format_string);
+        LoggerManager::getInstance().setGlobalFormat(log_format);
     } catch(std::invalid_argument& e) {
         LOG(ERROR) << "Log format \"" << log_format_string
                    << "\" specified in the configuration is invalid, using DEFAULT instead";
-        log_format_ = LogFormat::DEFAULT;
+        LoggerManager::getInstance().setGlobalFormat(LogFormat::DEFAULT);
     }
-    Log::setFormat(log_format_);
 
     // Open log file to write output to
     if(global_config.has("log_file")) {
         // NOTE: this stream should be available for the duration of the logging
         log_file_.open(global_config.getPath("log_file"), std::ios_base::out | std::ios_base::trunc);
         LOG(TRACE) << "Added log stream to file " << global_config.getPath("log_file");
-        Log::addStream(log_file_);
+        LoggerManager::getInstance().addStream(log_file_, SinkStyle::PLAIN);
     }
 
     // Wait for the first detailed messages until level and format are properly set
-    LOG(TRACE) << "Global log level is set to " << Log::getStringFromLevel(Log::getReportingLevel());
+    LOG(TRACE) << "Global log level is set to "
+               << Log::getStringFromLevel(LoggerManager::getInstance().getDefault().getLevel());
     LOG(TRACE) << "Global log format is set to " << log_format_string;
 }
 
@@ -149,9 +146,6 @@ void Allpix::load_configuration(std::filesystem::path config_file_name,
  * - Load the modules from the configuration
  */
 void Allpix::load() {
-    Log::setReportingLevel(log_level_);
-    Log::setFormat(log_format_);
-
     if(stop_source_.get_token().stop_requested()) {
         LOG(INFO) << "Skip loading modules because termination is requested";
         return;
@@ -362,9 +356,6 @@ void Allpix::read_model_file(const std::filesystem::path& path) {
  * Runs the Module::initialize() method linearly for every module
  */
 void Allpix::initialize() {
-    Log::setReportingLevel(log_level_);
-    Log::setFormat(log_format_);
-
     if(stop_source_.get_token().stop_requested()) {
         LOG(INFO) << "Skip initializing modules because termination is requested";
         return;
@@ -397,9 +388,6 @@ void Allpix::checkException() {
 void Allpix::run(const std::stop_token& /*unused*/) {
 
     try {
-        Log::setReportingLevel(log_level_);
-        Log::setFormat(log_format_);
-
         const auto& stop_token = stop_source_.get_token();
         if(stop_token.stop_requested()) {
             LOG(INFO) << "Skip running modules because termination is requested";
@@ -429,9 +417,6 @@ void Allpix::wait() {
  * Runs all modules Module::finalize() method linearly for every module
  */
 void Allpix::finalize() {
-    Log::setReportingLevel(log_level_);
-    Log::setFormat(log_format_);
-
     LOG(TRACE) << "Finalizing Allpix";
 
     if(has_run_) {
