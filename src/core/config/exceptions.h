@@ -175,7 +175,7 @@ namespace allpix {
      */
     class ModuleIdentifierNotFoundError : public LogicError {
     public:
-        explicit ModuleIdentifierNotFoundError(const ModuleIdentifier& identifier);
+        explicit ModuleIdentifierNotFoundError(const std::string& name, int prio);
     };
     /**
      * @ingroup Exceptions
@@ -183,7 +183,7 @@ namespace allpix {
      */
     class ModuleIdentifierAlreadyAddedError : public LogicError {
     public:
-        explicit ModuleIdentifierAlreadyAddedError(const ModuleIdentifier& identifier);
+        explicit ModuleIdentifierAlreadyAddedError(const std::string& name, int prio);
     };
 } // namespace allpix
 
