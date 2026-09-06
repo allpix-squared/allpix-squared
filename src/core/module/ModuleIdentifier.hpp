@@ -29,15 +29,21 @@ namespace allpix {
         /**
          * @brief Constructs an empty identifier
          */
-        // TODO [doc] Is this method really necessary
         ModuleIdentifier() = default;
+
         /**
          * @brief Construct an identifier
-         * @param module_name Name of the module
-         * @param identifier Unique identifier for the instantiation
+         * @param config Configuration of the module
          * @param prio Priority of this module
          */
         ModuleIdentifier(const Configuration& config, int prio);
+
+        /**
+         * @brief Construct an identifier with detector name
+         * @param config Configuration of the module
+         * @param detector Detector name for the instantiation
+         * @param prio Priority of this module
+         */
         ModuleIdentifier(const Configuration& config, const std::string& detector, int prio);
 
         /**
