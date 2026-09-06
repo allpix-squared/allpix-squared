@@ -12,6 +12,7 @@ ADD_LIBRARY(
     utils/unit.cpp
     module/Module.cpp
     module/Event.cpp
+    module/ModuleIdentifier.cpp
     module/ModuleManager.cpp
     module/ThreadPool.cpp
     messenger/Messenger.cpp

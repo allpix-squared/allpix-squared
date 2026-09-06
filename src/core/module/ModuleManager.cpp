@@ -308,18 +308,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
         throw InvalidValueError(config, "type", "unique modules cannot be specialized using the \"type\" keyword.");
     }
 
-    // Create the identifier
-    std::string identifier_str;
-    if(!config.get<std::string>("input").empty()) {
-        identifier_str += config.get<std::string>("input");
-    }
-    if(!config.get<std::string>("output").empty()) {
-        if(!identifier_str.empty()) {
-            identifier_str += "_";
-        }
-        identifier_str += config.get<std::string>("output");
-    }
-    const ModuleIdentifier identifier(module_name, std::move(identifier_str), 0);
+    const ModuleIdentifier identifier(config, 0);
 
     // Get the generator function for this module
     void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
@@ -373,18 +362,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
                                                                                          Messenger* messenger,
                                                                                          GeometryManager* geo_manager) {
     const std::string& module_name = config.getName();
-    LOG(DEBUG) << "Creating instantions for detector module " << module_name;
-
-    // Create the basic identifier
-    std::string identifier;
-    if(!config.get<std::string>("input").empty()) {
-        identifier += "_";
-        identifier += config.get<std::string>("input");
-    }
-    if(!config.get<std::string>("output").empty()) {
-        identifier += "_";
-        identifier += config.get<std::string>("output");
-    }
+    LOG(DEBUG) << "Creating instantiations for detector module " << module_name;
 
     // Open the library and get the module generator function
     void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
@@ -407,7 +385,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         const std::vector<std::string> names = config.getArray<std::string>("name");
         for(auto& name : names) {
             auto det = geo_manager->getDetector(name);
-            instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName() + identifier, 0));
+            instantiations.emplace_back(det, ModuleIdentifier(config, det->getName(), 0));
 
             // Save the name (to not instantiate it again later)
             module_names.insert(name);
@@ -427,7 +405,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
                     continue;
                 }
 
-                instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName() + identifier, 1));
+                instantiations.emplace_back(det, ModuleIdentifier(config, det->getName(), 1));
             }
         }
         instances_created = !types.empty();
@@ -438,7 +416,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         auto detectors = geo_manager->getDetectors();
 
         for(auto& det : detectors) {
-            instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName() + identifier, 2));
+            instantiations.emplace_back(det, ModuleIdentifier(config, det->getName(), 2));
         }
     }
 

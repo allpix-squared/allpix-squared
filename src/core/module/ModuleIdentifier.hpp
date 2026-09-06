@@ -16,6 +16,8 @@
 #include <string>
 #include <vector>
 
+#include "core/config/Configuration.hpp"
+
 namespace allpix {
     /**
      * @brief Internal identifier for a module
@@ -35,8 +37,8 @@ namespace allpix {
          * @param identifier Unique identifier for the instantiation
          * @param prio Priority of this module
          */
-        ModuleIdentifier(std::string module_name, std::string identifier, int prio)
-            : name_(std::move(module_name)), identifier_(std::move(identifier)), prio_(prio) {}
+        ModuleIdentifier(const Configuration& config, int prio);
+        ModuleIdentifier(const Configuration& config, const std::string& detector, int prio);
 
         /**
          * @brief Get the name of the module
@@ -54,13 +56,8 @@ namespace allpix {
          *
          * The unique name of the module is the name combined with its identifier separated by a semicolon.
          */
-        std::string getUniqueName() const {
-            std::string unique_name = name_;
-            if(!identifier_.empty()) {
-                unique_name += ":" + identifier_;
-            }
-            return unique_name;
-        }
+        std::string getUniqueName() const;
+
         /**
          * @brief Get the priority of the instantiation
          * @return Priority level
