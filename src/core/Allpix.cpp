@@ -66,7 +66,6 @@ Allpix::Allpix(std::filesystem::path config_file_name,
     // Set the log level from config if not specified earlier
     auto log_level_string = global_config.get<std::string>("log_level", "WARNING");
     if(!LoggerManager::getInstance().hasExplicitGlobalLevel()) {
-        std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
         LogLevel log_level = LogLevel::WARNING;
         try {
             log_level = Log::getLevelFromString(log_level_string);
@@ -79,7 +78,6 @@ Allpix::Allpix(std::filesystem::path config_file_name,
 
     // Set the log format from config
     auto log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
-    std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
     try {
         const auto log_format = Log::getFormatFromString(log_format_string);
         LoggerManager::getInstance().setGlobalFormat(log_format);

@@ -87,7 +87,7 @@ void LoggerManager::setGlobalFormat(Format format) {
 }
 
 Level Log::getLevelFromString(const std::string& level_str) {
-    const auto level = enum_cast<Level>(level_str);
+    const auto level = enum_cast<Level>(level_str, true);
     if(!level.has_value()) {
         throw std::invalid_argument("unknown log level");
     }
@@ -95,7 +95,7 @@ Level Log::getLevelFromString(const std::string& level_str) {
 }
 
 Format Log::getFormatFromString(const std::string& format_str) {
-    const auto format = enum_cast<Format>(format_str);
+    const auto format = enum_cast<Format>(format_str, true);
     if(!format.has_value()) {
         throw std::invalid_argument("unknown format");
     }

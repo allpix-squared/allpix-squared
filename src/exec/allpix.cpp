@@ -139,7 +139,7 @@ int main(int argc, const char* argv[]) {
             return 0;
         } else if(arg == "-v" && (i + 1 < argc)) {
             try {
-                const LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
+                const auto log_level = Log::getLevelFromString(std::string(argv[++i]));
                 LoggerManager::getInstance().setGlobalLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
