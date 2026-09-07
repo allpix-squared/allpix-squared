@@ -40,9 +40,9 @@ namespace allpix {
          */
         class LogStream final : public std::ostringstream {
         public:
-            LogStream(const Logger& logger, Level level, std::source_location loc)
-                : logger_(logger), level_(level), loc_(loc) {}
-            ~LogStream() final { logger_.log(level_, this->view(), loc_); } // NOLINT(bugprone-exception-escape)
+            LogStream(const Logger& logger, Level level, std::source_location loc, bool progress = false)
+                : logger_(logger), level_(level), loc_(loc), progress_(progress) {}
+            ~LogStream() final { logger_.log(level_, this->view(), loc_, progress_); } // NOLINT(bugprone-exception-escape)
 
             /// @{
             /* @brief Disable copying and moving */
@@ -56,6 +56,7 @@ namespace allpix {
             const Logger& logger_; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
             Level level_;
             std::source_location loc_;
+            bool progress_;
         };
 
         /**
@@ -118,14 +119,30 @@ namespace allpix {
         }
 
         /**
+         * @brief Gives a stream to write a progress update to
+         * @details Behaves exactly like \ref log, except the message is tagged as a progress update. Some sinks will render
+         * this on a single line, overwriting previous messages tagged as progress.
+         *
+         * @param level Logging level of the message
+         * @param loc Source code location the log message originates from
+         * @return A \ref LogStream to write to
+         */
+        LogStream logProgress(Level level, std::source_location loc = std::source_location::current()) const {
+            return {*this, level, loc, true};
+        }
+
+        /**
          * @brief Log a message
          *
          * @param level Level of the log message
          * @param message Log message
          * @param src_loc Source code location from which the log message emitted
+         * @param progress Whether this message is a progress update
          */
-        void
-        log(Level level, std::string_view message, std::source_location src_loc = std::source_location::current()) const;
+        void log(Level level,
+                 std::string_view message,
+                 std::source_location src_loc = std::source_location::current(),
+                 bool progress = false) const;
 
         /**
          * @brief Flush all sinks attached to this logger

@@ -15,6 +15,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include "LogContext.hpp"
+
 using namespace allpix;
 
 Logger::Logger(std::shared_ptr<spdlog::logger> spdlog_logger) : spdlog_logger_(std::move(spdlog_logger)) {}
@@ -27,7 +29,8 @@ void Logger::flush() {
     }
 }
 
-void Logger::log(Level level, std::string_view message, std::source_location loc) const {
+void Logger::log(Level level, std::string_view message, std::source_location loc, bool progress) const {
+    log_context::set_progress(progress);
     spdlog_logger_->log(
         {loc.file_name(), static_cast<int>(loc.line()), loc.function_name()}, to_spdlog_level(level), message);
 }

@@ -48,6 +48,17 @@ namespace allpix {
          * @brief Reset the context on this thread back to its defaults (framework logger, no stage, no event number)
          */
         void reset();
+
+        /**
+         * @brief Check whether the message currently being dispatched on this thread is a progress update
+         */
+        bool is_progress();
+
+        /**
+         * @brief Set whether the message about to be dispatched on this thread is a progress update
+         * @note Internal: called only by \ref Logger::log immediately before dispatching to spdlog
+         */
+        void set_progress(bool progress);
     } // namespace log_context
 
     /**

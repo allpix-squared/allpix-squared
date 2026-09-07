@@ -19,6 +19,7 @@ namespace {
     thread_local Logger* g_active_logger = nullptr; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
     thread_local char g_stage = '\0';               // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
     thread_local uint64_t g_event_num = 0;          // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    thread_local bool g_is_progress = false;        // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 } // namespace
 
 Logger& log_context::active() {
@@ -32,10 +33,15 @@ char log_context::stage() { return g_stage; }
 
 uint64_t log_context::event_num() { return g_event_num; }
 
+bool log_context::is_progress() { return g_is_progress; }
+
+void log_context::set_progress(bool progress) { g_is_progress = progress; }
+
 void log_context::reset() {
     g_active_logger = &LoggerManager::getInstance().getDefault();
     g_stage = '\0';
     g_event_num = 0;
+    g_is_progress = false;
 }
 
 LogContext::LogContext(Logger& logger, char stage, uint64_t event_num)

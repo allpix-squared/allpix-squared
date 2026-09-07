@@ -215,7 +215,20 @@ void StreamSink::setFormat(Format format) { set_formatter(make_formatter(format,
 void StreamSink::sink_it_(const spdlog::details::log_msg& msg) {
     spdlog::memory_buf_t formatted;
     formatter_->format(msg, formatted);
+
+    if(style_ != SinkStyle::COLOR) {
+        stream_.write(formatted.data(), static_cast<std::streamsize>(formatted.size()));
+        return;
+    }
+
+    // Progress updates - if the current line is also a progress update, overwrite it
+    if(progress_active_) {
+        // Set cursor up one line because spdlog always ends messages with end-of-line:
+        static constexpr std::string_view erase = "\x1B[1A\x1B[2K\r";
+        stream_.write(erase.data(), static_cast<std::streamsize>(erase.size()));
+    }
     stream_.write(formatted.data(), static_cast<std::streamsize>(formatted.size()));
+    progress_active_ = log_context::is_progress();
 }
 
 void StreamSink::flush_() { stream_.flush(); }

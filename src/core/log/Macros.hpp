@@ -41,13 +41,15 @@ namespace allpix {
         ::allpix::log_context::active().log(::allpix::Level::level, std::source_location::current())
 
     /**
-     * @brief Create a logging stream that overwrites the line if the previous message has the same identifier
-     * @param level The log level of the stream
-     * @param identifier Identifier for this stream to determine overwrites
+     * @brief Create a logging stream for a progress update that overwrites the previous one in place
      *
-     * @note FIXME missing implementation
+     * @param level The log level of the stream
+     * @param identifier Unused, kept for compatibility, there is only one progress slot per sink
      */
-#define LOG_PROGRESS(level, identifier) LOG(level) // NOLINT(bugprone-macro-parentheses)
+#define LOG_PROGRESS(level, identifier)                                                                                     \
+    if(!::allpix::log_context::active().shouldLog(::allpix::Level::level)) {                                                \
+    } else                                                                                                                  \
+        ::allpix::log_context::active().logProgress(::allpix::Level::level, std::source_location::current())
 
     /**
      * @brief Create a logging stream if the reporting level is high enough and this message has not yet been logged

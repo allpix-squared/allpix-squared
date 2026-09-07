@@ -129,6 +129,7 @@ namespace allpix {
     private:
         std::ostream& stream_;
         SinkStyle style_;
+        bool progress_active_ = false;
     };
 
 } // namespace allpix
