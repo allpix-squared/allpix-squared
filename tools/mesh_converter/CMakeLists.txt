@@ -24,9 +24,18 @@ ALLPIX_SETUP_ROOT_TARGETS()
 # Find Threading library
 FIND_PACKAGE(Threads REQUIRED)
 
+# Logging backend
+FIND_PACKAGE(spdlog REQUIRED)
+
 # Find required Allpix Squared tools
 GET_FILENAME_COMPONENT(ALLPIX_SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../src/" ABSOLUTE)
 INCLUDE_DIRECTORIES(${ALLPIX_SRC})
+
+SET(ALLPIX_LOG_SRCS
+    ${ALLPIX_SRC}/core/log/LogContext.cpp
+    ${ALLPIX_SRC}/core/log/Logger.cpp
+    ${ALLPIX_SRC}/core/log/LoggerManager.cpp
+    ${ALLPIX_SRC}/core/log/Sinks.cpp)
 
 # Add TCAD dfise converter executable
 ADD_EXECUTABLE(
@@ -37,7 +46,7 @@ ADD_EXECUTABLE(
     parsers/DFISEParser.cpp
     parsers/SilvacoParser.cpp
     parsers/SilvacoSSFParser.cpp
-    ${ALLPIX_SRC}/core/utils/log.cpp
+    ${ALLPIX_LOG_SRCS}
     ${ALLPIX_SRC}/core/utils/text.cpp
     ${ALLPIX_SRC}/core/utils/unit.cpp
     ${ALLPIX_SRC}/core/config/ConfigStack.cpp
@@ -61,6 +70,7 @@ TARGET_LINK_LIBRARIES(
     ROOT::RIO
     ROOT::Tree
     Threads::Threads
+    spdlog::spdlog
     PkgConfig::Eigen3)
 
 # Create install target
@@ -70,14 +80,14 @@ INSTALL(
     RUNTIME DESTINATION bin)
 
 # Add mesh_plotter executable
-ADD_EXECUTABLE(mesh_plotter MeshPlotter.cpp ${ALLPIX_SRC}/core/utils/log.cpp ${ALLPIX_SRC}/core/utils/text.cpp
+ADD_EXECUTABLE(mesh_plotter MeshPlotter.cpp ${ALLPIX_LOG_SRCS} ${ALLPIX_SRC}/core/utils/text.cpp
                             ${ALLPIX_SRC}/core/utils/unit.cpp)
 
 # Set compiler options
 TARGET_COMPILE_OPTIONS(mesh_plotter PRIVATE ${ALLPIX_CXX_FLAGS})
 
 # Link libraries
-TARGET_LINK_LIBRARIES(mesh_plotter ROOT::Core ROOT::Hist ROOT::GuiBld PkgConfig::Eigen3)
+TARGET_LINK_LIBRARIES(mesh_plotter ROOT::Core ROOT::Hist ROOT::GuiBld spdlog::spdlog PkgConfig::Eigen3)
 
 INSTALL(
     TARGETS mesh_plotter

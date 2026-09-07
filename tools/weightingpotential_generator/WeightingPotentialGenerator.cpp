@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
     try {
 
         // Add stream and set default logging level
-        allpix::Log::addStream(std::cout);
+        allpix::LoggerManager::getInstance().addStream(std::cout, allpix::SinkStyle::COLOR);
         allpix::register_units();
 
         // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
         }
 
         // Set log level:
-        allpix::Log::setReportingLevel(log_level);
+        allpix::LoggerManager::getInstance().setGlobalLevel(log_level);
 
         // Print help if requested or no arguments given
         if(print_help) {
@@ -205,8 +205,6 @@ int main(int argc, char** argv) {
         auto weighting_potential = std::make_shared<std::vector<double>>();
 
         auto generate_section = [&](size_t index_x) {
-            allpix::Log::setReportingLevel(log_level);
-
             auto potential = [implant, thickness_domain](const ROOT::Math::XYZPoint& pos) {
                 // Calculate values of the "f" function
                 auto f = [implant](double x, double y, double u) {
@@ -251,15 +249,7 @@ int main(int argc, char** argv) {
             return slice;
         };
 
-        // clang-format off
-        auto init_function = [log_level = allpix::Log::getReportingLevel(), log_format = allpix::Log::getFormat()]() {
-            // clang-format on
-            // Initialize the threads to the same log level and format as the master setting
-            allpix::Log::setReportingLevel(log_level);
-            allpix::Log::setFormat(log_format);
-        };
-
-        ThreadPool pool(num_threads, num_threads * 1024, init_function);
+        ThreadPool pool(num_threads, num_threads * 1024, {});
         std::vector<std::shared_future<std::vector<double>>> wp_futures;
 
         // Loop over x coordinate, add tasks for each coordinate to the queue

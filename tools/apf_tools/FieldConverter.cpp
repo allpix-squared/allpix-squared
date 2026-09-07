@@ -36,7 +36,7 @@ int main(int argc, const char* argv[]) {
         register_units();
 
         // Add cout as the default logging stream
-        Log::addStream(std::cout);
+        LoggerManager::getInstance().addStream(std::cout, SinkStyle::COLOR);
 
         // If no arguments are provided, print the help:
         bool print_help = false;
@@ -56,8 +56,8 @@ int main(int argc, const char* argv[]) {
                 print_help = true;
             } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
                 try {
-                    const LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
-                    Log::setReportingLevel(log_level);
+                    const auto log_level = Log::getLevelFromString(std::string(argv[++i]));
+                    LoggerManager::getInstance().setGlobalLevel(log_level);
                 } catch(std::invalid_argument& e) {
                     LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
                 }

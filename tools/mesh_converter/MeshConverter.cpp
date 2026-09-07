@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
     allpix::register_units();
 
     // Add stream and set default logging level
-    Log::addStream(std::cout);
+    allpix::LoggerManager::getInstance().addStream(std::cout, allpix::SinkStyle::COLOR);
 
     // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
     std::signal(SIGQUIT, interrupt_handler);
@@ -100,8 +100,8 @@ int main(int argc, char** argv) {
             print_help = true;
         } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
             try {
-                auto log_level = Log::getLevelFromString(std::string(argv[++i]));
-                Log::setReportingLevel(log_level);
+                const auto log_level = Log::getLevelFromString(std::string(argv[++i]));
+                allpix::LoggerManager::getInstance().setGlobalLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
                 return_code = 1;
@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
             Log::finish();
             return 1;
         }
-        Log::addStream(log_file);
+        allpix::LoggerManager::getInstance().addStream(log_file, allpix::SinkStyle::PLAIN);
     }
 
     try {
@@ -174,18 +174,16 @@ int main(int argc, char** argv) {
         const auto stack = allpix::FileParser::getStack(file, conf_file_name);
         const auto config = stack.getHeaderConfiguration();
 
-        auto log_level = Log::getReportingLevel();
-        if(log_level == allpix::LogLevel::NONE) {
-            auto log_level_string = config.get<std::string>("log_level", "INFO");
-            std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
+        auto log_level_string = config.get<std::string>("log_level", "INFO");
+        if(!allpix::LoggerManager::getInstance().hasExplicitGlobalLevel()) {
+            auto log_level = allpix::LogLevel::INFO;
             try {
                 log_level = Log::getLevelFromString(log_level_string);
-                Log::setReportingLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Log level \"" << log_level_string
                            << "\" specified in the configuration is invalid, defaulting to INFO instead";
-                Log::setReportingLevel(allpix::LogLevel::INFO);
             }
+            allpix::LoggerManager::getInstance().setGlobalLevel(log_level);
         }
 
         LOG(STATUS) << "Welcome to the Mesh Converter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
@@ -362,8 +360,6 @@ int main(int argc, char** argv) {
 
         unsigned int mesh_points_done = 0;
         auto mesh_section = [&](double x, double y) {
-            Log::setReportingLevel(log_level);
-
             // New mesh slice
             std::vector<Point> new_mesh;
 
@@ -479,15 +475,7 @@ int main(int argc, char** argv) {
         LOG(STATUS) << "Starting regular grid interpolation with " << num_threads << " threads.";
         std::vector<Point> e_field_new_mesh;
 
-        // clang-format off
-        auto init_function = [log_level = Log::getReportingLevel(), log_format = Log::getFormat()]() {
-            // clang-format on
-            // Initialize the threads to the same log level and format as the master setting
-            Log::setReportingLevel(log_level);
-            Log::setFormat(log_format);
-        };
-
-        ThreadPool pool(num_threads, num_threads * 1024, init_function);
+        ThreadPool pool(num_threads, num_threads * 1024, {});
         std::vector<std::shared_future<std::vector<Point>>> mesh_futures;
         // Set starting point
         double x = minx + xstep / 2.0;

@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
         }
 
         // Add stream and set default logging level
-        allpix::Log::addStream(std::cout);
+        LoggerManager::getInstance().addStream(std::cout, SinkStyle::COLOR);
 
         // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
         std::signal(SIGQUIT, interrupt_handler);
@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
         }
 
         // Set log level:
-        allpix::Log::setReportingLevel(log_level);
+        allpix::LoggerManager::getInstance().setGlobalLevel(log_level);
 
         if(file_name.empty()) {
             print_help = true;
