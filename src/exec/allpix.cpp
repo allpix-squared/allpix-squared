@@ -39,6 +39,7 @@
 
 #include "core/Allpix.hpp"
 #include "core/config/exceptions.h"
+#include "core/log/LoggerManager.hpp"
 #include "core/utils/exceptions.h"
 #include "core/utils/log.h"
 
@@ -62,7 +63,7 @@ extern "C" void signal_handler(int signal) { signal_v = signal; }
  */
 int main(int argc, const char* argv[]) {
     // Add cout as the default logging stream
-    Log::addStream(std::cout);
+    LoggerManager::getInstance().addStream(std::cout, SinkStyle::COLOR);
 
     std::signal(SIGTERM, &signal_handler); // NOLINT(cert-err33-c)
     std::signal(SIGINT, &signal_handler);  // NOLINT(cert-err33-c)
@@ -139,7 +140,7 @@ int main(int argc, const char* argv[]) {
         } else if(arg == "-v" && (i + 1 < argc)) {
             try {
                 const LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
-                Log::setReportingLevel(log_level);
+                LoggerManager::getInstance().setGlobalLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
             }
@@ -205,7 +206,7 @@ int main(int argc, const char* argv[]) {
             return 1;
         }
 
-        Log::addStream(log_file);
+        LoggerManager::getInstance().addStream(log_file, SinkStyle::PLAIN);
     }
 
     try {
