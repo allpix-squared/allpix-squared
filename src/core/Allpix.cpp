@@ -64,8 +64,8 @@ Allpix::Allpix(std::filesystem::path config_file_name,
     const auto& global_config = conf_mgr_->getGlobalConfiguration();
 
     // Set the log level from config if not specified earlier
+    auto log_level_string = global_config.get<std::string>("log_level", "WARNING");
     if(!LoggerManager::getInstance().hasExplicitGlobalLevel()) {
-        auto log_level_string = global_config.get<std::string>("log_level", "WARNING");
         std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
         LogLevel log_level = LogLevel::WARNING;
         try {
