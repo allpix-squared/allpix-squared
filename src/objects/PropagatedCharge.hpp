@@ -97,7 +97,7 @@ namespace allpix {
          * @brief Get related induced pulses
          * @return Map with induced pulses if available
          */
-        std::map<Pixel::Index, Pulse> getPulses() const;
+        std::map<Pixel::Index, Pulse> const& getPulses() const;
 
         /**
          * @brief Get state of the charge carrier
