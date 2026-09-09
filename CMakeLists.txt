@@ -352,7 +352,7 @@ SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
 SET(ALLPIX_DEPS_LIBRARIES
     Threads::Threads
     Boost::random
-    spdlog::spdlog
+    spdlog::spdlog_header_only
     ROOT::Core
     ROOT::GenVector
     ROOT::Geom
