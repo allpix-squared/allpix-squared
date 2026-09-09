@@ -33,9 +33,9 @@ using namespace allpix;
  */
 std::pair<std::string, std::string> FileParser::parseKeyValue(std::string line) {
     line = allpix::trim(line);
-    size_t const equals_pos = line.find('=');
+    const size_t equals_pos = line.find('=');
     if(equals_pos != std::string::npos) {
-        std::string const key = trim(std::string(line, 0, equals_pos));
+        const std::string key = trim(std::string(line, 0, equals_pos));
         std::string value = trim(std::string(line, equals_pos + 1));
         char last_quote = 0;
         for(size_t i = 0; i < value.size(); ++i) {

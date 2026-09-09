@@ -141,7 +141,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             } else if(min_element == std::abs((direction.z()))) {
                 angref1 = direction.cross({0, 0, 1});
             }
-            G4ThreeVector const angref2 = angref1.cross(direction);
+            const G4ThreeVector angref2 = angref1.cross(direction);
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Beam");
@@ -369,7 +369,7 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
     // Set the time of the particle source within the time window
     if(time_window_ > 0) {
         auto* single_source = particle_source_->GetCurrentSource();
-        double const event_time = time_ + G4UniformRand() * time_window_;
+        const double event_time = time_ + G4UniformRand() * time_window_;
         single_source->SetParticleTime(event_time);
     }
 

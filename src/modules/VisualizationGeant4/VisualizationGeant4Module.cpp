@@ -134,7 +134,7 @@ void VisualizationGeant4Module::initialize() {
     UI->ApplyCommand("/vis/scene/create");
 
     // Initialize the driver and checking it actually exists
-    int const check_driver = UI->ApplyCommand("/vis/sceneHandler/create " + config_.get<std::string>("driver"));
+    const int check_driver = UI->ApplyCommand("/vis/sceneHandler/create " + config_.get<std::string>("driver"));
     if(check_driver != 0) {
         std::set<G4String> candidates;
         for(auto* system : vis_manager_g4_->GetAvailableGraphicsSystems()) {
@@ -451,7 +451,7 @@ void VisualizationGeant4Module::add_visualization_volumes() {
             }
 
             // Place the pixels if all objects are available
-            std::shared_ptr<G4PVParameterised> const pixel_param_phys = std::make_shared<G4PVParameterised>(
+            const std::shared_ptr<G4PVParameterised> pixel_param_phys = std::make_shared<G4PVParameterised>(
                 "pixel_" + detector->getName() + "_param",
                 pixel_log.get(),
                 sensor_log.get(),

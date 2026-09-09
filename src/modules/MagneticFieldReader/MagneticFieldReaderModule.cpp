@@ -52,7 +52,7 @@ void MagneticFieldReaderModule::initialize() {
 
         auto b_field = config_.get<ROOT::Math::XYZVector>("magnetic_field", ROOT::Math::XYZVector());
 
-        MagneticFieldFunction const function = [b_field](const ROOT::Math::XYZPoint&) noexcept { return b_field; };
+        const MagneticFieldFunction function = [b_field](const ROOT::Math::XYZPoint&) noexcept { return b_field; };
 
         geometryManager_->setMagneticFieldFunction(function, type);
         LOG(INFO) << "Set constant magnetic field: " << Units::display(b_field, {"T", "mT"});
@@ -68,7 +68,7 @@ void MagneticFieldReaderModule::initialize() {
         auto ncells = field_data.getDimensions(); // Number of cells in each direction of the field mesh
         auto field_mesh = field_data.getData();   // The field mesh B-field data as a flattened array
 
-        MagneticFieldFunction const function =
+        const MagneticFieldFunction function =
             [fallback_field, field_mesh, fieldsize, ncells, offset](const ROOT::Math::XYZPoint& coord) {
                 // Find the nearest field mesh cell to the given input coordinate (assuming the mesh is centered about the
                 // origin)

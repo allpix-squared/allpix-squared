@@ -113,7 +113,7 @@ FieldMap SilvacoParser::read_fields(const std::string& file_name, const std::str
     std::map<std::string, std::map<std::string, std::vector<Point>>> region_electric_field_map;
     std::vector<double> region_electric_field_num;
 
-    std::string const region = "Silicon";
+    const std::string region = "Silicon";
     long unsigned int dimension = 1;
     long long num_lines_parsed = 0;
     long unsigned int columns_count = 0;

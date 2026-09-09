@@ -129,7 +129,7 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
             return false;
         }
         const Object& first_object = object_array[0];
-        std::string const class_name = allpix::demangle(typeid(first_object).name());
+        const std::string class_name = allpix::demangle(typeid(first_object).name());
 
         // Check if this message should be kept
         if((!include_.empty() && include_.find(class_name) == include_.cend()) ||
@@ -185,14 +185,14 @@ void ROOTObjectWriterModule::run(Event* event) {
         auto object_array = message->getObjectArray();
         // object_array emptiness is checked in the filter
         const Object& first_object = object_array[0];
-        std::type_index const type_idx = typeid(first_object);
+        const std::type_index type_idx = typeid(first_object);
 
         // Create a new branch of the correct type if this message was not received before
         auto index_tuple = std::make_tuple(type_idx, detector_name, message_name);
         if(write_list_.find(index_tuple) == write_list_.end()) {
 
             std::string class_name = allpix::demangle(typeid(first_object).name());
-            std::string const class_name_with_namespace = allpix::demangle(typeid(first_object).name(), true);
+            const std::string class_name_with_namespace = allpix::demangle(typeid(first_object).name(), true);
 
             // Add vector of objects to write to the write list
             write_list_[index_tuple] = new std::vector<Object*>();
@@ -324,7 +324,7 @@ void ROOTObjectWriterModule::finalize() {
 
         // Store the detector model
         // NOTE We save the model for every detector separately since parameter overloading might have changed it
-        std::string const model_name = detector->getModel()->getType() + "_" + detector->getName();
+        const std::string model_name = detector->getModel()->getType() + "_" + detector->getName();
         detector_dir->WriteObject(&model_name, "type");
         models_dir->cd();
         auto* model_dir = models_dir->mkdir(model_name.c_str());

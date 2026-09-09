@@ -135,7 +135,7 @@ namespace allpix {
         friend class cereal::access;
 
         // Versioned serialization function:
-        template <class Archive> void serialize(Archive& archive, std::uint32_t const version) {
+        template <class Archive> void serialize(Archive& archive, std::const uint32_t version) {
             // For now, we only know one version of this file type:
             if(version < 1 || version > 2) {
                 throw std::runtime_error("unknown format version " + std::to_string(version));

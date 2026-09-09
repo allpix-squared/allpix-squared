@@ -377,8 +377,8 @@ void CapacitiveTransferModule::run(Event* event) {
 
                 double ccpd_factor = 0;
                 if(config_.has("coupling_scan_file")) {
-                    double const local_x = pixel_index.x() * model_->getPixelSize().x();
-                    double const local_y = pixel_index.y() * model_->getPixelSize().y();
+                    const double local_x = pixel_index.x() * model_->getPixelSize().x();
+                    const double local_y = pixel_index.y() * model_->getPixelSize().y();
                     auto pixel_point = Eigen::Vector3d(local_x, local_y, 0);
                     auto pixel_projection = plane_.projection(pixel_point);
                     auto pixel_gap = pixel_projection[2];
@@ -421,7 +421,7 @@ void CapacitiveTransferModule::run(Event* event) {
     LOG(TRACE) << "Combining charges at same pixel";
     std::vector<PixelCharge> pixel_charges;
     for(auto& pixel_index_charge : pixel_map) {
-        double const charge = pixel_index_charge.second.first;
+        const double charge = pixel_index_charge.second.first;
 
         // Get pixel object from detector
         auto pixel = detector_->getPixel(pixel_index_charge.first.x(), pixel_index_charge.first.y());

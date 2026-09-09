@@ -173,8 +173,8 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
     LOG(DEBUG) << "Depleting the sensor from the " << (deplete_from_implants ? "implant side." : "back side.");
     return [bias_voltage, depletion_voltage, direction, eff_thickness, thickness_domain, deplete_from_implants](
                const ROOT::Math::XYZPoint& pos) {
-        double const z_rel = thickness_domain.second - pos.z();
-        double const field_z =
+        const double z_rel = thickness_domain.second - pos.z();
+        const double field_z =
             std::max(0.0,
                      (bias_voltage - depletion_voltage) / eff_thickness +
                          2 * (depletion_voltage / eff_thickness) *
@@ -189,7 +189,7 @@ ElectricFieldReaderModule::get_parabolic_field_function(std::pair<double, double
 
     auto z_min = config_.get<double>("minimum_position");
     auto e_max = config_.get<double>("maximum_field");
-    double const eff_thickness = thickness_domain.second - thickness_domain.first;
+    const double eff_thickness = thickness_domain.second - thickness_domain.first;
 
     if(z_min <= thickness_domain.first || z_min >= thickness_domain.second) {
         throw InvalidValueError(config_,
@@ -205,7 +205,7 @@ ElectricFieldReaderModule::get_parabolic_field_function(std::pair<double, double
     auto c = e_max - a * (thickness_domain.second * thickness_domain.second - eff_thickness * z_min);
 
     return [a, b, c](const ROOT::Math::XYZPoint& pos) {
-        double const field_z = a * pos.z() * pos.z() + b * pos.z() + c;
+        const double field_z = a * pos.z() * pos.z() + b * pos.z() + c;
         return ROOT::Math::XYZVector(0, 0, field_z);
     };
 }
@@ -336,8 +336,8 @@ void ElectricFieldReaderModule::create_output_plots() {
              ? ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z())
              : model->getSensorSize());
 
-    double const z_min = center.z() - size.z() / 2.0;
-    double const z_max = center.z() + size.z() / 2.0;
+    const double z_min = center.z() - size.z() / 2.0;
+    const double z_max = center.z() + size.z() / 2.0;
 
     // Determine minimum and maximum index depending on projection axis
     double min1 = NAN;
@@ -388,7 +388,7 @@ void ElectricFieldReaderModule::create_output_plots() {
     }
 
     // Create 2D histograms
-    std::string const histogram_title =
+    const std::string histogram_title =
         "Electric field (magnitude) at " + position_str + ";" + x_axis_title + ";" + y_axis_title + ";field strength (V/cm)";
     auto histogram = CreateHistogram<TH2F>("field_magnitude",
                                            histogram_title.c_str(),
@@ -401,25 +401,25 @@ void ElectricFieldReaderModule::create_output_plots() {
     histogram->SetMinimum(-0.01);
     histogram->SetOption("colz");
 
-    std::string const histogram_x_title =
+    const std::string histogram_x_title =
         "Electric field (x-component) at " + position_str + ";" + x_axis_title + ";" + y_axis_title + ";field (V/cm)";
     auto histogram_x = CreateHistogram<TH2F>(
         "field_x", histogram_x_title.c_str(), static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
     histogram_x->SetOption("colz");
 
-    std::string const histogram_y_title =
+    const std::string histogram_y_title =
         "Electric field (y-component) at " + position_str + ";" + x_axis_title + ";" + y_axis_title + ";field (V/cm)";
     auto histogram_y = CreateHistogram<TH2F>(
         "field_y", histogram_y_title.c_str(), static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
     histogram_y->SetOption("colz");
 
-    std::string const histogram_z_title =
+    const std::string histogram_z_title =
         "Electric field (z-component) at " + position_str + ";" + x_axis_title + ";" + y_axis_title + ";field (V/cm)";
     auto histogram_z = CreateHistogram<TH2F>(
         "field_z", histogram_z_title.c_str(), static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
     histogram_z->SetOption("colz");
 
-    std::string const histogram_lateral_title =
+    const std::string histogram_lateral_title =
         "Electric field (lateral) at " + position_str + ";" + x_axis_title + ";" + y_axis_title + ";field (V/cm)";
     auto histogram_lateral = CreateHistogram<TH2F>("field_lateral",
                                                    histogram_lateral_title.c_str(),

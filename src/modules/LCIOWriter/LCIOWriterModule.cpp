@@ -53,7 +53,7 @@ namespace eutelescope {
 
 } // namespace eutelescope
 
-inline std::array<long double, 3> getRotationAnglesFromMatrix(ROOT::Math::Rotation3D const& rot_mat) {
+inline std::array<long double, 3> getRotationAnglesFromMatrix(const ROOT::Math::Rotation3D& rot_mat) {
     double r00 = 0;
     double r01 = 0;
     double r02 = 0;
@@ -134,8 +134,8 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     if(has_short_config) {
         auto out_col_name = config_.get<std::string>("output_collection_name");
         unsigned sensor_id = 0;
-        for(auto const& det : detectors) {
-            auto const& det_name = det->getName();
+        for(const auto& det : detectors) {
+            const auto& det_name = det->getName();
             collections_to_detectors_map_[out_col_name].emplace_back(det_name);
             detector_names_to_id_[det_name] = sensor_id++;
         }
@@ -150,11 +150,11 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
         auto setup = config.getMatrix<std::string>("detector_assignment");
         auto assigned_ids = std::vector<unsigned>{};
 
-        for(auto const& setup_entry : setup) {
+        for(const auto& setup_entry : setup) {
             if(setup_entry.size() == 3) {
-                auto const& det_name = setup_entry[0];
-                auto const& col_name = setup_entry[1];
-                auto const& sensor_id_str = setup_entry[2];
+                const auto& det_name = setup_entry[0];
+                const auto& col_name = setup_entry[1];
+                const auto& sensor_id_str = setup_entry[2];
                 // This map will help determine how many setup we will create (keys) and what
                 // detectors write into that collection (values)
                 collections_to_detectors_map_[col_name].emplace_back(det_name);
@@ -193,7 +193,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
 
             } else {
                 auto error = std::string("The entry: [");
-                for(auto const& value : setup_entry) {
+                for(const auto& value : setup_entry) {
                     error.append("\"" + value + "\", ");
                 }
                 error.pop_back();
@@ -214,10 +214,10 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
         }
     }
     //
-    for(auto const& col_dets_pair : collections_to_detectors_map_) {
+    for(const auto& col_dets_pair : collections_to_detectors_map_) {
         collection_names_vector_.emplace_back(col_dets_pair.first);
         LOG(DEBUG) << "Registered output collection \"" << col_dets_pair.first << "\" for sensors: ";
-        for(auto const& det_name : col_dets_pair.second) {
+        for(const auto& det_name : col_dets_pair.second) {
             LOG(DEBUG) << det_name << " ";
             auto det_id = detector_names_to_id_[det_name];
             detector_ids_to_colllection_index_[det_id] = collection_names_vector_.size() - 1;
@@ -225,7 +225,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     }
 
     for(const auto& det : detectors) {
-        auto const& det_name = det->getName();
+        const auto& det_name = det->getName();
         auto it = detector_names_to_id_.find(det_name);
         if(it != detector_names_to_id_.end()) {
             LOG(DEBUG) << det_name << " has ID " << detector_names_to_id_[det_name];
@@ -278,10 +278,10 @@ void LCIOWriterModule::run(Event* event) {
     std::unique_ptr<CellIDEncoder<TrackerHitImpl>> mc_hit_encoder = nullptr;
 
     // The detector id is only attached to the message, not the MCParticle, thus we store it here
-    auto mcp_to_det_id = std::map<MCParticle const*, unsigned>{};
+    auto mcp_to_det_id = std::map<const MCParticle*, unsigned>{};
     // Multiple pixel hits can be assigned to a single MCParticle, here we store them in a LCIO 'float vector' to create the
     // Monte Carlo truth cluster
-    auto mcp_to_pixel_data_vec = std::map<MCParticle const*, std::vector<std::vector<float>>>{};
+    auto mcp_to_pixel_data_vec = std::map<const MCParticle*, std::vector<std::vector<float>>>{};
 
     if(dump_mc_truth_) {
         // Prepare static Monte-Carlo output setup and their CellIDEncoders which are the same every time
@@ -302,7 +302,7 @@ void LCIOWriterModule::run(Event* event) {
     // In LCIO the 'charge vector' is a vector of floats which correspond to hit pixels, depending on the pixel
     // type in EUTelescope the number of entries per pixel varies
     std::map<unsigned, std::vector<float>> charges;
-    for(auto const& det : detector_names_to_id_) {
+    for(const auto& det : detector_names_to_id_) {
         charges[det.second] = std::vector<float>{};
     }
 
@@ -356,7 +356,7 @@ void LCIOWriterModule::run(Event* event) {
                 break;
             }
 
-            for(auto const& mcp : hitdata.getMCParticles()) {
+            for(const auto& mcp : hitdata.getMCParticles()) {
                 mcp_to_det_id[mcp] = det_id;
                 mcp_to_pixel_data_vec[mcp].emplace_back(this_hit_charge_vec);
             }
@@ -364,7 +364,7 @@ void LCIOWriterModule::run(Event* event) {
     }
 
     // Every track will be linked to at least one (typically multiple) MCParticles and thus TrackerData objects
-    auto mctrk_to_hit_data_vec = std::map<MCTrack const*, std::vector<TrackerHitImpl*>>{};
+    auto mctrk_to_hit_data_vec = std::map<const MCTrack*, std::vector<TrackerHitImpl*>>{};
 
     // A MCParticle will be reflected by an LCIO hit and cluster - the hit is stored in a TrackerHit, the cluster in
     // a TrackerPulse linked to a TrackerData object
@@ -380,7 +380,7 @@ void LCIOWriterModule::run(Event* event) {
 
             // Every detected pixel hit which had charge contribution from this MCParticle will be added to the cluster
             std::vector<float> truth_cluster_charge_vec;
-            for(auto const& pixel_hit_charge_vec : mcp_pixel_data_vec_pair.second) {
+            for(const auto& pixel_hit_charge_vec : mcp_pixel_data_vec_pair.second) {
                 truth_cluster_charge_vec.insert(
                     std::end(truth_cluster_charge_vec), std::begin(pixel_hit_charge_vec), std::end(pixel_hit_charge_vec));
             }
@@ -398,8 +398,8 @@ void LCIOWriterModule::run(Event* event) {
             mc_cluster_vec->push_back(mc_tracker_pulse);
 
             // we take the centre of the MCParticle to be the global z-position
-            auto const& hit_start_pos = mc_particle->getGlobalStartPoint();
-            auto const& hit_end_pos = mc_particle->getGlobalEndPoint();
+            const auto& hit_start_pos = mc_particle->getGlobalStartPoint();
+            const auto& hit_end_pos = mc_particle->getGlobalEndPoint();
             auto pos_arr = std::array<double, 3>{{0.5 * (hit_start_pos.x() + hit_end_pos.x()),
                                                   0.5 * (hit_start_pos.y() + hit_end_pos.y()),
                                                   0.5 * (hit_start_pos.z() + hit_end_pos.z())}};
@@ -420,7 +420,7 @@ void LCIOWriterModule::run(Event* event) {
         }
     }
     // Fill hitvector with event data
-    for(auto const& det_id_name_pair : detector_names_to_id_) {
+    for(const auto& det_id_name_pair : detector_names_to_id_) {
         auto det_id = det_id_name_pair.second;
         auto* hit = new TrackerDataImpl(); // NOLINT(cppcoreguidelines-owning-memory)
         hit->setChargeValues(charges[det_id]);

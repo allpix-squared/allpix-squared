@@ -76,7 +76,7 @@ ROOT::Math::XYZPoint StaggeredPixelDetectorModel::getPixelCenter(const int x, co
 
 std::pair<int, int> StaggeredPixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& position) const {
     // Check if we have an odd or even row
-    bool const odd_row = (static_cast<int>(std::lround(position.y() / pixel_size_.y())) % 2) != 0;
+    const bool odd_row = (static_cast<int>(std::lround(position.y() / pixel_size_.y())) % 2) != 0;
 
     auto pixel_x = static_cast<int>(std::lround((position.x() / pixel_size_.x()) - (odd_row ? offset_ : 0.)));
     auto pixel_y = static_cast<int>(std::lround(position.y() / pixel_size_.y()));

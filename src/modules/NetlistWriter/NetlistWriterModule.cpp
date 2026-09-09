@@ -143,8 +143,8 @@ void NetlistWriterModule::initialize() {
 
             if(std::regex_search(line, connection_match, subckt_regex)) {
 
-                std::string const circuit_instance = connection_match[1].str();
-                std::string const nets = connection_match[2].str();
+                const std::string circuit_instance = connection_match[1].str();
+                const std::string nets = connection_match[2].str();
                 subckt_name_ = connection_match[3].str();
 
                 LOG(INFO) << "Circuit instance name: " << circuit_instance;
@@ -250,7 +250,7 @@ void NetlistWriterModule::run(Event* event) {
 
                 for(auto bin = pulse.begin(); bin != pulse.end(); ++bin) {
                     auto time = Units::convert(step, "s") * static_cast<double>(std::distance(pulse.begin(), bin));
-                    double const current_bin = *bin / step;
+                    const double current_bin = *bin / step;
                     auto current = Units::convert(current_bin, "nC");
 
                     file << std::setprecision(15) << time << " " << current << (bin < pulse.end() - 1 ? " " : "");
@@ -340,7 +340,7 @@ void NetlistWriterModule::run(Event* event) {
 
         // Log messages according to the electrical simulation execution
         if(WIFEXITED(retval)) {
-            int const exit_code = WEXITSTATUS(retval);
+            const int exit_code = WEXITSTATUS(retval);
             if(exit_code == 0) {
                 LOG(INFO) << "Command executed normally. \n";
             } else {

@@ -34,7 +34,7 @@ void PassiveMaterialConstructionG4::registerVolumes() {
     LOG(TRACE) << "Registering " << passive_configs.size() << " passive material volume(s)";
 
     for(auto& passive_config : passive_configs) {
-        std::shared_ptr<PassiveMaterialModel> const model = PassiveMaterialModel::factory(passive_config, geo_manager_);
+        const std::shared_ptr<PassiveMaterialModel> model = PassiveMaterialModel::factory(passive_config, geo_manager_);
         passive_volumes_.emplace_back(model);
     }
 

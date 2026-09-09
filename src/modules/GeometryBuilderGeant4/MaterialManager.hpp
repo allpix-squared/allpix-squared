@@ -27,8 +27,8 @@ namespace allpix {
      */
     class Materials {
     public:
-        Materials(Materials const&) = delete;
-        void operator=(Materials const&) = delete;
+        Materials(const Materials&) = delete;
+        void operator=(const Materials&) = delete;
 
         static Materials& getInstance();
 

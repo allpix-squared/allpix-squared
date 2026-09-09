@@ -265,7 +265,7 @@ void CorryvreckanWriterModule::finalize() {
             // Transform the rotation matrix to a ZYX rotation and invert it to get a XYZ rotation
             // This way we stay compatible to old Corryvreckan versions which only support XYZ.
             geometry_file << "orientation_mode = \"xyz\"" << '\n';
-            ROOT::Math::RotationZYX const rotations(detector->getOrientation().Inverse());
+            const ROOT::Math::RotationZYX rotations(detector->getOrientation().Inverse());
             geometry_file << "orientation = " << Units::display(-rotations.Psi(), "deg") << ", "
                           << Units::display(-rotations.Theta(), "deg") << ", " << Units::display(-rotations.Phi(), "deg")
                           << '\n';

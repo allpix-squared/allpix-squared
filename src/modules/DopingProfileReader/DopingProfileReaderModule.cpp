@@ -186,8 +186,8 @@ void DopingProfileReaderModule::create_output_plots() {
              ? ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z())
              : model->getSensorSize());
 
-    double const z_min = center.z() - size.z() / 2.0;
-    double const z_max = center.z() + size.z() / 2.0;
+    const double z_min = center.z() - size.z() / 2.0;
+    const double z_max = center.z() + size.z() / 2.0;
 
     // Determine minimum and maximum index depending on projection axis
     double min1 = NAN;
@@ -238,7 +238,7 @@ void DopingProfileReaderModule::create_output_plots() {
     }
 
     // Create 2D doping_concentration_histograms
-    std::string const histogram_title = "Doping concentration (1/cm^{3}) at " + position_str + ";" + x_axis_title + ";" +
+    const std::string histogram_title = "Doping concentration (1/cm^{3}) at " + position_str + ";" + x_axis_title + ";" +
                                         y_axis_title + ";Concentration (1/cm^{3})";
     auto doping_concentration_histogram = CreateHistogram<TH2F>("doping_concentration",
                                                                 histogram_title.c_str(),

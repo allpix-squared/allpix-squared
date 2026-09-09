@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
         }
 
         // Output file path:
-        std::string const output_file_name =
+        const std::string output_file_name =
             output_file_prefix + "_weightingpotential" + (file_type == allpix::FileType::INIT ? ".init" : ".apf");
 
         LOG(INFO) << "Field size: " << allpix::Units::display(fieldsize, {"um", "mm"});
@@ -216,10 +216,10 @@ int main(int argc, char** argv) {
                     };
 
                     // Shift the x and y coordinates by plus/minus half the implant size:
-                    double const x1 = x - implant.x() / 2;
-                    double const x2 = x + implant.x() / 2;
-                    double const y1 = y - implant.y() / 2;
-                    double const y2 = y + implant.y() / 2;
+                    const double x1 = x - implant.x() / 2;
+                    const double x2 = x + implant.x() / 2;
+                    const double y1 = y - implant.y() / 2;
+                    const double y2 = y + implant.y() / 2;
 
                     // Calculate arctan sum and return
                     return arctan(x1, y1, u) + arctan(x2, y2, u) - arctan(x1, y2, u) - arctan(x2, y1, u);
@@ -284,12 +284,12 @@ int main(int argc, char** argv) {
         LOG(INFO) << "Weighting potential generated in " << elapsed_seconds << " seconds.";
 
         // Prepare header and auxiliary information:
-        std::string const header =
+        const std::string header =
             "Allpix Squared " + std::string(ALLPIX_PROJECT_VERSION) + " Weighting Potential Generator";
-        std::array<double, 3> const size{{fieldsize.x(), fieldsize.y(), fieldsize.z()}};
-        std::array<size_t, 3> const gridsize{{binning.x(), binning.y(), binning.z()}};
+        const std::array<double, 3> size{{fieldsize.x(), fieldsize.y(), fieldsize.z()}};
+        const std::array<size_t, 3> gridsize{{binning.x(), binning.y(), binning.z()}};
 
-        allpix::FieldData<double> const field_data(header, gridsize, size, weighting_potential);
+        const allpix::FieldData<double> field_data(header, gridsize, size, weighting_potential);
         allpix::FieldWriter<double> field_writer(allpix::FieldQuantity::SCALAR);
         field_writer.writeFile(field_data, output_file_name, file_type);
 

@@ -67,7 +67,7 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config,
 
     // Set Geant4 G4cerr log level
     try {
-        LogLevel const log_level = Log::getLevelFromString(g4cerr_log_level);
+        const LogLevel log_level = Log::getLevelFromString(g4cerr_log_level);
         G4LoggingDestination::setG4cerrReportingLevel(log_level);
     } catch(std::invalid_argument& e) {
         throw InvalidValueError(config_, "log_level_g4cerr", "invalid log level provided");
@@ -75,7 +75,7 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config,
 
     // Set Geant G4cout log level
     try {
-        LogLevel const log_level = Log::getLevelFromString(g4cout_log_level);
+        const LogLevel log_level = Log::getLevelFromString(g4cout_log_level);
         G4LoggingDestination::setG4coutReportingLevel(log_level);
     } catch(std::invalid_argument& e) {
         throw InvalidValueError(config_, "log_level_g4cout", "invalid log level provided");
@@ -103,7 +103,7 @@ static void check_dataset_g4(const std::string& env_name) {
                           " is not set, make sure to source a Geant4 "
                           "environment with all datasets");
     }
-    std::ifstream const file(file_name);
+    const std::ifstream file(file_name);
     if(!file.good()) {
         throw ModuleError("Geant4 environment variable " + env_name +
                           " does not point to existing dataset, the Geant4 "

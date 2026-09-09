@@ -177,8 +177,8 @@ void Allpix::load() {
         auto clock_seed = static_cast<uint64_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
         // Use memory location local variable
         auto mem_seed = reinterpret_cast<uint64_t>(&seed); // NOLINT
-        // Use thread id
-        std::hash<std::thread::id> const thrd_hasher;
+                                                           // Use thread id
+        const std::hash<std::thread::id> thrd_hasher;
         auto thread_seed = thrd_hasher(std::this_thread::get_id());
         seed = (clock_seed ^ mem_seed ^ thread_seed);
         seeder_modules_.seed(seed);
@@ -275,7 +275,7 @@ void Allpix::load_geometry() {
 
                 // Accept only with correct model suffix
                 auto sub_path = std::filesystem::canonical(entry);
-                std::string const suffix(ALLPIX_MODEL_SUFFIX);
+                const std::string suffix(ALLPIX_MODEL_SUFFIX);
                 if(sub_path.extension() != suffix) {
                     continue;
                 }
@@ -485,7 +485,7 @@ void Allpix::set_style() {
     style->SetTitleOffset(1.4F, "x");
 
     // Set font settings
-    short const font = 42; // Use a clear font
+    const short font = 42; // Use a clear font
     style->SetTitleFont(font);
     style->SetTitleFontSize(0.06F);
     style->SetStatFont(font);

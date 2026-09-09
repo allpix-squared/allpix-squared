@@ -143,7 +143,7 @@ void SimpleTransferModule::run(Event* event) {
             continue;
         }
 
-        Pixel::Index const pixel_index(xpixel, ypixel);
+        const Pixel::Index pixel_index(xpixel, ypixel);
 
         // Update statistics
         transferred_charges_count += propagated_charge.getCharge();

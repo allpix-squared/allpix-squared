@@ -125,7 +125,7 @@ void DepositionReaderModule::initialize() {
         auto branch_list = config_.getArray<std::string>("branch_names");
 
         // Exactly 10 branch names are required unless time or monte carlo particles are left out:
-        size_t const required_list_size =
+        const size_t required_list_size =
             10 - static_cast<size_t>(time_available_ ? 0 : 1) - static_cast<size_t>(create_mcparticles_ ? 0 : 2);
         if(branch_list.size() != required_list_size) {
             throw InvalidValueError(config_,
@@ -198,11 +198,11 @@ void DepositionReaderModule::initialize() {
         for(auto& detector : geo_manager_->getDetectors()) {
 
             // Plot axis are in kilo electrons - convert from framework units!
-            int const maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
-            int const nbins = 5 * maximum;
+            const int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+            const int nbins = 5 * maximum;
 
             // Create histograms if needed
-            std::string const plot_name = "deposited_charge_" + detector->getName();
+            const std::string plot_name = "deposited_charge_" + detector->getName();
             charge_per_event_[detector] = CreateHistogram<TH1D>(
                 plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
         }
@@ -397,7 +397,7 @@ void DepositionReaderModule::run(Event* event) {
         }
 
         // Send the mc particle information if available
-        bool const has_mcparticles = !mc_particles.empty();
+        const bool has_mcparticles = !mc_particles.empty();
         auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles), detector);
         if(has_mcparticles) {
             messenger_->dispatchMessage(this, mc_particle_message, event);
@@ -441,7 +441,7 @@ void DepositionReaderModule::run(Event* event) {
 
             // Fill output plots if requested:
             if(output_plots_) {
-                double const charge = static_cast<double>(Units::convert(total_deposits, "ke"));
+                const double charge = static_cast<double>(Units::convert(total_deposits, "ke"));
                 charge_per_event_[detector]->Fill(charge);
             }
         }

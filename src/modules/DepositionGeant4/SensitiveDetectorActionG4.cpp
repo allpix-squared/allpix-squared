@@ -69,14 +69,14 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory* 
     LOG(TRACE) << "Distance of this step: " << (postStep->GetPosition() - preStep->GetPosition()).mag();
 
     // Get Transportaion Matrix
-    G4TouchableHandle const theTouchable = step->GetPreStepPoint()->GetTouchableHandle();
+    const G4TouchableHandle theTouchable = step->GetPreStepPoint()->GetTouchableHandle();
     auto* track = step->GetTrack();
 
     // Put the charge deposit in the middle of the step unless it is a photon:
     auto is_photon = (track->GetDynamicParticle()->GetPDGcode() == 22);
     LOG(TRACE) << "Placing energy deposit "
                << (is_photon ? "at the end of step, photon detected" : "in the middle of the step");
-    G4ThreeVector const step_pos =
+    const G4ThreeVector step_pos =
         is_photon ? postStep->GetPosition() : (preStep->GetPosition() + postStep->GetPosition()) / 2;
     double step_time = is_photon ? postStep->GetGlobalTime() : (preStep->GetGlobalTime() + postStep->GetGlobalTime()) / 2;
 

@@ -454,7 +454,7 @@ FieldMap DFISEParser::read_fields(const std::string& file_name, const std::strin
                 auto header_data = base_match[2].str();
 
                 if(header_string == "Dataset") {
-                    std::string const data_type = header_data.substr(1, header_data.size() - 2);
+                    const std::string data_type = header_data.substr(1, header_data.size() - 2);
                     LOG(DEBUG) << "Opening dataset of type " << data_type;
 
                     if(data_type == "ElectricField") {

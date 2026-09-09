@@ -238,7 +238,7 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     // Save the indent count to fix with newlines
     size_t prev = 0;
     size_t pos = 0;
-    std::string const out = os_.str();
+    const std::string out = os_.str();
     while((pos = out.find("\x1B[", prev)) != std::string::npos) {
         indent_count_ += static_cast<unsigned int>(pos - prev);
         prev = out.find('m', pos) + 1;

@@ -77,8 +77,8 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 
     // Calculate world size
     ROOT::Math::XYZVector half_world_size;
-    ROOT::Math::XYZPoint const min_coord = geo_manager_->getMinimumCoordinate();
-    ROOT::Math::XYZPoint const max_coord = geo_manager_->getMaximumCoordinate();
+    const ROOT::Math::XYZPoint min_coord = geo_manager_->getMinimumCoordinate();
+    const ROOT::Math::XYZPoint max_coord = geo_manager_->getMaximumCoordinate();
     half_world_size.SetX(std::max(std::abs(min_coord.x()), std::abs(max_coord.x())));
     half_world_size.SetY(std::max(std::abs(min_coord.y()), std::abs(max_coord.y())));
     half_world_size.SetZ(std::max(std::abs(min_coord.z()), std::abs(max_coord.z())));
