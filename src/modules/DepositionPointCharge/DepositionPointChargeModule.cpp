@@ -279,9 +279,9 @@ void DepositionPointChargeModule::run(Event* event) {
     } else {
         // Calculate random offset from configured position
         auto shift = [&](auto size) {
-            double const dx = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
-            double const dy = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
-            double const dz = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+            const double dx = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+            const double dy = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+            const double dz = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
             return ROOT::Math::XYZVector(dx, dy, dz);
         };
 
@@ -356,8 +356,8 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
     // End point is the intersection along the line to the box. Start position is also that, but in the other direction.
     // The given position is a point the line intersects. Need to extrapolate to surfaces using this
     auto [start_local, end_local] = SensorIntersection(position);
-    ROOT::Math::XYZPoint const start_global = detector_->getGlobalPosition(start_local);
-    ROOT::Math::XYZPoint const end_global = detector_->getGlobalPosition(end_local);
+    const ROOT::Math::XYZPoint start_global = detector_->getGlobalPosition(start_local);
+    const ROOT::Math::XYZPoint end_global = detector_->getGlobalPosition(end_local);
 
     // Total number of carriers will be:
     auto charge = static_cast<unsigned int>(carriers_ * sqrt((end_local - start_local).Mag2()) / step_size_);

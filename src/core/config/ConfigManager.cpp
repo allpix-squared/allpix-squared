@@ -46,7 +46,7 @@ ConfigManager::ConfigManager(Configuration header,
     // Store all module configurations
     for(const auto& config : modules) {
         // Skip all ignored sections
-        std::string const config_name = allpix::transform(config.getName(), ::tolower);
+        const std::string config_name = allpix::transform(config.getName(), ::tolower);
         if(ignore_names_.find(config_name) != ignore_names_.end()) {
             continue;
         }

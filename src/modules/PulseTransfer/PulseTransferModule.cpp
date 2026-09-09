@@ -89,7 +89,7 @@ void PulseTransferModule::initialize() {
         LOG(TRACE) << "Creating output plots";
 
         // Plot axis are in kilo electrons - convert from framework units!
-        int const maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+        const int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
@@ -185,7 +185,7 @@ void PulseTransferModule::run(Event* event) {
                 continue;
             }
 
-            Pixel::Index const pixel_index(xpixel, ypixel);
+            const Pixel::Index pixel_index(xpixel, ypixel);
 
             // Generate pseudo-pulse:
             Pulse pulse(timestep_);
@@ -248,16 +248,16 @@ void PulseTransferModule::run(Event* event) {
         }
 
         // Store the pulse:
-        std::vector<const PropagatedCharge*> const pixel_charge_vec(pixel_charge_map[index].begin(),
+        const std::vector<const PropagatedCharge*> pixel_charge_vec(pixel_charge_map[index].begin(),
                                                                     pixel_charge_map[index].end());
         LOG(DEBUG) << "Charge on pixel " << index << " has " << pixel_charge_vec.size() << " ancestors";
         pixel_charges.emplace_back(detector_->getPixel(index), std::move(pulse), pixel_charge_vec);
     }
 
     if(output_pulsegraphs_) {
-        std::string const name = "chargemap_ev" + std::to_string(event->number);
+        const std::string name = "chargemap_ev" + std::to_string(event->number);
         auto size = detector_->getModel()->getNPixels();
-        std::string const title =
+        const std::string title =
             "Map of accumulated induced charge in event " + std::to_string(event->number) + ";x (pixels);y (pixels);charge";
         auto* charge_map = new TH2D(name.c_str(),
                                     title.c_str(),

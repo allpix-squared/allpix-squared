@@ -189,7 +189,7 @@ void DefaultDigitizerModule::initialize() {
             h_pxq_adc_smear = CreateHistogram<TH1D>(
                 "pixelcharge_adc_smeared", "pixel charge after ADC smearing;pixel charge [ke];pixels", nbins, 0, maximum);
 
-            int const adcbins = (1 << qdc_resolution_);
+            const int adcbins = (1 << qdc_resolution_);
             h_pxq_adc = CreateHistogram<TH1D>(
                 "pixelcharge_adc", "pixel charge after QDC;pixel charge [QDC];pixels", adcbins, 0, adcbins);
             h_calibration =
@@ -217,7 +217,7 @@ void DefaultDigitizerModule::initialize() {
                                                    0,
                                                    time_maximum);
 
-            int const adcbins = (1 << tdc_resolution_);
+            const int adcbins = (1 << tdc_resolution_);
             h_px_tdc = CreateHistogram<TH1D>(
                 "pixel_tdc", "pixel time-of-arrival after TDC;pixel ToA [TDC];pixels", adcbins, 0, adcbins);
             h_toa_calibration = CreateHistogram<TH2D>(
@@ -312,7 +312,7 @@ void DefaultDigitizerModule::run(Event* event) {
 
         // Smear the threshold, Gaussian distribution around "threshold" with width "threshold_smearing"
         allpix::normal_distribution<double> thr_smearing(threshold_, threshold_smearing_);
-        double const threshold = thr_smearing(event->getRandomEngine());
+        const double threshold = thr_smearing(event->getRandomEngine());
         if(output_plots_) {
             h_thr->Fill(threshold / 1e3);
         }

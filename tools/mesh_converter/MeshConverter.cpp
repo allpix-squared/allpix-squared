@@ -194,7 +194,7 @@ int main(int argc, char** argv) {
         // Output file format:
         auto format = config.get<std::string>("model", "apf");
         std::transform(format.begin(), format.end(), format.begin(), ::tolower);
-        FileType const file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
+        const FileType file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
         if(file_type == FileType::UNKNOWN) {
             throw allpix::InvalidValueError(config, "model", "only models 'apf' and 'init' are currently supported");
         }
@@ -228,7 +228,7 @@ int main(int argc, char** argv) {
 
         auto start = std::chrono::system_clock::now();
 
-        std::string const grid_file = file_prefix + ".grd";
+        const std::string grid_file = file_prefix + ".grd";
         std::vector<Point> points = parser->getMesh(grid_file, regions);
 
         // Obtain number of mesh dimensions from mesh point:
@@ -247,7 +247,7 @@ int main(int argc, char** argv) {
             throw allpix::InvalidValueError(config, "xyz", "For 2D meshes the first coordinate has to remain 'x'");
         }
 
-        std::string const data_file = file_prefix + ".dat";
+        const std::string data_file = file_prefix + ".dat";
         std::vector<Point> field = parser->getField(data_file, observable, regions);
 
         if(points.size() != field.size()) {
@@ -513,14 +513,14 @@ int main(int argc, char** argv) {
         LOG(INFO) << "New mesh created in " << elapsed_seconds << " seconds.";
 
         // Prepare header and auxiliary information:
-        std::string const header =
+        const std::string header =
             "Allpix Squared " + std::string(ALLPIX_PROJECT_VERSION) + " TCAD Mesh Converter, observable: " + observable;
-        std::array<double, 3> const size{
+        const std::array<double, 3> size{
             {Units::get(maxx - minx, "um"), Units::get(maxy - miny, "um"), Units::get(maxz - minz, "um")}};
-        std::array<size_t, 3> const gridsize{
+        const std::array<size_t, 3> gridsize{
             {static_cast<size_t>(divisions.x()), static_cast<size_t>(divisions.y()), static_cast<size_t>(divisions.z())}};
 
-        FieldQuantity const quantity = (vector_field ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
+        const FieldQuantity quantity = (vector_field ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
         // Prepare data:
         LOG(INFO) << "Preparing data for storage...";
         auto data = std::make_shared<std::vector<double>>();
@@ -550,8 +550,8 @@ int main(int argc, char** argv) {
             }
         }
 
-        allpix::FieldData<double> const field_data(header, gridsize, size, data);
-        std::string const init_file_name =
+        const allpix::FieldData<double> field_data(header, gridsize, size, data);
+        const std::string init_file_name =
             init_file_prefix + "_" + observable + (file_type == FileType::INIT ? ".init" : ".apf");
 
         allpix::FieldWriter<double> field_writer(quantity);

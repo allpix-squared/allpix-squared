@@ -84,7 +84,7 @@ allpix::Units::UnitType Units::get(const std::string& str) {
     // Go through all units
     char lst = '*';
     std::string unit;
-    for(char const ch : str) {
+    for(const char ch : str) {
         if(ch == '*' || ch == '/') {
             if(lst == '*') {
                 ret_value = getSingle(ret_value, unit);
@@ -115,7 +115,7 @@ allpix::Units::UnitType Units::convert(UnitType input, std::string str) {
     // Go through all units
     char lst = '*';
     std::string unit;
-    for(char const ch : str) {
+    for(const char ch : str) {
         if(ch == '*' || ch == '/') {
             if(lst == '*') {
                 input = getSingleInverse(input, unit);
@@ -157,7 +157,7 @@ std::string Units::display(UnitType input, std::initializer_list<std::string> un
     int best_exponent = std::numeric_limits<int>::min();
     std::string best_unit;
     for(const auto& unit : units) {
-        Units::UnitType const value = convert(input, unit);
+        const Units::UnitType value = convert(input, unit);
         int exponent = 0;
         std::frexp(value, &exponent);
         if((best_exponent <= 0 && exponent > best_exponent) || (exponent > 0 && exponent < best_exponent)) {

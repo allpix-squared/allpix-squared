@@ -393,9 +393,9 @@ std::pair<XYZPoint, Rotation3D> GeometryManager::calculate_orientation(const Con
 
     // Calculate possible detector misalignment to be added
     auto misalignment = [&](auto residuals) {
-        double const dx = allpix::normal_distribution<double>(0, residuals.x())(random_generator_);
-        double const dy = allpix::normal_distribution<double>(0, residuals.y())(random_generator_);
-        double const dz = allpix::normal_distribution<double>(0, residuals.z())(random_generator_);
+        const double dx = allpix::normal_distribution<double>(0, residuals.x())(random_generator_);
+        const double dy = allpix::normal_distribution<double>(0, residuals.y())(random_generator_);
+        const double dz = allpix::normal_distribution<double>(0, residuals.z())(random_generator_);
         return DisplacementVector3D<Cartesian3D<double>>(dx, dy, dz);
     };
 

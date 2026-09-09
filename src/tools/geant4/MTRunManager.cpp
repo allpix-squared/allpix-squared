@@ -57,7 +57,7 @@ void MTRunManager::Initialize() {
 
     G4MTRunManager::Initialize();
 
-    G4bool const cond = ConfirmBeamOnCondition();
+    const G4bool cond = ConfirmBeamOnCondition();
     if(cond) {
         G4MTRunManager::ConstructScoringWorlds();
         G4MTRunManager::RunInitialization();

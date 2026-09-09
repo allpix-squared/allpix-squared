@@ -78,7 +78,7 @@ bool TextWriterModule::filter(const std::shared_ptr<BaseMessage>& message, const
         auto object_array = message->getObjectArray();
         if(!object_array.empty()) {
             const Object& first_object = object_array[0];
-            std::string const class_name = allpix::demangle(typeid(first_object).name());
+            const std::string class_name = allpix::demangle(typeid(first_object).name());
 
             // Check if this message should be kept
             if((!include_.empty() && include_.find(class_name) == include_.end()) ||

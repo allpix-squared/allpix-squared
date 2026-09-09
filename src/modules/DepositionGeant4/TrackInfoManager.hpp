@@ -89,7 +89,7 @@ namespace allpix {
          * @return Const pointer to the MCTrack object or a nullptr if track_id is not found
          * @warning Results are invalidated by any reallocation iof the internal #stored_tracks_ vector
          */
-        MCTrack const* findMCTrack(int track_id) const;
+        const MCTrack* findMCTrack(int track_id) const;
 
     private:
         /**
@@ -118,7 +118,7 @@ namespace allpix {
         // Ids ins same order as tracks stored in #stored_tracks_
         std::vector<int> stored_track_ids_;
         // Id to index in #stored_tracks_ for easier handling
-        std::map<int, MCTrack const*> id_to_track_;
+        std::map<int, const MCTrack*> id_to_track_;
     };
 } // namespace allpix
 #endif /* TrackInfoManager_H */

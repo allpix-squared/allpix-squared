@@ -133,7 +133,7 @@ void ThreadPool::worker(size_t min_thread_buffer,
                 // Fetch the future to propagate exceptions
                 task->get_future().get();
                 // Update the run count and propagate update
-                std::unique_lock<std::mutex> const lock{run_mutex_};
+                const std::unique_lock<std::mutex> lock{run_mutex_};
                 if(--run_cnt_ == 0) {
                     run_condition_.notify_all();
                 }
@@ -146,7 +146,7 @@ void ThreadPool::worker(size_t min_thread_buffer,
         }
     } catch(...) {
         // Check if the first exception thrown
-        std::unique_lock<std::mutex> const lock{run_mutex_};
+        const std::unique_lock<std::mutex> lock{run_mutex_};
         if(!has_exception_.test_and_set()) {
             // Save the first exception
             exception_ptr_ = std::current_exception();

@@ -142,12 +142,12 @@ int main(int argc, char** argv) {
         LOG(STATUS) << "Welcome to the Mesh Plotter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
         LOG(STATUS) << "Reading file: " << file_name;
 
-        size_t const firstindex = file_name.find_last_of('_');
-        size_t const lastindex = file_name.find_last_of('.');
-        std::string const observable = file_name.substr(firstindex + 1, lastindex - (firstindex + 1));
+        const size_t firstindex = file_name.find_last_of('_');
+        const size_t lastindex = file_name.find_last_of('.');
+        const std::string observable = file_name.substr(firstindex + 1, lastindex - (firstindex + 1));
 
         // FIXME this should be done in a more elegant way
-        FieldQuantity const quantity = (scalar_field ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
+        const FieldQuantity quantity = (scalar_field ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
 
         FieldParser<double> field_parser(quantity);
         auto field_data = field_parser.getByFileName(file_name, units);

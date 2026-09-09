@@ -259,20 +259,20 @@ void ProjectionPropagationModule::run(Event* event) {
                 if(!diffuse_deposit_) {
                     continue;
                 }
-                double const diffusion_constant = boltzmann_kT_ * (*mobility_)(type, efield_mag, doping);
-                double const diffusion_std_dev = std::sqrt(2. * diffusion_constant * integration_time_);
+                const double diffusion_constant = boltzmann_kT_ * (*mobility_)(type, efield_mag, doping);
+                const double diffusion_std_dev = std::sqrt(2. * diffusion_constant * integration_time_);
                 LOG(TRACE) << "Diffusion width of this charge carrier is " << Units::display(diffusion_std_dev, "um");
 
                 allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-                double const diffusion_x = gauss_distribution(event->getRandomEngine());
-                double const diffusion_y = gauss_distribution(event->getRandomEngine());
-                double const diffusion_z = gauss_distribution(event->getRandomEngine());
+                const double diffusion_x = gauss_distribution(event->getRandomEngine());
+                const double diffusion_y = gauss_distribution(event->getRandomEngine());
+                const double diffusion_z = gauss_distribution(event->getRandomEngine());
                 auto diffusion_vec = ROOT::Math::XYZVector(diffusion_x, diffusion_y, diffusion_z);
 
                 auto local_position_diffusion = position + diffusion_vec;
 
                 auto efield_diffusion = detector_->getElectricField(local_position_diffusion);
-                double const efield_mag_diffusion = std::sqrt(efield_diffusion.Mag2());
+                const double efield_mag_diffusion = std::sqrt(efield_diffusion.Mag2());
 
                 if(efield_mag_diffusion < std::numeric_limits<double>::epsilon() &&
                    (detector_->getModel()->isWithinSensor(position))) {
@@ -295,7 +295,7 @@ void ProjectionPropagationModule::run(Event* event) {
                         return stop;
                     }
                     auto efield_center = detector_->getElectricField((stop + ROOT::Math::XYZVector(start)) / 2.);
-                    double const efield_center_mag = std::sqrt(efield_center.Mag2());
+                    const double efield_center_mag = std::sqrt(efield_center.Mag2());
                     if(efield_center_mag > std::numeric_limits<double>::epsilon()) {
                         return interval(start, (stop + ROOT::Math::XYZVector(start)) / 2.);
                     }
@@ -341,7 +341,7 @@ void ProjectionPropagationModule::run(Event* event) {
                     return 0.;
                 }
 
-                double const Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
+                const double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
 
                 return ((log(efield_mag_top) - log(efield_mag)) / slope_efield + std::abs(top_z_ - position.z()) / Ec) /
                        (*mobility_)(type, 0, doping);
@@ -349,11 +349,11 @@ void ProjectionPropagationModule::run(Event* event) {
             LOG(TRACE) << "Electric field is " << Units::display(efield_mag, "V/cm");
 
             // Assume linear electric field over the depleted part of the sensor
-            double const diffusion_constant =
+            const double diffusion_constant =
                 boltzmann_kT_ * ((*mobility_)(type, efield_mag, doping) + (*mobility_)(type, efield_mag_top, doping)) / 2.;
 
-            double const drift_time = calc_drift_time();
-            double const propagation_time = drift_time + diffusion_time;
+            const double drift_time = calc_drift_time();
+            const double propagation_time = drift_time + diffusion_time;
             LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
 
             if(output_plots_) {
@@ -364,11 +364,11 @@ void ProjectionPropagationModule::run(Event* event) {
                 }
             }
 
-            double const diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
+            const double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
             LOG(TRACE) << "Diffusion width is " << Units::display(diffusion_std_dev, "um");
 
             // Check if charge carrier is still alive via its survival probability, evaluated once
-            allpix::uniform_real_distribution<double> const survival(0, 1);
+            const allpix::uniform_real_distribution<double> survival(0, 1);
             if(recombination_(
                    type, detector_->getDopingConcentration(position), survival(event->getRandomEngine()), drift_time)) {
                 LOG(DEBUG) << "Recombined " << charge_per_step << " charge carriers (" << type << ") at "
@@ -378,8 +378,8 @@ void ProjectionPropagationModule::run(Event* event) {
             }
 
             allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-            double const diffusion_x = gauss_distribution(event->getRandomEngine());
-            double const diffusion_y = gauss_distribution(event->getRandomEngine());
+            const double diffusion_x = gauss_distribution(event->getRandomEngine());
+            const double diffusion_y = gauss_distribution(event->getRandomEngine());
 
             // Find projected position
             auto local_position = ROOT::Math::XYZPoint(position.x() + diffusion_x, position.y() + diffusion_y, top_z_);

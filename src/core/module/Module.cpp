@@ -126,7 +126,7 @@ Module::createOutputFile(const std::string& pathname, const std::string& extensi
         }
 
         // Open the file to check if it can be accessed
-        std::fstream const file_stream(file, std::ios_base::out | std::ios_base::app);
+        const std::fstream file_stream(file, std::ios_base::out | std::ios_base::app);
         if(!file_stream.good()) {
             throw ModuleError("File " + file.string() + " not accessible");
         }

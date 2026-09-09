@@ -84,7 +84,7 @@ int main(int argc, const char* argv[]) {
     std::vector<std::string> detector_options;
 
     for(int i = 1; i < argc; i++) {
-        std::string const arg = argv[i];
+        const std::string arg = argv[i];
 
         if(arg == "-h") {
             print_help = true;
@@ -110,7 +110,7 @@ int main(int argc, const char* argv[]) {
             std::array<char, 0x40> cpu_string{};
             std::array<unsigned int, 4> cpu_info = {0, 0, 0, 0};
             __cpuid(0x80000000, cpu_info[0], cpu_info[1], cpu_info[2], cpu_info[3]);
-            unsigned int const n_ex_ids = cpu_info[0];
+            const unsigned int n_ex_ids = cpu_info[0];
             memset(cpu_string.data(), 0, sizeof(cpu_string));
             for(unsigned int j = 0x80000000; j <= n_ex_ids; ++j) {
                 __cpuid(j, cpu_info[0], cpu_info[1], cpu_info[2], cpu_info[3]);
@@ -138,7 +138,7 @@ int main(int argc, const char* argv[]) {
             return 0;
         } else if(arg == "-v" && (i + 1 < argc)) {
             try {
-                LogLevel const log_level = Log::getLevelFromString(std::string(argv[++i]));
+                const LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
                 Log::setReportingLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";

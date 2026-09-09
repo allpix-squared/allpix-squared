@@ -143,9 +143,9 @@ G4Event* WorkerRunManager::GenerateEvent(G4int /*i_event*/) {
         if(!runIsSeeded) {
             // Seeds are stored in this queue to ensure we can reproduce the results of events
             // each event will reseed the random number generator
-            long const s1 = seedsQueue.front();
+            const long s1 = seedsQueue.front();
             seedsQueue.pop();
-            long const s2 = seedsQueue.front();
+            const long s2 = seedsQueue.front();
             seedsQueue.pop();
 
             // Seed RNG for this run only once
@@ -172,7 +172,7 @@ WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() { // NOLINT
     // Initliazie per-thread stream-output
     // The following line is needed before we actually do I/O initialization
     // because the constructor of UI manager resets the I/O destination.
-    G4int const this_id = counter.fetch_add(1);
+    const G4int this_id = counter.fetch_add(1);
     G4Threading::G4SetThreadId(this_id);
     G4UImanager::GetUIpointer()->SetUpForAThread(this_id);
 
@@ -233,7 +233,7 @@ WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() { // NOLINT
 
 void WorkerRunManager::AbortRun(bool softAbort) {
     // This method is valid only for GeomClosed or EventProc state
-    G4ApplicationState const currentState = G4StateManager::GetStateManager()->GetCurrentState();
+    const G4ApplicationState currentState = G4StateManager::GetStateManager()->GetCurrentState();
     if(currentState == G4State_GeomClosed || currentState == G4State_EventProc) {
         runAborted = true;
         if(currentState == G4State_EventProc && !softAbort) {

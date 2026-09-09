@@ -63,7 +63,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
     /*
     Build the individual detectors
     */
-    std::vector<std::shared_ptr<Detector>> const detectors = geo_manager_->getDetectors();
+    const std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
     LOG(TRACE) << "Building " << detectors.size() << " device(s)";
 
     for(auto& detector : detectors) {
@@ -73,7 +73,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         // Get pointer to the model of the detector
         auto model = detector->getModel();
 
-        std::string const name = detector->getName();
+        const std::string name = detector->getName();
         LOG(DEBUG) << "Creating Geant4 model for " << name;
         LOG(DEBUG) << " Wrapper dimensions of model: " << Units::display(model->getSize(), {"mm", "um"});
         LOG(TRACE) << " Sensor dimensions: " << Units::display(model->getSensorSize(), {"mm", "um"});
@@ -129,7 +129,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         // Get position and orientation
         auto position = detector->getPosition();
         LOG(DEBUG) << " - Position\t\t:\t" << Units::display(position, {"mm", "um"});
-        ROOT::Math::Rotation3D const orientation = detector->getOrientation();
+        const ROOT::Math::Rotation3D orientation = detector->getOrientation();
         std::vector<double> copy_vec(9);
         orientation.GetComponents(copy_vec.begin(), copy_vec.end());
         ROOT::Math::XYZPoint vx;
@@ -149,9 +149,9 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         auto wrapperGeoTranslation = toG4Vector(model->getMatrixCenter() - model->getModelCenter());
         wrapperGeoTranslation += *model_translation;
         wrapperGeoTranslation *= *rotWrapper;
-        G4ThreeVector const posWrapper = toG4Vector(position) - wrapperGeoTranslation;
+        const G4ThreeVector posWrapper = toG4Vector(position) - wrapperGeoTranslation;
         geo_manager_->setExternalObject(name, "rotation_matrix", rotWrapper);
-        G4Transform3D const transform_phys(*rotWrapper, posWrapper);
+        const G4Transform3D transform_phys(*rotWrapper, posWrapper);
 
         G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
         G4LogicalVolume* world_log_volume = log_volume_store->GetVolume("world_log");
@@ -317,7 +317,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
 
                 solids_.push_back(hole_solid);
 
-                G4Transform3D const transform(G4RotationMatrix(), toG4Vector(layer.getHoleCenter() - layer.getCenter()));
+                const G4Transform3D transform(G4RotationMatrix(), toG4Vector(layer.getHoleCenter() - layer.getCenter()));
                 auto subtraction_solid = make_shared_no_delete<G4SubtractionSolid>("support_" + name + "_subtraction_" +
                                                                                        std::to_string(support_idx),
                                                                                    support_box.get(),
@@ -389,7 +389,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
             geo_manager_->setExternalObject(name, "bumps_wrapper_log", bumps_wrapper_log);
 
             // Place the general bumps volume
-            G4ThreeVector const bumps_pos =
+            const G4ThreeVector bumps_pos =
                 toG4Vector(hybrid_chip->getBumpsOffset() +
                            ROOT::Math::XYZVector(0, 0, model->getSensorSize().z() / 2.0 - model->getModelCenter().z()));
             LOG(DEBUG) << "  - Bumps\t\t:\t" << Units::display(bumps_pos, {"mm", "um"});
@@ -425,7 +425,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                 (relativeArea * hybrid_chip->getBumpHeight() / bumps_cell_log->GetMaterial()->GetRadlen());
 
             // Place the bump bonds grid
-            std::shared_ptr<G4VPVParameterisation> const bumps_param = std::make_shared<Parameterization2DG4>(
+            const std::shared_ptr<G4VPVParameterisation> bumps_param = std::make_shared<Parameterization2DG4>(
                 model->getNPixels().x(),
                 model->getPixelSize().x(),
                 model->getPixelSize().y(),

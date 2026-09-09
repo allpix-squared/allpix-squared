@@ -56,7 +56,7 @@ int main(int argc, const char* argv[]) {
                 print_help = true;
             } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
                 try {
-                    LogLevel const log_level = Log::getLevelFromString(std::string(argv[++i]));
+                    const LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
                     Log::setReportingLevel(log_level);
                 } catch(std::invalid_argument& e) {
                     LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
@@ -104,7 +104,7 @@ int main(int argc, const char* argv[]) {
             return return_code;
         }
 
-        FieldQuantity const quantity = (scalar ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
+        const FieldQuantity quantity = (scalar ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
 
         FieldParser<double> field_parser(quantity);
         LOG(STATUS) << "Reading input file from " << file_input;

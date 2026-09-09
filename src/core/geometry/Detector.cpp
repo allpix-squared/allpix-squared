@@ -73,15 +73,15 @@ void Detector::set_model(std::shared_ptr<DetectorModel> model) {
 }
 void Detector::build_transform() {
     // Transform from locally centered to global coordinates
-    ROOT::Math::Translation3D const translation_center(static_cast<ROOT::Math::XYZVector>(position_));
-    ROOT::Math::Rotation3D const rotation_center(orientation_);
+    const ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(position_));
+    const ROOT::Math::Rotation3D rotation_center(orientation_);
     // Transformation from locally centered into global coordinate system, consisting of
     // * The rotation into the global coordinate system
     // * The shift from the origin to the detector position
-    ROOT::Math::Transform3D const transform_center(rotation_center, translation_center);
+    const ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
     // Transform from locally centered to local coordinates
-    ROOT::Math::Translation3D const translation_local(static_cast<ROOT::Math::XYZVector>(model_->getMatrixCenter()));
-    ROOT::Math::Transform3D const transform_local(translation_local);
+    const ROOT::Math::Translation3D translation_local(static_cast<ROOT::Math::XYZVector>(model_->getMatrixCenter()));
+    const ROOT::Math::Transform3D transform_local(translation_local);
     // Compute total transform local to global by first transforming local to locally centered and then to global coordinates
     transform_ = transform_center * transform_local.Inverse();
 }
@@ -102,7 +102,7 @@ ROOT::Math::XYZPoint Detector::getGlobalPosition(const ROOT::Math::XYZPoint& loc
  * The pixel has internal information about the size and location specific for this detector
  */
 Pixel Detector::getPixel(int x, int y) const {
-    Pixel::Index const index(x, y);
+    const Pixel::Index index(x, y);
     return getPixel(index);
 }
 

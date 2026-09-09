@@ -78,7 +78,7 @@ void TrackInfoManager::dispatchMessage(Module* module, Messenger* messenger, Eve
     set_all_track_parents();
     IFLOG(DEBUG) {
         LOG(DEBUG) << "Dispatching " << stored_tracks_.size() << " MCTrack(s) from TrackInfoManager::dispatchMessage()";
-        for(auto const& mc_track : stored_tracks_) {
+        for(const auto& mc_track : stored_tracks_) {
             LOG(DEBUG) << "MCTrack originates at: " << Units::display(mc_track.getStartPoint(), {"mm", "um"})
                        << " and terminates at: " << Units::display(mc_track.getEndPoint(), {"mm", "um"});
         }
@@ -87,7 +87,7 @@ void TrackInfoManager::dispatchMessage(Module* module, Messenger* messenger, Eve
     messenger->dispatchMessage(module, std::move(mc_track_message), event);
 }
 
-MCTrack const* TrackInfoManager::findMCTrack(int track_id) const {
+const MCTrack* TrackInfoManager::findMCTrack(int track_id) const {
     auto it = id_to_track_.find(track_id);
     return (it == id_to_track_.end()) ? nullptr : it->second;
 }

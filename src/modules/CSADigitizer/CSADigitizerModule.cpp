@@ -226,7 +226,7 @@ void CSADigitizerModule::initialize() {
         LOG(TRACE) << "Creating output plots";
 
         // Plot axis are in kilo electrons - convert from framework units!
-        int const maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+        const int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
@@ -323,7 +323,7 @@ void CSADigitizerModule::run(Event* event) {
             double outsum{};
             // Convolution: multiply pulse.at(k - i) * impulse_response_function_.at(i), when (k - i) < input length
             // -> no point to start i at 0, start from jmin:
-            size_t const jmin = (k >= pulse.size() - 1) ? k - (pulse.size() - 1) : 0;
+            const size_t jmin = (k >= pulse.size() - 1) ? k - (pulse.size() - 1) : 0;
             for(size_t i = jmin; i <= k; ++i) {
                 outsum += pulse.at(k - i) * impulse_response_function_.at(i);
             }
@@ -488,7 +488,7 @@ void CSADigitizerModule::create_output_pulsegraphs(const std::string& s_event_nu
     std::transform(
         plot_pulse_vec.begin(), plot_pulse_vec.end(), pulse_in_mV.begin(), [](auto& c) { return Units::convert(c, "mV"); });
 
-    std::string const name = s_name + "_ev" + s_event_num + "_px" + s_pixel_index;
+    const std::string name = s_name + "_ev" + s_event_num + "_px" + s_pixel_index;
     auto* csa_pulse_graph = new TGraph(static_cast<int>(pulse_in_mV.size()), amptime.data(), pulse_in_mV.data());
     csa_pulse_graph->GetXaxis()->SetTitle("t [ns]");
     csa_pulse_graph->GetYaxis()->SetTitle("CSA output [mV]");

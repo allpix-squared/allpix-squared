@@ -119,7 +119,7 @@ bool MeshElement::isValid(double volume_cut, Point& qp) const {
 Point MeshElement::getObservable(Point& qp) const {
     Point new_observable;
     for(size_t index = 0; index < dimension_ + 1; index++) {
-        double const sub_volume = get_sub_volume(index, qp);
+        const double sub_volume = get_sub_volume(index, qp);
         LOG(DEBUG) << "Sub volume " << index << ": " << sub_volume;
         new_observable.x = new_observable.x + (sub_volume * e_field_[index].x) / volume_;
         new_observable.y = new_observable.y + (sub_volume * e_field_[index].y) / volume_;

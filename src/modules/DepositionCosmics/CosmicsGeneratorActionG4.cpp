@@ -89,7 +89,7 @@ void CosmicsGeneratorActionG4::GeneratePrimaries(G4Event* event) {
             G4ThreeVector(particle->x() * CLHEP::m, particle->y() * CLHEP::m, particle->z() * CLHEP::m));
         particle_gun_->SetParticleMomentumDirection(G4ThreeVector(particle->u(), particle->v(), particle->w()));
 
-        double const time = (reset_particle_time_ ? 0. : particle->t() - event_starting_time);
+        const double time = (reset_particle_time_ ? 0. : particle->t() - event_starting_time);
         particle_gun_->SetParticleTime(time);
         particle_gun_->GeneratePrimaryVertex(event);
 

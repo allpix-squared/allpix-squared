@@ -114,8 +114,8 @@ void PassiveMaterialModel::buildVolume(const std::shared_ptr<G4LogicalVolume>& w
         throw InvalidValueError(config_, "mother_volume", "mother_volume does not exist");
     }
 
-    G4ThreeVector const position_vector = toG4Vector(position_);
-    G4Transform3D const transform_phys(*rotation_, position_vector);
+    const G4ThreeVector position_vector = toG4Vector(position_);
+    const G4Transform3D transform_phys(*rotation_, position_vector);
 
     auto& materials = Materials::getInstance();
     auto material = config_.get<std::string>("material");

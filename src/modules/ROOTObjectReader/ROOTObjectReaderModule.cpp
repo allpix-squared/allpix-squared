@@ -105,7 +105,7 @@ template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCre
  */
 template <template <typename...> class T, typename... Args>
 static void gen_creator_map_from_tag(ROOTObjectReaderModule::MessageCreatorMap& map, type_tag<T<Args...>> /*unused*/) {
-    std::initializer_list<int> const value{(add_creator<Args>(map), 0)...};
+    const std::initializer_list<int> value{(add_creator<Args>(map), 0)...};
     (void)value;
 }
 
@@ -257,8 +257,8 @@ void ROOTObjectReaderModule::initialize() {
                 throw ModuleError("Tree is malformed and cannot be used for creating messages");
             }
             std::string class_name = split_type[1].substr(0, split_type[1].size() - 1);
-            std::string const apx_namespace = "allpix::";
-            size_t const ap_idx = class_name.find(apx_namespace);
+            const std::string apx_namespace = "allpix::";
+            const size_t ap_idx = class_name.find(apx_namespace);
             if(ap_idx != std::string::npos) {
                 class_name.replace(ap_idx, apx_namespace.size(), "");
             }
