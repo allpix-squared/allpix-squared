@@ -84,7 +84,7 @@ const MCParticle* PropagatedCharge::getMCParticle() const {
     return mc_particle;
 }
 
-std::map<Pixel::Index, Pulse> const& PropagatedCharge::getPulses() const { return pulses_; }
+const std::map<Pixel::Index, Pulse>& PropagatedCharge::getPulses() const { return pulses_; }
 
 CarrierState PropagatedCharge::getState() const { return state_; }
 

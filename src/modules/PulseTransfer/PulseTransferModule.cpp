@@ -112,7 +112,7 @@ void PulseTransferModule::run(Event* event) {
             continue;
         }
 
-        auto const& pulses = propagated_charge.getPulses();
+        const auto& pulses = propagated_charge.getPulses();
 
         if(pulses.empty()) {
             LOG_ONCE(INFO) << "No pulse information available - producing pseudo-pulse from arrival time of charge carriers";
@@ -182,7 +182,7 @@ void PulseTransferModule::run(Event* event) {
             LOG_ONCE(INFO) << "Pulses available - settings \"timestep\", \"max_depth_distance\" and "
                               "\"collect_from_implant\" have no effect";
 
-            for(auto const& [pixel_index, pulse] : pulses) {
+            for(const auto& [pixel_index, pulse] : pulses) {
                 // Accumulate all pulses from input message data:
                 pixel_pulse_map[pixel_index] += pulse;
 
