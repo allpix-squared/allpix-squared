@@ -37,7 +37,7 @@ namespace allpix {
      */
 #define LOG(level)                                                                                                          \
     if(!::allpix::log_context::active().shouldLog(::allpix::Level::level)) {                                                \
-    } else                                                                                                                  \
+    } else /* NOLINT(readability-inconsistent-ifelse-braces) */                                                             \
         ::allpix::log_context::active().log(::allpix::Level::level, std::source_location::current())
 
     /**
@@ -48,7 +48,7 @@ namespace allpix {
      */
 #define LOG_PROGRESS(level, identifier)                                                                                     \
     if(!::allpix::log_context::active().shouldLog(::allpix::Level::level)) {                                                \
-    } else                                                                                                                  \
+    } else /* NOLINT(readability-inconsistent-ifelse-braces) */                                                             \
         ::allpix::log_context::active().logProgress(::allpix::Level::level, std::source_location::current())
 
     /**
@@ -80,7 +80,7 @@ namespace allpix {
 #define LOG_N(level, max_log_count)                                                                                         \
     GENERATE_LOG_VAR(max_log_count);                                                                                        \
     if(!(GET_LOG_VARIABLE() > 0 && ::allpix::log_context::active().shouldLog(::allpix::Level::level))) {                    \
-    } else                                                                                                                  \
+    } else /* NOLINT(readability-inconsistent-ifelse-braces) */                                                             \
         ::allpix::log_context::active().log(::allpix::Level::level, std::source_location::current())                        \
             << ((--GET_LOG_VARIABLE() == 0) ? "[further messages suppressed] " : "")
     // NOLINTEND(cppcoreguidelines-macro-usage)
