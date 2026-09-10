@@ -44,7 +44,8 @@ namespace allpix {
         class LevelFormatter final : public spdlog::custom_flag_formatter {
         public:
             LevelFormatter(bool short_form, bool colored);
-            void format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) override;
+            void
+            format(const spdlog::details::log_msg& msg, const std::tm& /*tm_time*/, spdlog::memory_buf_t& dest) override;
             std::unique_ptr<custom_flag_formatter> clone() const override;
 
         private:
@@ -58,7 +59,8 @@ namespace allpix {
         class EventFormatter final : public spdlog::custom_flag_formatter {
         public:
             explicit EventFormatter(bool short_form);
-            void format(const spdlog::details::log_msg&, const std::tm&, spdlog::memory_buf_t& dest) override;
+            void
+            format(const spdlog::details::log_msg& /*msg*/, const std::tm& /*tm_time*/, spdlog::memory_buf_t& dest) override;
             std::unique_ptr<custom_flag_formatter> clone() const override;
 
         private:
@@ -71,7 +73,8 @@ namespace allpix {
         class SectionFormatter final : public spdlog::custom_flag_formatter {
         public:
             explicit SectionFormatter(bool colored);
-            void format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) override;
+            void
+            format(const spdlog::details::log_msg& msg, const std::tm& /*tm_time*/, spdlog::memory_buf_t& dest) override;
             std::unique_ptr<custom_flag_formatter> clone() const override;
 
         private:
@@ -84,7 +87,8 @@ namespace allpix {
          */
         class MessageFormatter final : public spdlog::custom_flag_formatter {
         public:
-            void format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) override;
+            void
+            format(const spdlog::details::log_msg& msg, const std::tm& /*tm_time*/, spdlog::memory_buf_t& dest) override;
             std::unique_ptr<custom_flag_formatter> clone() const override;
 
         private:
@@ -127,7 +131,7 @@ namespace allpix {
         std::unique_ptr<spdlog::pattern_formatter> make_formatter(Format format, SinkStyle style);
 
     private:
-        std::ostream& stream_;
+        std::ostream& stream_; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
         SinkStyle style_;
         bool progress_active_ = false;
     };

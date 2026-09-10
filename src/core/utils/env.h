@@ -9,7 +9,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#pragma once
+#ifndef ALLPIX_ENV_H
+#define ALLPIX_ENV_H
 
 #include <cstdlib>
 #include <mutex>
@@ -38,3 +39,5 @@ namespace allpix {
     }
 
 } // namespace allpix
+
+#endif /* ALLPIX_ENV_H */

@@ -29,7 +29,7 @@ WarningsAsErrors: '*'
 HeaderFileExtensions: ['', 'h', 'hpp', 'tpp']
 CheckOptions:
   misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: 'true'
-  misc-include-cleaner.IgnoreHeaders: 'Eigen/*;Math/*;G4*'
+  misc-include-cleaner.IgnoreHeaders: 'Eigen/*;Math/*;G4*;spdlog/*'
   modernize-use-override.IgnoreDestructors: 'true'
   cppcoreguidelines-avoid-do-while.IgnoreMacros: 'true'
   readability-identifier-naming.NamespaceCase: lower_case
