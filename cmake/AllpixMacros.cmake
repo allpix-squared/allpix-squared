@@ -296,6 +296,9 @@ FUNCTION(add_allpix_test)
         STRING(REPLACE " " ";" TESTDATA ${TESTDATA})
         SET_PROPERTY(TEST ${TEST_NAME} PROPERTY REQUIRED_FILES "${TESTDATA}")
     ENDIF()
+
+    # Disable color for the test:
+    SET_PROPERTY(TEST ${TEST_NAME} PROPERTY ENVIRONMENT NO_COLOR=1)
 ENDFUNCTION()
 
 # Macro for adding module tests to CTest
