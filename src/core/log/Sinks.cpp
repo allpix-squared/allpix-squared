@@ -25,7 +25,9 @@ using namespace allpix;
 
 StreamSink::LevelFormatter::LevelFormatter(bool short_form, bool colored) : short_form_(short_form), colored_(colored) {}
 
-void StreamSink::LevelFormatter::format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) {
+void StreamSink::LevelFormatter::format(const spdlog::details::log_msg& msg,
+                                        const std::tm& /*tm_time*/,
+                                        spdlog::memory_buf_t& dest) {
     auto level = from_spdlog_level(msg.level);
 
     if(colored_) {
@@ -82,7 +84,9 @@ std::unique_ptr<spdlog::custom_flag_formatter> StreamSink::LevelFormatter::clone
 
 StreamSink::EventFormatter::EventFormatter(bool short_form) : short_form_(short_form) {}
 
-void StreamSink::EventFormatter::format(const spdlog::details::log_msg&, const std::tm&, spdlog::memory_buf_t& dest) {
+void StreamSink::EventFormatter::format(const spdlog::details::log_msg& /*msg*/,
+                                        const std::tm& /*tm_time*/,
+                                        spdlog::memory_buf_t& dest) {
     auto event_num = log_context::event_num();
     if(event_num == 0) {
         return;
@@ -99,8 +103,10 @@ std::unique_ptr<spdlog::custom_flag_formatter> StreamSink::EventFormatter::clone
 
 StreamSink::SectionFormatter::SectionFormatter(bool colored) : colored_(colored) {}
 
-void StreamSink::SectionFormatter::format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) {
-    if(msg.logger_name.size() == 0) {
+void StreamSink::SectionFormatter::format(const spdlog::details::log_msg& msg,
+                                          const std::tm& /*tm_time*/,
+                                          spdlog::memory_buf_t& dest) {
+    if(msg.logger_name.empty()) {
         return;
     }
     if(colored_) {
@@ -108,7 +114,7 @@ void StreamSink::SectionFormatter::format(const spdlog::details::log_msg& msg, c
         dest.append(bold.data(), bold.data() + bold.size());
     }
     dest.push_back('[');
-    char stage = log_context::stage();
+    const char stage = log_context::stage();
     if(stage != '\0') {
         dest.push_back(stage);
         dest.push_back(':');
@@ -126,8 +132,10 @@ std::unique_ptr<spdlog::custom_flag_formatter> StreamSink::SectionFormatter::clo
     return spdlog::details::make_unique<SectionFormatter>(colored_);
 }
 
-void StreamSink::MessageFormatter::format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) {
-    std::string_view payload(msg.payload.data(), msg.payload.size());
+void StreamSink::MessageFormatter::format(const spdlog::details::log_msg& msg,
+                                          const std::tm& /*tm_time*/,
+                                          spdlog::memory_buf_t& dest) {
+    const std::string_view payload(msg.payload.data(), msg.payload.size());
     if(payload.find('\n') == std::string_view::npos) {
         dest.append(payload.data(), payload.data() + payload.size());
         return;
@@ -136,7 +144,7 @@ void StreamSink::MessageFormatter::format(const spdlog::details::log_msg& msg, c
     auto indent_count = strip_ansi_codes(std::string_view(dest.data(), dest.size())).size();
     std::string indented(payload);
     std::string spcs(indent_count + 1, ' ');
-    spcs[0] = '\n';
+    spcs.at(0) = '\n';
     size_t pos = 0;
     while((pos = indented.find('\n', pos)) != std::string::npos) {
         indented.replace(pos, 1, spcs);
