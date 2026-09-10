@@ -11,15 +11,27 @@
 
 #include "LogContext.hpp"
 
+#include <vector>
+
 #include "LoggerManager.hpp"
 
 using namespace allpix;
 
 namespace {
+    /**
+     * @brief One saved (logger, stage, event number) frame, pushed by acquire() and popped by release()
+     */
+    struct ContextFrame {
+        Logger* logger;
+        char stage;
+        uint64_t event_num;
+    };
+
     thread_local Logger* g_active_logger = nullptr; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
     thread_local char g_stage = '\0';               // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
     thread_local uint64_t g_event_num = 0;          // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
     thread_local bool g_is_progress = false;        // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    thread_local std::vector<ContextFrame> g_stack; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 } // namespace
 
 Logger& log_context::active() {
@@ -42,17 +54,25 @@ void log_context::reset() {
     g_stage = '\0';
     g_event_num = 0;
     g_is_progress = false;
+    g_stack.clear();
 }
 
-LogContext::LogContext(Logger& logger, char stage, uint64_t event_num)
-    : prev_logger_(&log_context::active()), prev_stage_(g_stage), prev_event_(g_event_num) {
+void log_context::acquire(Logger& logger, char stage, uint64_t event_num) {
+    g_stack.push_back({&log_context::active(), g_stage, g_event_num});
     g_active_logger = &logger;
     g_stage = stage;
     g_event_num = event_num;
 }
 
-LogContext::~LogContext() {
-    g_active_logger = prev_logger_;
-    g_stage = prev_stage_;
-    g_event_num = prev_event_;
+void log_context::release() {
+    if(g_stack.empty()) {
+        // Fall back to the default context
+        reset();
+        return;
+    }
+    const auto frame = g_stack.back();
+    g_stack.pop_back();
+    g_active_logger = frame.logger;
+    g_stage = frame.stage;
+    g_event_num = frame.event_num;
 }

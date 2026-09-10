@@ -338,11 +338,10 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     auto start = std::chrono::steady_clock::now();
 
     // Build module, logging its construction through its own permanent logger
-    Module* module;
-    {
-        const LogContext guard(Module::generate_logger(instance_config), 'C');
-        module = module_generator(instance_config, messenger, geo_manager);
-    }
+    log_context::acquire(Module::generate_logger(instance_config), 'C');
+    auto* module = module_generator(instance_config, messenger, geo_manager);
+    log_context::release();
+
     // Update execution time
     auto end = std::chrono::steady_clock::now();
     module_execution_time_[module] += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -440,11 +439,10 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         output_dir /= path_mod_name;
 
         // Build module, logging its construction through its own permanent logger
-        Module* module;
-        {
-            const LogContext guard(Module::generate_logger(instance_config), 'C');
-            module = module_generator(instance_config, messenger, instance.first);
-        }
+        log_context::acquire(Module::generate_logger(instance_config), 'C');
+        auto* module = module_generator(instance_config, messenger, instance.first);
+        log_context::release();
+
         // Update execution time
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module] += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -546,11 +544,12 @@ void ModuleManager::initialize() {
 
         // Get current time
         auto start = std::chrono::steady_clock::now();
+
         // Init module
-        {
-            const LogContext guard(module->getLogger(), 'I');
-            module->initialize();
-        }
+        log_context::acquire(module->getLogger(), 'I');
+        module->initialize();
+        log_context::release();
+
         // Update execution time
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -616,18 +615,20 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
     auto initialize_function = [modules_list = modules_]() {
         // Call per-thread initialization of each module
         for(const auto& module : modules_list) {
-            const LogContext guard(module->getLogger(), 'T');
+            log_context::acquire(module->getLogger(), 'T');
             LOG(TRACE) << "Initializing thread " << std::this_thread::get_id();
             module->initializeThread();
+            log_context::release();
         }
     };
 
     // Finalize modules for each thread
     auto finalize_function = [modules_list = modules_]() {
         for(const auto& module : modules_list) {
-            const LogContext guard(module->getLogger(), 'T');
+            log_context::acquire(module->getLogger(), 'T');
             LOG(TRACE) << "Finalizing thread " << std::this_thread::get_id();
             module->finalizeThread();
+            log_context::release();
         }
     };
 
@@ -708,25 +709,25 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
                 // Run module, logging through its own permanent logger
                 bool stop = false;
                 bool abort = false;
-                {
-                    const LogContext guard(module->getLogger(), 'R', event->number);
-                    try {
-                        if(module->require_sequence() && event_num != thread_pool_->minimumUncompleted()) {
-                            stop = true;
-                        } else {
-                            module->run(event.get());
-                        }
-                    } catch(const MissingDependenciesException& e) {
+
+                log_context::acquire(module->getLogger(), 'R', event->number);
+                try {
+                    if(module->require_sequence() && event_num != thread_pool_->minimumUncompleted()) {
                         stop = true;
-                    } catch(const AbortEventException& e) {
-                        LOG(WARNING) << "Event aborted:" << '\n' << e.what();
-                        abort = true;
-                    } catch(const EndOfRunException& e) {
-                        // Terminate if the module threw the EndOfRun request exception:
-                        LOG(WARNING) << "Request to terminate:" << '\n' << e.what();
-                        stop_requested = true;
+                    } else {
+                        module->run(event.get());
                     }
+                } catch(const MissingDependenciesException& e) {
+                    stop = true;
+                } catch(const AbortEventException& e) {
+                    LOG(WARNING) << "Event aborted:" << '\n' << e.what();
+                    abort = true;
+                } catch(const EndOfRunException& e) {
+                    // Terminate if the module threw the EndOfRun request exception:
+                    LOG(WARNING) << "Request to terminate:" << '\n' << e.what();
+                    stop_requested = true;
                 }
+                log_context::release();
 
                 // Update execution time
                 auto end = std::chrono::steady_clock::now();
@@ -847,19 +848,18 @@ void ModuleManager::finalize() {
         // Get current time
         auto start = std::chrono::steady_clock::now();
 
-        {
-            const LogContext guard(module->getLogger(), 'F');
-            // Change to our ROOT directory
-            module->getROOTDirectory()->cd();
-            // Finalize module
-            module->finalize();
-            // Remove the pointer to the ROOT directory after finalizing
-            module->set_root_directory(nullptr);
-            // Remove the config manager
-            module->set_config_manager(nullptr);
-            // Remove the histogram manager
-            module->set_histogram_manager(nullptr);
-        }
+        log_context::acquire(module->getLogger(), 'F');
+        // Change to our ROOT directory
+        module->getROOTDirectory()->cd();
+        // Finalize module
+        module->finalize();
+        // Remove the pointer to the ROOT directory after finalizing
+        module->set_root_directory(nullptr);
+        // Remove the config manager
+        module->set_config_manager(nullptr);
+        // Remove the histogram manager
+        module->set_histogram_manager(nullptr);
+        log_context::release();
 
         // Update execution time
         auto end = std::chrono::steady_clock::now();

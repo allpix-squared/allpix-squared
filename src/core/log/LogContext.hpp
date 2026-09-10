@@ -27,7 +27,7 @@ namespace allpix {
     namespace log_context {
         /**
          * @brief Get the currently active logger for this thread
-         * @return Reference to the active logger, returns the framework logger unless a \ref LogContext is active
+         * @return Reference to the active logger, returns the framework logger unless a context is currently acquired
          */
         Logger& active();
 
@@ -45,12 +45,17 @@ namespace allpix {
         uint64_t event_num();
 
         /**
-         * @brief Reset the context on this thread back to its defaults (framework logger, no stage, no event number)
+         * @brief Reset the context on this thread back to its defaults (framework logger, no stage, no event number),
+         *        discarding any outstanding acquire() calls
          */
         void reset();
 
         /**
          * @brief Check whether the message currently being dispatched on this thread is a progress update
+         *
+         * Only meaningful synchronously, while \ref Logger::log is dispatching into spdlog: this is how a color-styled
+         * \ref StreamSink tells a \ref LOG_PROGRESS update apart from a regular log message, without needing any extra
+         * field on spdlog's own `log_msg`. See \ref Logger::logProgress.
          */
         bool is_progress();
 
@@ -59,40 +64,25 @@ namespace allpix {
          * @note Internal: called only by \ref Logger::log immediately before dispatching to spdlog
          */
         void set_progress(bool progress);
-    } // namespace log_context
 
-    /**
-     * @brief Log context serving as RAII guard that enables a logger and sets stage/event number for its scope
-     *
-     * Used by the \ref ModuleManager and \ref ThreadPool around calls into module code. Restores the previous context on
-     * destruction, including when the scope is left via an exception.
-     */
-    class LogContext {
-    public:
         /**
-         * @brief Construct the guard, making the given logger active for the remainder of the scope
+         * @brief Acquire a new logging context on this thread, enabling the provided logger
+         * @details Pushes the current context (active logger, stage, event number) aside and installs the new one. Every
+         * call to acquire() must be matched by exactly one later call to \ref release() on the same thread, in LIFO order.
+         *
          * @param logger Logger to make active
-         * @param stage Lifecycle-stage marker to display
-         * @param event_num Event number to display
+         * @param stage Lifecycle-stage marker to display, or '\0' for none
+         * @param event_num Event number to display, or 0 for none
          */
-        explicit LogContext(Logger& logger, char stage = '\0', uint64_t event_num = 0);
-        ~LogContext();
+        void acquire(Logger& logger, char stage = '\0', uint64_t event_num = 0);
 
-        /// @{
         /**
-         * @brief Disable copying and moving
+         * @brief Release the most recently acquired logging context, restoring the one before it
+         * @note Must be matched with a prior \ref acquire() call on the same thread. Calling this without a
+         *       matching acquire() resets to the default context.
          */
-        LogContext(const LogContext&) = delete;
-        LogContext& operator=(const LogContext&) = delete;
-        LogContext(LogContext&&) = delete;
-        LogContext& operator=(LogContext&&) = delete;
-        /// @}
-
-    private:
-        Logger* prev_logger_;
-        char prev_stage_;
-        uint64_t prev_event_;
-    };
+        void release();
+    } // namespace log_context
 } // namespace allpix
 
 #endif /* ALLPIX_LOG_CONTEXT_H */
