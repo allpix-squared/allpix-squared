@@ -28,7 +28,7 @@ LoggerManager& LoggerManager::getInstance() {
 }
 
 Logger& LoggerManager::getLogger(const std::string& topic, Level level) {
-    std::scoped_lock const lock(mutex_);
+    const std::scoped_lock lock(mutex_);
     auto it = loggers_.find(topic);
     if(it != loggers_.end()) {
         // Logger already exists: keeps its level permanently, requested level is ignored
@@ -50,7 +50,7 @@ Logger& LoggerManager::getLogger(const std::string& topic) {
 Logger& LoggerManager::getDefault() { return getLogger(""); }
 
 void LoggerManager::addSink(const spdlog::sink_ptr& sink) {
-    std::scoped_lock const lock(mutex_);
+    const std::scoped_lock lock(mutex_);
     sinks_.push_back(sink);
     for(auto& [topic, logger] : loggers_) {
         logger->getBackend()->sinks().push_back(sink);
@@ -60,7 +60,7 @@ void LoggerManager::addSink(const spdlog::sink_ptr& sink) {
 void LoggerManager::addStream(std::ostream& stream, SinkStyle style) {
     auto sink = std::make_shared<StreamSink>(stream, style, global_format_.load(std::memory_order_relaxed));
     {
-        std::scoped_lock const lock(mutex_);
+        const std::scoped_lock lock(mutex_);
         stream_sinks_.push_back(sink);
     }
     addSink(sink);
@@ -70,7 +70,7 @@ void LoggerManager::setGlobalLevel(Level level) {
     global_level_.store(level, std::memory_order_relaxed);
     global_level_explicit_.store(true, std::memory_order_relaxed);
 
-    std::scoped_lock const lock(mutex_);
+    const std::scoped_lock lock(mutex_);
     auto it = loggers_.find("");
     if(it != loggers_.end()) {
         it->second->setLevel(level);
@@ -80,7 +80,7 @@ void LoggerManager::setGlobalLevel(Level level) {
 void LoggerManager::setGlobalFormat(Format format) {
     global_format_.store(format, std::memory_order_relaxed);
 
-    std::scoped_lock const lock(mutex_);
+    const std::scoped_lock lock(mutex_);
     for(auto& sink : stream_sinks_) {
         sink->setFormat(format);
     }
@@ -103,7 +103,7 @@ Format Log::getFormatFromString(const std::string& format_str) {
 }
 
 void LoggerManager::finish() {
-    std::scoped_lock const lock(mutex_);
+    const std::scoped_lock lock(mutex_);
     for(auto& sink : sinks_) {
         sink->flush();
     }
