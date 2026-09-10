@@ -23,6 +23,7 @@
 #include "TH2.h"
 #include "TStyle.h"
 
+#include "core/utils/env.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/field_parser.h"
@@ -62,7 +63,9 @@ int main(int argc, char** argv) {
         }
 
         // Add stream and set default logging level
-        LoggerManager::getInstance().addStream(std::cout, SinkStyle::COLOR);
+        const auto no_color = allpix::getenv("NO_COLOR");
+        allpix::LoggerManager::getInstance().addStream(
+            std::cout, no_color.has_value() ? allpix::SinkStyle::PLAIN : allpix::SinkStyle::COLOR);
 
         // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
         std::signal(SIGQUIT, interrupt_handler);

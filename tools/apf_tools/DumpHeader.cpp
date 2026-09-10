@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "core/utils/env.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/field_parser.h"
@@ -57,7 +58,9 @@ int main(int argc, const char* argv[]) {
         register_units();
 
         // Add cout as the default logging stream
-        LoggerManager::getInstance().addStream(std::cout, SinkStyle::COLOR);
+        const auto no_color = allpix::getenv("NO_COLOR");
+        allpix::LoggerManager::getInstance().addStream(
+            std::cout, no_color.has_value() ? allpix::SinkStyle::PLAIN : allpix::SinkStyle::COLOR);
 
         // If no arguments are provided, print the help:
         bool print_help = false;

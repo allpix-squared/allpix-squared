@@ -40,6 +40,7 @@
 #include "core/Allpix.hpp"
 #include "core/config/exceptions.h"
 #include "core/log/LoggerManager.hpp"
+#include "core/utils/env.h"
 #include "core/utils/exceptions.h"
 #include "core/utils/log.h"
 
@@ -62,8 +63,10 @@ extern "C" void signal_handler(int signal) { signal_v = signal; }
  * @brief Main function running the application
  */
 int main(int argc, const char* argv[]) {
-    // Add cout as the default logging stream
-    LoggerManager::getInstance().addStream(std::cout, SinkStyle::COLOR);
+
+    // Add cout as the default logging stream, use plain style if NO_COLOR is set:
+    const auto no_color = allpix::getenv("NO_COLOR");
+    LoggerManager::getInstance().addStream(std::cout, no_color.has_value() ? SinkStyle::PLAIN : SinkStyle::COLOR);
 
     std::signal(SIGTERM, &signal_handler); // NOLINT(cert-err33-c)
     std::signal(SIGINT, &signal_handler);  // NOLINT(cert-err33-c)

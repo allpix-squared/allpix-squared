@@ -36,6 +36,7 @@
 #include "core/config/FileParser.hpp"
 #include "core/config/exceptions.h"
 #include "core/module/ThreadPool.hpp"
+#include "core/utils/env.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
@@ -76,7 +77,9 @@ int main(int argc, char** argv) {
     allpix::register_units();
 
     // Add stream and set default logging level
-    allpix::LoggerManager::getInstance().addStream(std::cout, allpix::SinkStyle::COLOR);
+    const auto no_color = allpix::getenv("NO_COLOR");
+    allpix::LoggerManager::getInstance().addStream(
+        std::cout, no_color.has_value() ? allpix::SinkStyle::PLAIN : allpix::SinkStyle::COLOR);
 
     // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
     std::signal(SIGQUIT, interrupt_handler);
