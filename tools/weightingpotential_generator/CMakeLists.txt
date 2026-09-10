@@ -26,7 +26,6 @@ FIND_PACKAGE(Threads REQUIRED)
 
 # Logging backend
 FIND_PACKAGE(spdlog REQUIRED)
-ADD_DEFINITIONS(-DSPDLOG_USE_STD_FORMAT=ON)
 
 # Find required Allpix Squared tools
 GET_FILENAME_COMPONENT(ALLPIX_SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../src/" ABSOLUTE)
@@ -58,13 +57,14 @@ ADD_EXECUTABLE(
 
 # Set compiler options
 TARGET_COMPILE_OPTIONS(generate_potential PRIVATE ${ALLPIX_CXX_FLAGS})
+TARGET_COMPILE_DEFINITIONS(generate_potential PUBLIC SPDLOG_USE_STD_FORMAT=ON)
 
 # Include Eigen dependency
 FIND_PACKAGE(PkgConfig REQUIRED)
 PKG_CHECK_MODULES(Eigen3 REQUIRED IMPORTED_TARGET eigen3)
 
 # Link the dependency libraries
-TARGET_LINK_LIBRARIES(generate_potential ROOT::Core Threads::Threads spdlog::spdlog PkgConfig::Eigen3)
+TARGET_LINK_LIBRARIES(generate_potential ROOT::Core Threads::Threads spdlog::spdlog_header_only PkgConfig::Eigen3)
 
 # Create install target
 INSTALL(

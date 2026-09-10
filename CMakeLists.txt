@@ -324,7 +324,6 @@ FIND_PACKAGE(Threads REQUIRED)
 
 # Logging backend
 FIND_PACKAGE(spdlog 1.10.0 REQUIRED)
-ADD_DEFINITIONS(-DSPDLOG_USE_STD_FORMAT=ON)
 
 # Include Boost.Random
 FIND_PACKAGE(Boost 1.64.0 REQUIRED COMPONENTS random)
@@ -353,7 +352,6 @@ SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
 SET(ALLPIX_DEPS_LIBRARIES
     Threads::Threads
     Boost::random
-    spdlog::spdlog_header_only
     ROOT::Core
     ROOT::GenVector
     ROOT::Geom

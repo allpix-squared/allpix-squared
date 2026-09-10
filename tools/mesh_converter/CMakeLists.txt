@@ -26,7 +26,6 @@ FIND_PACKAGE(Threads REQUIRED)
 
 # Logging backend
 FIND_PACKAGE(spdlog REQUIRED)
-ADD_DEFINITIONS(-DSPDLOG_USE_STD_FORMAT=ON)
 
 # Find required Allpix Squared tools
 GET_FILENAME_COMPONENT(ALLPIX_SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../src/" ABSOLUTE)
@@ -58,6 +57,7 @@ ADD_EXECUTABLE(
 
 # Set compiler options
 TARGET_COMPILE_OPTIONS(mesh_converter PRIVATE ${ALLPIX_CXX_FLAGS})
+TARGET_COMPILE_DEFINITIONS(mesh_converter PUBLIC SPDLOG_USE_STD_FORMAT=ON)
 
 # Include Eigen dependency
 FIND_PACKAGE(PkgConfig REQUIRED)
@@ -71,7 +71,7 @@ TARGET_LINK_LIBRARIES(
     ROOT::RIO
     ROOT::Tree
     Threads::Threads
-    spdlog::spdlog
+    spdlog::spdlog_header_only
     PkgConfig::Eigen3)
 
 # Create install target
@@ -86,9 +86,10 @@ ADD_EXECUTABLE(mesh_plotter MeshPlotter.cpp ${ALLPIX_LOG_SRCS} ${ALLPIX_SRC}/cor
 
 # Set compiler options
 TARGET_COMPILE_OPTIONS(mesh_plotter PRIVATE ${ALLPIX_CXX_FLAGS})
+TARGET_COMPILE_DEFINITIONS(mesh_plotter PUBLIC SPDLOG_USE_STD_FORMAT=ON)
 
 # Link libraries
-TARGET_LINK_LIBRARIES(mesh_plotter ROOT::Core ROOT::Hist ROOT::GuiBld spdlog::spdlog PkgConfig::Eigen3)
+TARGET_LINK_LIBRARIES(mesh_plotter ROOT::Core ROOT::Hist ROOT::GuiBld spdlog::spdlog_header_only PkgConfig::Eigen3)
 
 INSTALL(
     TARGETS mesh_plotter
