@@ -27,6 +27,7 @@ Checks: [
 ]
 WarningsAsErrors: '*'
 HeaderFileExtensions: ['', 'h', 'hpp', 'tpp']
+HeaderFilterRegex: '^(?!.*spdlog/).*'
 CheckOptions:
   misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: 'true'
   misc-include-cleaner.IgnoreHeaders: 'Eigen/*;Math/*;G4*;spdlog/*'
