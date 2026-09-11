@@ -323,7 +323,7 @@ ENDIF()
 FIND_PACKAGE(Threads REQUIRED)
 
 # Logging backend
-FIND_PACKAGE(spdlog 1.10.0 REQUIRED)
+FIND_PACKAGE(spdlog 1.9.2 REQUIRED)
 
 # Include Boost.Random
 FIND_PACKAGE(Boost 1.64.0 REQUIRED COMPONENTS random)
