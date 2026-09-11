@@ -46,6 +46,7 @@ namespace allpix {
          */
         G4int ReceiveG4cerr(const G4String& msg) override;
 
+        static void setG4ReportingLevel(LogLevel level);
         /**
          * Method to set the logger verbosity level for the cout stream
          * @param level Log level

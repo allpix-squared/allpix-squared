@@ -41,10 +41,13 @@ namespace {
     Logger& geant4_logger() { return LoggerManager::getInstance().getLogger("Geant4"); }
 } // namespace
 
+void G4LoggingDestination::setG4ReportingLevel(LogLevel level) { geant4_logger().setLevel(level); }
+
 void G4LoggingDestination::process_message(LogLevel level, std::string& msg) {
     if(msg.empty()) {
         return;
     }
+
     auto& logger = geant4_logger();
     if(!logger.shouldLog(level)) {
         return;
