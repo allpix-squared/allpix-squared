@@ -146,7 +146,7 @@ FUNCTION(add_default_fail_conditions name)
         TEST ${name}
         PROPERTY FAIL_REGULAR_EXPRESSION)
     IF(NOT EXPRESSIONS_FAIL)
-        # Unless they are part of the pass condition, no WARNING, ERROR or FATAL logs should appear:
+        # Unless they are part of the pass condition, no WARNING or ERROR logs should appear:
         GET_PROPERTY(
             EXPRESSIONS_PASS
             TEST ${name}
