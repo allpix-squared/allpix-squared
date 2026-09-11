@@ -22,16 +22,6 @@
 using namespace allpix;
 
 G4LoggingDestination* G4LoggingDestination::instance = nullptr;
-allpix::LogLevel G4LoggingDestination::reporting_level_g4cout = allpix::LogLevel::TRACE;
-allpix::LogLevel G4LoggingDestination::reporting_level_g4cerr = allpix::LogLevel::WARNING;
-
-void G4LoggingDestination::setG4coutReportingLevel(LogLevel level) { G4LoggingDestination::reporting_level_g4cout = level; }
-
-void G4LoggingDestination::setG4cerrReportingLevel(LogLevel level) { G4LoggingDestination::reporting_level_g4cerr = level; }
-
-LogLevel G4LoggingDestination::getG4coutReportingLevel() { return G4LoggingDestination::reporting_level_g4cout; }
-
-LogLevel G4LoggingDestination::getG4cerrReportingLevel() { return G4LoggingDestination::reporting_level_g4cerr; }
 
 namespace {
     /**
@@ -42,6 +32,8 @@ namespace {
 } // namespace
 
 void G4LoggingDestination::setG4ReportingLevel(LogLevel level) { geant4_logger().setLevel(level); }
+
+LogLevel G4LoggingDestination::getG4ReportingLevel() { return geant4_logger().getLevel(); }
 
 void G4LoggingDestination::process_message(LogLevel level, std::string& msg) {
     if(msg.empty()) {
@@ -58,11 +50,11 @@ void G4LoggingDestination::process_message(LogLevel level, std::string& msg) {
 }
 
 G4int G4LoggingDestination::ReceiveG4cout(const G4String& msg) {
-    process_message(G4LoggingDestination::reporting_level_g4cout, const_cast<G4String&>(msg)); // NOLINT
+    process_message(LogLevel::DEBUG, const_cast<G4String&>(msg)); // NOLINT
     return 0;
 }
 
 G4int G4LoggingDestination::ReceiveG4cerr(const G4String& msg) {
-    process_message(G4LoggingDestination::reporting_level_g4cerr, const_cast<G4String&>(msg)); // NOLINT
+    process_message(LogLevel::WARNING, const_cast<G4String&>(msg)); // NOLINT
     return 0;
 }

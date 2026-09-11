@@ -136,12 +136,12 @@ void GeometryConstructionG4::check_overlaps() {
     LOG(TRACE) << "Checking overlaps";
     bool overlapFlag = false;
 
-    auto current_level = G4LoggingDestination::getG4coutReportingLevel();
-    G4LoggingDestination::setG4coutReportingLevel(LogLevel::ERROR);
+    auto current_level = G4LoggingDestination::getG4ReportingLevel();
+    G4LoggingDestination::setG4ReportingLevel(LogLevel::ERROR);
     for(auto* volume : (*phys_volume_store)) {
         overlapFlag = volume->CheckOverlaps(1000, 0., false) || overlapFlag;
     }
-    G4LoggingDestination::setG4coutReportingLevel(current_level);
+    G4LoggingDestination::setG4ReportingLevel(current_level);
 
     if(overlapFlag) {
         LOG(ERROR) << "Overlapping volumes detected.";

@@ -46,30 +46,17 @@ namespace allpix {
          */
         G4int ReceiveG4cerr(const G4String& msg) override;
 
+        /**
+         * Method to set the logger verbosity level for the Geant4 logger
+         * @param level Log level
+         */
         static void setG4ReportingLevel(LogLevel level);
-        /**
-         * Method to set the logger verbosity level for the cout stream
-         * @param level Log level
-         */
-        static void setG4coutReportingLevel(LogLevel level);
 
         /**
-         * Method to set the logger verbosity level for the cerr stream
-         * @param level Log level
-         */
-        static void setG4cerrReportingLevel(LogLevel level);
-
-        /**
-         * Method to obtain the current logger verbosity level for the cout stream
+         * Method to obtain the current logger verbosity level for the Geant4 logger
          * @return Log level
          */
-        static LogLevel getG4coutReportingLevel();
-
-        /**
-         * Method to obtain the current logger verbosity level for the cerr stream
-         * @return Log level
-         */
-        static LogLevel getG4cerrReportingLevel();
+        static LogLevel getG4ReportingLevel();
 
     private:
         /**
@@ -88,12 +75,6 @@ namespace allpix {
          * Static instance of G4LoggingDestination
          */
         static G4LoggingDestination* instance;
-
-        /**
-         * Static log level configurations for cout and cerr
-         */
-        static LogLevel reporting_level_g4cout;
-        static LogLevel reporting_level_g4cerr;
     };
 
 } // namespace allpix

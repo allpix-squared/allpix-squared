@@ -59,24 +59,16 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config,
                << "To allow multithreading, rebuild Geant4 with the GEANT4_BUILD_MULTITHREADED option enabled.";
 #endif
 
-    // Read Geant4 verbosity configuration
-    auto g4cerr_log_level = config_.get<std::string>("log_level_g4cerr", "WARNING");
-    auto g4cout_log_level = config_.get<std::string>("log_level_g4cout", "TRACE");
+    // Read Geant4 verbosity configuration, fallback to old value but warn
+    config_.setAlias("log_level_geant4", "log_level_g4cour", true);
+    auto g4_log_level = config_.get<std::string>("log_level_geant4", "WARNING");
 
-    // Set Geant4 G4cerr log level
+    // Set Geant4 log level
     try {
-        const auto log_level = Log::getLevelFromString(g4cerr_log_level);
-        G4LoggingDestination::setG4cerrReportingLevel(log_level);
+        const auto log_level = Log::getLevelFromString(g4_log_level);
+        G4LoggingDestination::setG4ReportingLevel(log_level);
     } catch(std::invalid_argument& e) {
-        throw InvalidValueError(config_, "log_level_g4cerr", "invalid log level provided");
-    }
-
-    // Set Geant G4cout log level
-    try {
-        const auto log_level = Log::getLevelFromString(g4cout_log_level);
-        G4LoggingDestination::setG4coutReportingLevel(log_level);
-    } catch(std::invalid_argument& e) {
-        throw InvalidValueError(config_, "log_level_g4cout", "invalid log level provided");
+        throw InvalidValueError(config_, "log_level_geant4", "invalid log level provided");
     }
 
     // Set up UI manager with logging destination

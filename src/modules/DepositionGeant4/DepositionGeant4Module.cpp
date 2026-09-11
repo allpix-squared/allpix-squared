@@ -60,7 +60,6 @@
 #include "core/config/exceptions.h"
 #include "core/geometry/DetectorModel.hpp"
 #include "core/geometry/GeometryManager.hpp"
-#include "core/log/LogContext.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 #include "core/module/exceptions.h"
@@ -70,7 +69,6 @@
 #include "core/utils/unit.h"
 #include "physics/MaterialProperties.hpp"
 #include "tools/ROOT.h"
-#include "tools/geant4/G4LoggingDestination.hpp"
 #include "tools/geant4/MTRunManager.hpp"
 
 #define G4_NUM_SEEDS 10
@@ -135,9 +133,6 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
             }
         }
     }
-
-    // Set verbosity of the Geant4 logger:
-    G4LoggingDestination::setG4ReportingLevel(log_context::active().getLevel());
 
     // Add the particle source position to the geometry
     geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
