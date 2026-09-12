@@ -111,7 +111,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     FIND_PROGRAM(
         RUN_CLANG_TIDY
         NAMES "run-clang-tidy" "run-clang-tidy.py" "run-clang-tidy-${CLANG_TIDY_MAJOR_VERSION}.py"
-        HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
+        HINTS ${CLANG_DIR}/ /usr/share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
         MESSAGE(STATUS "Found ${RUN_CLANG_TIDY}, adding full-code linting targets")
 
@@ -136,7 +136,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     FIND_PROGRAM(
         CLANG_TIDY_DIFF
         NAMES "clang-tidy-diff" "clang-tidy-diff.py" "clang-tidy-diff-${CLANG_TIDY_MAJOR_VERSION}.py"
-        HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
+        HINTS ${CLANG_DIR}/../share/clang/ /usr/share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
         # Set target branch and remote to perform the diff against
         IF(NOT TARGET_BRANCH)
