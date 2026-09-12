@@ -18,6 +18,11 @@
 
 namespace allpix {
     /**
+     * @defgroup PhysicsModels Physical process models
+     * @brief Collection of physics models to describe processes
+     */
+
+    /**
      * @ingroup Exceptions
      * @brief Base class for all model exceptions in the framework.
      */

@@ -24,7 +24,7 @@ namespace allpix {
     // NOLINTBEGIN(cppcoreguidelines-macro-usage)
 
     /**
-     * @brief Execute a block only if the reporting level of the currently active \ref Logger is high enough
+     * @brief Execute a block only if the reporting level of the currently active logger is high enough
      * @param level The minimum log level
      */
 #define IFLOG(level) if(::allpix::log_context::active().shouldLog(::allpix::Level::level))
@@ -33,7 +33,7 @@ namespace allpix {
      * @brief Create a logging stream if the reporting level of the currently active logger is high enough
      * @param level The log level of the stream
      *
-     * Logs to the currently active \ref Logger
+     * Logs to the currently active logger
      */
 #define LOG(level)                                                                                                          \
     if(!::allpix::log_context::active().shouldLog(::allpix::Level::level)) {                                                \

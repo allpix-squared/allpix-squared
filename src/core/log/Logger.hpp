@@ -62,7 +62,6 @@ namespace allpix {
         /**
          * @brief Construct a logger
          * @param spdlog_logger Underlying spdlog logger
-         * @param level Initial, permanent logging level of this logger
          */
         Logger(std::shared_ptr<spdlog::logger> spdlog_logger);
 

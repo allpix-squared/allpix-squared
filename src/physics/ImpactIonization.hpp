@@ -27,7 +27,7 @@
 namespace allpix {
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Impact ionization models
      */
     class ImpactIonizationModel {
@@ -63,7 +63,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief No multiplication
      *
      */
@@ -77,7 +77,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Massey model for impact ionization
      *
      * Formulae 2a for electrons and 2b for holes, temperature dependence equation 3 of
@@ -111,7 +111,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Massey model for impact ionization with optimized parameters
      *
      * This is the Massey impact ionization model with updated parameters from fits to measurements performed at CERN within
@@ -130,7 +130,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief van Overstraeten de Man model for impact ionization
      *
      * Taken from https://www.sciencedirect.com/science/article/pii/0038110170901395; Parametrization according to
@@ -175,7 +175,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief van Overstraeten de Man model for impact ionization with optimized parameters
      *
      * This is the van Overstraeten de Man impact ionization model with updated parameters from fits to measurements
@@ -202,7 +202,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Okuto Crowell model for impact ionization
      *
      * Taken from https://www.sciencedirect.com/science/article/pii/0038110175900994. Parametrization according to equations
@@ -233,7 +233,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Okuto Crowell model for impact ionization with optimized parameters
      *
      * This is the Okuto Crowell impact ionization model with updated parameters from fits to measurements
@@ -252,7 +252,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Bologna model for impact ionization
      *
      * Taken from https://ieeexplore.ieee.org/abstract/document/799251, Table 1
@@ -293,7 +293,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Custom gain model for charge carriers
      */
     class CustomGain : public ImpactIonizationModel {
