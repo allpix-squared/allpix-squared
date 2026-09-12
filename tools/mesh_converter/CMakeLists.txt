@@ -57,7 +57,7 @@ ADD_EXECUTABLE(
 
 # Set compiler options
 TARGET_COMPILE_OPTIONS(mesh_converter PRIVATE ${ALLPIX_CXX_FLAGS})
-TARGET_COMPILE_DEFINITIONS(mesh_converter PUBLIC SPDLOG_USE_STD_FORMAT=ON SPDLOG_HEADER_ONLY=ON)
+TARGET_COMPILE_DEFINITIONS(mesh_converter PUBLIC SPDLOG_USE_STD_FORMAT SPDLOG_HEADER_ONLY)
 
 # Include Eigen dependency
 FIND_PACKAGE(PkgConfig REQUIRED)
@@ -65,7 +65,7 @@ PKG_CHECK_MODULES(Eigen3 REQUIRED IMPORTED_TARGET eigen3)
 
 # Link the dependency libraries
 TARGET_LINK_LIBRARIES(
-    mesh_converter
+    mesh_converter PUBLIC
     ROOT::Core
     ROOT::GenVector
     ROOT::RIO
@@ -86,10 +86,10 @@ ADD_EXECUTABLE(mesh_plotter MeshPlotter.cpp ${ALLPIX_LOG_SRCS} ${ALLPIX_SRC}/cor
 
 # Set compiler options
 TARGET_COMPILE_OPTIONS(mesh_plotter PRIVATE ${ALLPIX_CXX_FLAGS})
-TARGET_COMPILE_DEFINITIONS(mesh_plotter PUBLIC SPDLOG_USE_STD_FORMAT=ON SPDLOG_HEADER_ONLY=ON)
+TARGET_COMPILE_DEFINITIONS(mesh_plotter PUBLIC SPDLOG_USE_STD_FORMAT SPDLOG_HEADER_ONLY)
 
 # Link libraries
-TARGET_LINK_LIBRARIES(mesh_plotter ROOT::Core ROOT::Hist ROOT::GuiBld spdlog::spdlog_header_only PkgConfig::Eigen3)
+TARGET_LINK_LIBRARIES(mesh_plotter PUBLIC ROOT::Core ROOT::Hist ROOT::GuiBld spdlog::spdlog_header_only PkgConfig::Eigen3)
 
 INSTALL(
     TARGETS mesh_plotter
