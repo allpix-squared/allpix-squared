@@ -15,7 +15,6 @@ ENDIF()
 
 # Logging backend
 FIND_PACKAGE(spdlog REQUIRED)
-ADD_DEFINITIONS(-DSPDLOG_USE_STD_FORMAT=ON)
 
 # Find required Allpix Squared tools
 GET_FILENAME_COMPONENT(ALLPIX_SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../src/" ABSOLUTE)
@@ -34,7 +33,7 @@ ADD_EXECUTABLE(field_converter FieldConverter.cpp ${ALLPIX_LOG_SRCS} ${ALLPIX_SR
 
 # Set compiler options
 TARGET_COMPILE_OPTIONS(field_converter PRIVATE ${ALLPIX_CXX_FLAGS})
-TARGET_COMPILE_DEFINITIONS(field_converter PUBLIC SPDLOG_USE_STD_FORMAT=ON)
+TARGET_COMPILE_DEFINITIONS(field_converter PUBLIC SPDLOG_USE_STD_FORMAT=ON SPDLOG_HEADER_ONLY=ON)
 TARGET_LINK_LIBRARIES(field_converter spdlog::spdlog_header_only)
 
 # Create install target
@@ -49,7 +48,7 @@ ADD_EXECUTABLE(apf_dump DumpHeader.cpp ${ALLPIX_LOG_SRCS} ${ALLPIX_SRC}/core/uti
 
 # Set compiler options
 TARGET_COMPILE_OPTIONS(apf_dump PRIVATE ${ALLPIX_CXX_FLAGS})
-TARGET_COMPILE_DEFINITIONS(apf_dump PUBLIC SPDLOG_USE_STD_FORMAT=ON)
+TARGET_COMPILE_DEFINITIONS(apf_dump PUBLIC SPDLOG_USE_STD_FORMAT=ON SPDLOG_HEADER_ONLY=ON)
 TARGET_LINK_LIBRARIES(apf_dump spdlog::spdlog_header_only)
 
 # Create install target
