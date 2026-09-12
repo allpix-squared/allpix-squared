@@ -106,7 +106,7 @@ StreamSink::SectionFormatter::SectionFormatter(bool colored) : colored_(colored)
 void StreamSink::SectionFormatter::format(const spdlog::details::log_msg& msg,
                                           const std::tm& /*tm_time*/,
                                           spdlog::memory_buf_t& dest) {
-    if(msg.logger_name.size() == 0) {
+    if(msg.logger_name.size() == 0) { // NOLINT(readability-container-size-empty) for spdlog 1.9.2 on Ubuntu 22.04
         return;
     }
     if(colored_) {
@@ -128,6 +128,7 @@ void StreamSink::SectionFormatter::format(const spdlog::details::log_msg& msg,
     }
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 std::unique_ptr<spdlog::custom_flag_formatter> StreamSink::SectionFormatter::clone() const {
     return spdlog::details::make_unique<SectionFormatter>(colored_);
 }
@@ -203,7 +204,7 @@ std::unique_ptr<spdlog::pattern_formatter> StreamSink::make_formatter(Format for
 }
 
 StreamSink::StreamSink(std::ostream& stream, SinkStyle style, Format format) : stream_(stream), style_(style) {
-    set_formatter_(make_formatter(format, style_));
+    set_formatter(make_formatter(format, style_));
     if(style_ == SinkStyle::COLOR) {
         // Hide cursor
         stream_ << "\x1B[?25l";

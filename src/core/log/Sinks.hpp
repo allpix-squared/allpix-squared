@@ -92,7 +92,7 @@ namespace allpix {
             std::unique_ptr<custom_flag_formatter> clone() const override;
 
         private:
-            std::string strip_ansi_codes(std::string_view input);
+            static std::string strip_ansi_codes(std::string_view input);
         };
 
     public:
