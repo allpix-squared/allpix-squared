@@ -320,7 +320,7 @@ fmt:clang-lint:
     script:
         # Get correct GCC tool chain from CLang wrapper
         - GCC_TOOLCHAIN=$(sed -n 's/.*--gcc-toolchain=\([^ "$]*\).*/\1/p' "$CXX")
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DCLANG_TIDY_EXTRA_ARGS="--gcc-toolchain=$GCC_TOOLCHAIN" ..
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DCLANG_TIDY_EXTRA_ARGS="-extra-arg-before=--gcc-toolchain=$GCC_TOOLCHAIN" ..
         - ninja check-lint 2> /dev/null
     only:
         - schedules
@@ -332,7 +332,7 @@ fmt:clang-lint-diff:
         # Get correct GCC tool chain from CLang wrapper
         - GCC_TOOLCHAIN=$(sed -n 's/.*--gcc-toolchain=\([^ "$]*\).*/\1/p' "$CXX")
         - git remote add upstream $REPOSITORY && git fetch upstream
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DCLANG_TIDY_EXTRA_ARGS="--gcc-toolchain=$GCC_TOOLCHAIN" -DTARGET_REMOTE="upstream" ..
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DCLANG_TIDY_EXTRA_ARGS="-extra-arg-before=--gcc-toolchain=$GCC_TOOLCHAIN" -DTARGET_REMOTE="upstream" ..
         - ninja check-lint-diff 2> /dev/null
 
 fmt:coverage:
