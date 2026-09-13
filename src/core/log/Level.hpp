@@ -12,6 +12,7 @@
 #ifndef ALLPIX_LOG_LEVEL_H
 #define ALLPIX_LOG_LEVEL_H
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -24,14 +25,14 @@ namespace allpix {
     /**
      * @brief Logging detail level
      */
-    enum class Level : int { // NOLINT(performance-enum-size)
-        PRNG = 0,            ///< Logging level printing every pseudo-random number requested
-        TRACE = 1,           ///< Software debugging information about what part is currently running
-        DEBUG = 2,           ///< Detailed information about physics process
-        INFO = 3,            ///< General information about processes (should not be called in run function)
-        WARNING = 4,         ///< Possible issue that could lead to unexpected results
-        STATUS = 5,          ///< Only critical progress information; stays visible up to and including the WARNING threshold
-        ERROR = 6,           ///< Critical problems that usually lead to termination of the framework
+    enum class Level : std::uint8_t {
+        PRNG = 0,    ///< Logging level printing every pseudo-random number requested
+        TRACE = 1,   ///< Software debugging information about what part is currently running
+        DEBUG = 2,   ///< Detailed information about physics process
+        INFO = 3,    ///< General information about processes (should not be called in run function)
+        WARNING = 4, ///< Possible issue that could lead to unexpected results
+        STATUS = 5,  ///< Only critical progress information; stays visible up to and including the WARNING threshold
+        ERROR = 6,   ///< Critical problems that usually lead to termination of the framework
     };
     using enum Level;
 

@@ -38,7 +38,7 @@ namespace allpix {
         /**
          * @brief Log stream that executes logging upon its destruction
          */
-        class LogStream final : public std::ostringstream {
+        class LogStream final : public std::ostringstream { // NOLINT(misc-multiple-inheritance)
         public:
             LogStream(const Logger& logger, Level level, std::source_location loc, bool progress = false)
                 : logger_(logger), level_(level), loc_(loc), progress_(progress) {}

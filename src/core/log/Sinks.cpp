@@ -137,7 +137,7 @@ void StreamSink::MessageFormatter::format(const spdlog::details::log_msg& msg,
                                           const std::tm& /*tm_time*/,
                                           spdlog::memory_buf_t& dest) {
     const std::string_view payload(msg.payload.data(), msg.payload.size());
-    if(payload.find('\n') == std::string_view::npos) {
+    if(payload.find('\n') == std::string_view::npos) { // NOLINT(readability-container-contains)
         dest.append(payload.data(), payload.data() + payload.size());
         return;
     }

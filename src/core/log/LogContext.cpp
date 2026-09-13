@@ -21,17 +21,17 @@ namespace {
     /**
      * @brief One saved (logger, stage, event number) frame, pushed by acquire() and popped by release()
      */
-    struct ContextFrame {
+    struct context_frame {
         Logger* logger;
         char stage;
         uint64_t event_num;
     };
 
-    thread_local Logger* g_active_logger = nullptr; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-    thread_local char g_stage = '\0';               // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-    thread_local uint64_t g_event_num = 0;          // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-    thread_local bool g_is_progress = false;        // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-    thread_local std::vector<ContextFrame> g_stack; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    thread_local Logger* g_active_logger = nullptr;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    thread_local char g_stage = '\0';                // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    thread_local uint64_t g_event_num = 0;           // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    thread_local bool g_is_progress = false;         // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    thread_local std::vector<context_frame> g_stack; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 } // namespace
 
 Logger& log_context::active() {

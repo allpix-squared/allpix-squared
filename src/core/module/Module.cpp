@@ -202,7 +202,6 @@ Logger& Module::generate_logger(const Configuration& config) {
     auto level = manager.getDefault().getLevel();
     if(config.has("log_level")) {
         auto log_level_string = config.get<std::string>("log_level");
-        std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
         try {
             level = Log::getLevelFromString(log_level_string);
         } catch(std::invalid_argument& e) {

@@ -12,6 +12,7 @@
 #ifndef ALLPIX_LOG_SINKS_H
 #define ALLPIX_LOG_SINKS_H
 
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <ostream>
@@ -27,7 +28,7 @@ namespace allpix {
     /**
      * @brief Sink output style
      */
-    enum class SinkStyle {
+    enum class SinkStyle : std::uint8_t {
         PLAIN, ///< Plain text (log files etc)
         COLOR, ///< ANSI colors, hidden cursor (interactive console)
     };
@@ -105,6 +106,14 @@ namespace allpix {
         explicit StreamSink(std::ostream& stream, SinkStyle style, Format format = Format::DEFAULT);
         ~StreamSink() override;
 
+        /// @{
+        /* @brief Disable copying and moving */
+        StreamSink(const StreamSink&) = delete;
+        StreamSink& operator=(const StreamSink&) = delete;
+        StreamSink(StreamSink&&) = delete;
+        StreamSink& operator=(StreamSink&&) = delete;
+        /// @}
+
         /**
          * @brief Return the style this sink was constructed with
          */
@@ -128,7 +137,7 @@ namespace allpix {
          * @param style Log style (color, plain)
          * @return New pattern_formatter for a sink
          */
-        std::unique_ptr<spdlog::pattern_formatter> make_formatter(Format format, SinkStyle style);
+        static std::unique_ptr<spdlog::pattern_formatter> make_formatter(Format format, SinkStyle style);
 
     private:
         std::ostream& stream_; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
