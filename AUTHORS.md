@@ -23,6 +23,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Marco Bomben, Université de Paris, [mbomben](https://gitlab.cern.ch/mbomben)
 * Koen van den Brandt, Nikhef, [kvandenb](https://gitlab.cern.ch/kvandenb)
 * Ben Bruers, DESY, [bbrueers](https://gitlab.cern.ch/bbrueers)
+* Rickard Brunskog, KTH
 * Carsten Daniel Burgard, DESY, [cburgard](https://gitlab.cern.ch/cburgard)
 * Raul Back Campanelli, Brazilian Synchrotron Light Laboratory, [raul-campanelli](https://github.com/raul-campanelli)
 * Maximilian Felix Caspar, DESY, [mcaspar](https://gitlab.cern.ch/mcaspar)
