@@ -129,7 +129,7 @@ std::list<Configuration>& ConfigManager::getDetectorConfigurations() { return de
 Configuration& ConfigManager::addInstanceConfiguration(const ModuleIdentifier& identifier, const Configuration& config) {
     // Check uniqueness
     if(instance_identifier_to_config_.find(identifier) != instance_identifier_to_config_.end()) {
-        throw ModuleIdentifierAlreadyAddedError(identifier);
+        throw ModuleIdentifierAlreadyAddedError(identifier.getUniqueName(), identifier.getPriority());
     }
 
     // Add configuration
@@ -156,6 +156,6 @@ void ConfigManager::dropInstanceConfiguration(const ModuleIdentifier& identifier
         instance_configs_.erase(instance_identifier_to_config_[identifier]);
         instance_identifier_to_config_.erase(identifier);
     } else {
-        throw ModuleIdentifierNotFoundError(identifier);
+        throw ModuleIdentifierNotFoundError(identifier.getUniqueName(), identifier.getPriority());
     }
 }
