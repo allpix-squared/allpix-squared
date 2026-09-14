@@ -118,7 +118,7 @@ namespace allpix {
                 T tt = t_;
                 for(int j = 0; j < i; ++j) {
                     yt += h_ * tableau_(i, j) * k.row(j);
-                    tt += tableau_(i, j);
+                    tt += h_ * tableau_(i, j);
                 }
                 k.row(i) = function_(tt, yt);
 
