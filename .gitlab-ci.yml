@@ -318,7 +318,9 @@ core:el9-llvm:
 fmt:clang-lint:
     extends: .lint
     script:
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
+        # Get correct GCC tool chain from CLang wrapper
+        - GCC_TOOLCHAIN=$(sed -n 's/.*--gcc-toolchain=\([^ "$]*\).*/\1/p' "$CXX")
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DCLANG_TIDY_EXTRA_ARGS="-extra-arg-before=--gcc-toolchain=$GCC_TOOLCHAIN" ..
         - ninja check-lint 2> /dev/null
     only:
         - schedules
@@ -327,8 +329,10 @@ fmt:clang-lint:
 fmt:clang-lint-diff:
     extends: .lint
     script:
+        # Get correct GCC tool chain from CLang wrapper
+        - GCC_TOOLCHAIN=$(sed -n 's/.*--gcc-toolchain=\([^ "$]*\).*/\1/p' "$CXX")
         - git remote add upstream $REPOSITORY && git fetch upstream
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DTARGET_REMOTE="upstream" ..
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DCLANG_TIDY_EXTRA_ARGS="-extra-arg-before=--gcc-toolchain=$GCC_TOOLCHAIN" -DTARGET_REMOTE="upstream" ..
         - ninja check-lint-diff 2> /dev/null
 
 fmt:coverage:

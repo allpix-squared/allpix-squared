@@ -74,6 +74,8 @@ IF(${CMAKE_CXX_STANDARD})
     SET(CXX_STD ${CMAKE_CXX_STANDARD})
 ENDIF()
 
+SET(CLANG_TIDY_EXTRA_ARGS "" CACHE STRING "Extra arguments passed to clang-tidy")
+
 FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-${CLANG_TIDY_VERSION}" "clang-tidy")
 # Enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -111,21 +113,21 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     FIND_PROGRAM(
         RUN_CLANG_TIDY
         NAMES "run-clang-tidy" "run-clang-tidy.py" "run-clang-tidy-${CLANG_TIDY_MAJOR_VERSION}.py"
-        HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
+        HINTS ${CLANG_DIR}/ /usr/share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
         MESSAGE(STATUS "Found ${RUN_CLANG_TIDY}, adding full-code linting targets")
 
         ADD_CUSTOM_TARGET(
             lint
             COMMAND ${RUN_CLANG_TIDY} -clang-tidy-binary=${CLANG_TIDY} -fix -format -header-filter=${CMAKE_SOURCE_DIR}
-                    -j${NPROC}
+                    -j${NPROC} ${CLANG_TIDY_EXTRA_ARGS}
             COMMENT "Auto fixing problems in all source files")
 
         ADD_CUSTOM_TARGET(
             check-lint
             COMMAND
-                ${RUN_CLANG_TIDY} -clang-tidy-binary=${CLANG_TIDY} -header-filter=${CMAKE_SOURCE_DIR} -j${NPROC} | tee
-                ${CMAKE_BINARY_DIR}/check_lint_file.txt
+                ${RUN_CLANG_TIDY} -clang-tidy-binary=${CLANG_TIDY} -header-filter=${CMAKE_SOURCE_DIR} -j${NPROC}
+                ${CLANG_TIDY_EXTRA_ARGS} | tee ${CMAKE_BINARY_DIR}/check_lint_file.txt
                 # WARNING: fix to stop with error if there are problems
             COMMAND ! grep -c ": error: " ${CMAKE_BINARY_DIR}/check_lint_file.txt > /dev/null
             COMMENT "Checking for problems in source files")
@@ -136,7 +138,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     FIND_PROGRAM(
         CLANG_TIDY_DIFF
         NAMES "clang-tidy-diff" "clang-tidy-diff.py" "clang-tidy-diff-${CLANG_TIDY_MAJOR_VERSION}.py"
-        HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
+        HINTS ${CLANG_DIR}/../share/clang/ /usr/share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
         # Set target branch and remote to perform the diff against
         IF(NOT TARGET_BRANCH)
@@ -153,6 +155,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             COMMAND
                 git diff --unified=0 ${TARGET_REMOTE}/${TARGET_BRANCH}... -- ":!3rdparty/*" ":!tools/root_analysis_macros/*"
                 | ${CLANG_TIDY_DIFF} -clang-tidy-binary=${CLANG_TIDY} -path=${CMAKE_BINARY_DIR} -p1 -fix -j${NPROC}
+                ${CLANG_TIDY_EXTRA_ARGS}
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
             COMMENT "Auto fixing problems in differing source files")
 
@@ -160,8 +163,8 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             check-lint-diff
             COMMAND
                 git diff --unified=0 ${TARGET_REMOTE}/${TARGET_BRANCH}... -- ":!3rdparty/*" ":!tools/root_analysis_macros/*"
-                | ${CLANG_TIDY_DIFF} -clang-tidy-binary=${CLANG_TIDY} -path=${CMAKE_BINARY_DIR} -p1 -j${NPROC} | tee
-                ${CMAKE_BINARY_DIR}/check_lint_file.txt
+                | ${CLANG_TIDY_DIFF} -clang-tidy-binary=${CLANG_TIDY} -path=${CMAKE_BINARY_DIR} -p1 -j${NPROC}
+                ${CLANG_TIDY_EXTRA_ARGS} | tee ${CMAKE_BINARY_DIR}/check_lint_file.txt
                 # WARNING: fix to stop with error if there are problems
             COMMAND ! grep -c ": error: " ${CMAKE_BINARY_DIR}/check_lint_file.txt > /dev/null
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
