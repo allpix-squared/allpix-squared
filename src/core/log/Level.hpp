@@ -55,7 +55,7 @@ namespace allpix {
     /**
      * @brief Format of the logger
      */
-    enum class Format : int {
+    enum class Format : std::uint8_t {
         SHORT = 0,   ///< Only include a single character for the log level, the section header and the message
         DEFAULT = 1, ///< Also include the time and a full logging level description
         LONG = 2,    ///< All of the above and also information about the file and line where the message was defined
