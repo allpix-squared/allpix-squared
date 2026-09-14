@@ -13,7 +13,7 @@ Checks: [
   'cppcoreguidelines-*','-cppcoreguidelines-pro-bounds-pointer-arithmetic',
   'google-*','-google-build-using-namespace','-google-explicit-constructor','-google-runtime-int',
   'hicpp-*',
-  'llvm-*','-llvm-header-guard','-llvm-include-order',
+  'llvm-*','-llvm-header-guard','-llvm-include-order','-llvm-prefer-static-over-anonymous-namespace',
   'misc-*','-misc-include-cleaner','-misc-non-private-member-variables-in-classes',
   'modernize-*','-modernize-use-designated-initializers','-modernize-use-nodiscard','-modernize-use-trailing-return-type',
   'performance-*',
