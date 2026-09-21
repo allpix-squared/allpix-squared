@@ -330,11 +330,6 @@ void CoulombProjectionPropagationModule::run(Event* event) {
 void CoulombProjectionPropagationModule::finalize() {
     if(output_plots_) {
         group_size_histo_->Get()->GetXaxis()->SetRange(1, group_size_histo_->Get()->GetNbinsX() + 1);
-
-        // Write output plots
-        propagation_time_histo_->Write();
-        initial_position_histo_->Write();
-        group_size_histo_->Write();
     }
     LOG(INFO) << deposits_exceeding_max_groups_ * 100.0 / total_deposits_ << "% of deposits have charge exceeding the "
               << max_charge_groups_ << " charge groups allowed, with a charge_per_step value of " << charge_per_step_ << ".";
