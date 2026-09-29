@@ -53,6 +53,20 @@ namespace allpix {
     constexpr Level from_spdlog_level(spdlog::level::level_enum level) { return static_cast<Level>(level); }
 
     /**
+     * Compare two logging levels and return the lower one
+     *
+     * @tparam LevelL left logging level type
+     * @tparam LevelR right logging level type
+     * @param lhs Left logging level
+     * @param rhs Right logging level
+     * @return Minimum verbosity allpix::Level
+     */
+    template <typename LevelL, typename LevelR> constexpr Level min_level(LevelL lhs, LevelR rhs) {
+        return static_cast<Level>(
+            std::min(static_cast<std::underlying_type_t<Level>>(lhs), static_cast<std::underlying_type_t<Level>>(rhs)));
+    }
+
+    /**
      * @brief Format of the logger
      */
     enum class Format : std::uint8_t {

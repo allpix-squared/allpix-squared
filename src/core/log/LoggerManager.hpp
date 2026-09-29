@@ -92,6 +92,13 @@ namespace allpix {
         void addStream(std::ostream& stream, SinkStyle style);
 
         /**
+         * @brief Set the global level and the individual log levels for the different loggers
+         * @param global_level GLobal log level
+         * @param log_levels Map with logger name and its individual level to be set
+         */
+        void setLogLevels(Level global_level, std::unordered_map<std::string, Level> log_levels = {});
+
+        /**
          * @brief Set the level used for the core logger and as the default for loggers created from now on
          * @param level New global default level
          */

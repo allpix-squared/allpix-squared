@@ -66,6 +66,34 @@ void LoggerManager::addStream(std::ostream& stream, SinkStyle style) {
     addSink(sink);
 }
 
+void LoggerManager::setLogLevels(Level global_level, std::unordered_map<std::string, Level> log_levels) {
+    // Configure global log level
+    setGlobalLevel(global_level);
+
+    // Acquire lock to prevent modification of loggers_
+    const std::scoped_lock lock{mutex_};
+    // Set re-calculate log level for every logger
+    for(auto& [topic, logger] : loggers_) {
+        // Start with the global log level
+        Level min_log_level = global_level;
+
+        // Global logger is configured separately
+        if(topic.empty()) {
+            continue;
+        }
+
+        // Iterate over topic subscriptions to find minimum level for this logger
+        for(auto& [sub_topic, sub_level] : log_levels) {
+            if(topic.starts_with(sub_topic)) {
+                // Logger is subscribed => set new minimum level
+                min_log_level = min_level(min_log_level, sub_level);
+            }
+        }
+
+        logger->setLevel(min_log_level);
+    }
+}
+
 void LoggerManager::setGlobalLevel(Level level) {
     global_level_.store(level, std::memory_order_relaxed);
     global_level_explicit_.store(true, std::memory_order_relaxed);
