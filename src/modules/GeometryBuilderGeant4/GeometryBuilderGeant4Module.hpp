@@ -50,7 +50,7 @@ namespace allpix {
          */
         void initialize() override;
 
-        virtual ~GeometryBuilderGeant4Module();
+        ~GeometryBuilderGeant4Module() override;
 
     private:
         GeometryManager* geo_manager_;

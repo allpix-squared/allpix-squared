@@ -553,7 +553,6 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
     }
 
     // Loop through all detectors and set the sensitive detector action that handles the particle passage
-    bool useful_deposition = false;
     for(auto& detector : geo_manager_->getDetectors()) {
         // Do not add sensitive detector for detectors that have no listeners for the deposited charges
         if(!messenger_->hasReceiver(this,
@@ -564,7 +563,6 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
                       << " because there is no listener for its output";
             continue;
         }
-        useful_deposition = true;
 
         // Get ionization energy and Fano factor
         auto model = detector->getModel();
