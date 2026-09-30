@@ -148,7 +148,6 @@ FUNCTION(SETUP_TARGET_FOR_COVERAGE_GCOVR)
         ${Coverage_EXECUTABLE} ${Coverage_EXECUTABLE_ARGS}
         # Running gcovr
         COMMAND ${GCOVR_PATH} -r ${PROJECT_SOURCE_DIR} ${GCOVR_EXCLUDES} --object-directory=${PROJECT_BINARY_DIR}
-                --merge-mode-functions=merge-use-line-min
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         DEPENDS ${Coverage_DEPENDENCIES}
         COMMENT "Running gcovr to produce Cobertura code coverage report.")
