@@ -46,6 +46,19 @@ Configuration::AccessMarker& Configuration::AccessMarker::operator=(const Config
     return *this;
 }
 
+Configuration::AccessMarker::AccessMarker(AccessMarker&& other) noexcept {
+    const std::scoped_lock<std::mutex> config_lock{other.markers_mutex_};
+    markers_ = std::move(other.markers_);
+}
+
+Configuration::AccessMarker& Configuration::AccessMarker::operator=(AccessMarker&& other) {
+    if(this != &other) {
+        const std::scoped_lock config_lock(markers_mutex_, other.markers_mutex_);
+        markers_ = std::move(other.markers_);
+    }
+    return *this;
+}
+
 void Configuration::AccessMarker::registerMarker(const std::string& key) {
     const std::scoped_lock markers_lock{markers_mutex_};
     markers_.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple());
@@ -82,6 +95,17 @@ Configuration::Configuration(Configuration&& other) noexcept {
     path_ = std::move(other.path_);
     config_ = std::move(other.config_);
     used_keys_ = std::move(other.used_keys_);
+}
+
+Configuration& Configuration::operator=(Configuration&& other) {
+    if(this != &other) {
+        const std::scoped_lock config_lock(config_mutex_, other.config_mutex_);
+        name_ = std::move(other.name_);
+        path_ = std::move(other.path_);
+        config_ = std::move(other.config_);
+        used_keys_ = std::move(other.used_keys_);
+    }
+    return *this;
 }
 
 bool Configuration::has(const std::string& key) const {
@@ -227,7 +251,8 @@ void Configuration::merge(const Configuration& other) {
     for(const auto& [key, value] : other.config_) {
         // Only merge values that do not yet exist
         if(!config_.contains(key)) {
-            setText(key, value);
+            config_[key] = value;
+            used_keys_.registerMarker(key);
         }
     }
 }

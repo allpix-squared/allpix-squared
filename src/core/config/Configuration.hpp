@@ -62,10 +62,11 @@ namespace allpix {
              */
             AccessMarker& operator=(const AccessMarker& rhs);
 
-            /* Default destructor, move constructor and operator */
+            /* Default destructor */
             ~AccessMarker() = default;
-            AccessMarker(AccessMarker&&) = default;
-            AccessMarker& operator=(AccessMarker&&) = default;
+            /* move constructor and operator */
+            AccessMarker(AccessMarker&&) noexcept;
+            AccessMarker& operator=(AccessMarker&&);
 
             /**
              * @brief Method to register a key for a new access marker
@@ -124,7 +125,7 @@ namespace allpix {
          * @brief Allow moving the configuration
          */
         Configuration(Configuration&& other) noexcept;
-        Configuration& operator=(Configuration&&) = default;
+        Configuration& operator=(Configuration&&);
         /// @}
 
         /**
