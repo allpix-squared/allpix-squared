@@ -30,21 +30,24 @@
 using namespace allpix;
 
 Configuration::AccessMarker::AccessMarker(const Configuration::AccessMarker& rhs) {
+    const std::scoped_lock markers_lock{markers_mutex_};
     for(const auto& [key, value] : rhs.markers_) {
-        registerMarker(key);
+        markers_.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple());
         markers_.at(key).store(value.load());
     }
 }
 
 Configuration::AccessMarker& Configuration::AccessMarker::operator=(const Configuration::AccessMarker& rhs) {
+    const std::scoped_lock markers_lock{markers_mutex_};
     for(const auto& [key, value] : rhs.markers_) {
-        registerMarker(key);
+        markers_.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple());
         markers_.at(key).store(value.load());
     }
     return *this;
 }
 
 void Configuration::AccessMarker::registerMarker(const std::string& key) {
+    const std::scoped_lock markers_lock{markers_mutex_};
     markers_.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple());
 }
 
@@ -53,16 +56,21 @@ void Configuration::AccessMarker::removeMarker(const std::string& key) { markers
 Configuration::Configuration(std::string name, std::filesystem::path path)
     : name_(std::move(name)), path_(std::move(path)) {}
 
-bool Configuration::has(const std::string& key) const { return config_.find(key) != config_.cend(); }
+bool Configuration::has(const std::string& key) const {
+    const std::scoped_lock config_lock{config_mutex_};
+    return config_.find(key) != config_.cend();
+}
 
 unsigned int Configuration::count(std::initializer_list<std::string> keys) const {
+    const std::scoped_lock config_lock{config_mutex_};
+
     if(keys.size() == 0) {
         throw std::invalid_argument("list of keys cannot be empty");
     }
 
     unsigned int found = 0;
     for(const auto& key : keys) {
-        if(has(key)) {
+        if(config_.contains(key)) {
             found++;
         }
     }
@@ -70,6 +78,8 @@ unsigned int Configuration::count(std::initializer_list<std::string> keys) const
 }
 
 std::string Configuration::getText(const std::string& key) const {
+    const std::scoped_lock config_lock{config_mutex_};
+
     try {
         // NOTE: returning literally including ""
         used_keys_.markUsed(key);
@@ -79,7 +89,8 @@ std::string Configuration::getText(const std::string& key) const {
     }
 }
 std::string Configuration::getText(const std::string& key, const std::string& def) const {
-    if(!has(key)) {
+    const std::scoped_lock config_lock{config_mutex_};
+    if(!config_.contains(key)) {
         return def;
     }
     return getText(key);
@@ -153,6 +164,7 @@ std::filesystem::path Configuration::path_to_absolute(std::filesystem::path path
 }
 
 void Configuration::setText(const std::string& key, const std::string& val) {
+    const std::scoped_lock config_lock{config_mutex_};
     config_[key] = val;
     used_keys_.registerMarker(key);
 }
@@ -161,7 +173,8 @@ void Configuration::setText(const std::string& key, const std::string& val) {
  *  The alias is only used if new key does not exist but old key does. The old key is automatically marked as used.
  */
 void Configuration::setAlias(const std::string& new_key, const std::string& old_key, bool warn) {
-    if(!has(old_key) || has(new_key)) {
+    const std::scoped_lock config_lock{config_mutex_};
+    if(!config_.contains(old_key) || config_.contains(new_key)) {
         return;
     }
     try {
@@ -181,29 +194,36 @@ void Configuration::setAlias(const std::string& new_key, const std::string& old_
  * All keys that are already defined earlier in this configuration are not changed.
  */
 void Configuration::merge(const Configuration& other) {
+    const std::scoped_lock config_lock{config_mutex_};
+
     for(const auto& [key, value] : other.config_) {
         // Only merge values that do not yet exist
-        if(!has(key)) {
+        if(!config_.contains(key)) {
             setText(key, value);
         }
     }
 }
 
 void Configuration::remove(const std::string& key) {
-    if(has(key)) {
+    const std::scoped_lock config_lock{config_mutex_};
+    if(config_.contains(key)) {
         used_keys_.removeMarker(key);
         config_.erase(key);
     }
 }
 
 void Configuration::remove(std::initializer_list<std::string> keys) {
+    const std::scoped_lock config_lock{config_mutex_};
     for(const auto& key : keys) {
-        remove(key);
+        used_keys_.removeMarker(key);
+        config_.erase(key);
     }
 }
 
 std::vector<std::pair<std::string, std::string>> Configuration::getAll() const {
     std::vector<std::pair<std::string, std::string>> result;
+
+    const std::scoped_lock config_lock{config_mutex_};
 
     // Loop over all configuration keys
     for(const auto& key_value : config_) {
@@ -220,9 +240,14 @@ std::vector<std::pair<std::string, std::string>> Configuration::getAll() const {
 
 std::vector<std::string> Configuration::getUnusedKeys() const {
     std::vector<std::string> result;
+    const std::scoped_lock config_lock{config_mutex_};
 
     // Loop over all configuration keys, excluding internal ones
-    for(const auto& key_value : getAll()) {
+    for(const auto& key_value : config_) {
+        // Skip internal keys starting with an underscore
+        if(!key_value.first.empty() && key_value.first.front() == '_') {
+            continue;
+        }
         // Add those to result that have not been accessed:
         if(!used_keys_.isUsed(key_value.first)) {
             result.emplace_back(key_value.first);

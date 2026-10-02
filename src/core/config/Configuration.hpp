@@ -16,6 +16,7 @@
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
@@ -69,14 +70,12 @@ namespace allpix {
             /**
              * @brief Method to register a key for a new access marker
              * @param key Key of the marker
-             * @warning This operation is not thread-safe
              */
             void registerMarker(const std::string& key);
 
             /**
              * @brief Method to unregister a key from the access marker
              * @param key Key of the marker
-             * @warning This operation is not thread-safe
              */
             void removeMarker(const std::string& key);
 
@@ -97,6 +96,7 @@ namespace allpix {
             bool isUsed(const std::string& key) { return markers_.at(key).load(); }
 
         private:
+            std::mutex markers_mutex_;
             std::map<std::string, std::atomic<bool>> markers_;
         };
 
@@ -115,15 +115,36 @@ namespace allpix {
         /**
          * @brief Allow copying the configuration
          */
-        Configuration(const Configuration&) = default;
-        Configuration& operator=(const Configuration&) = default;
+        Configuration(const Configuration& other) noexcept {
+            const std::scoped_lock<std::mutex> config_lock{other.config_mutex_};
+            name_ = other.name_;
+            path_ = other.path_;
+            config_ = other.config_;
+            used_keys_ = other.used_keys_;
+        };
+        Configuration& operator=(const Configuration& other) {
+            if(this != &other) {
+                const std::scoped_lock config_lock(config_mutex_, other.config_mutex_);
+                name_ = other.name_;
+                path_ = other.path_;
+                config_ = other.config_;
+                used_keys_ = other.used_keys_;
+            }
+            return *this;
+        };
         /// @}
 
         /// @{
         /**
          * @brief Allow moving the configuration
          */
-        Configuration(Configuration&&) noexcept = default; // NOLINT
+        Configuration(Configuration&& other) noexcept {
+            const std::scoped_lock<std::mutex> config_lock{other.config_mutex_};
+            name_ = std::move(other.name_);
+            path_ = std::move(other.path_);
+            config_ = std::move(other.config_);
+            used_keys_ = std::move(other.used_keys_);
+        };
         Configuration& operator=(Configuration&&) = default;
         /// @}
 
@@ -370,6 +391,7 @@ namespace allpix {
 
         using ConfigMap = std::map<std::string, std::string>;
         ConfigMap config_;
+        mutable std::mutex config_mutex_;
         mutable AccessMarker used_keys_;
     };
 } // namespace allpix

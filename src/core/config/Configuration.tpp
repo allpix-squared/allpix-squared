@@ -18,6 +18,8 @@ namespace allpix {
      * @throws InvalidKeyError If an overflow happened while converting the key
      */
     template <typename T> T Configuration::get(const std::string& key) const {
+        const std::scoped_lock config_lock{config_mutex_};
+
         try {
             auto node = parse_value(config_.at(key));
             used_keys_.markUsed(key);
@@ -52,6 +54,8 @@ namespace allpix {
      */
     template <typename T> std::vector<T> Configuration::getArray(const std::string& key) const {
         try {
+            const std::scoped_lock config_lock{config_mutex_};
+
             std::string str = config_.at(key);
             used_keys_.markUsed(key);
 
@@ -91,6 +95,8 @@ namespace allpix {
      */
     template <typename T> Matrix<T> Configuration::getMatrix(const std::string& key) const {
         try {
+            const std::scoped_lock config_lock{config_mutex_};
+
             std::string str = config_.at(key);
             used_keys_.markUsed(key);
 
@@ -134,6 +140,8 @@ namespace allpix {
     }
 
     template <typename T> void Configuration::set(const std::string& key, const T& val, bool mark_used) {
+        const std::scoped_lock config_lock{config_mutex_};
+
         config_[key] = allpix::to_string(val);
         used_keys_.registerMarker(key);
         if(mark_used) {
@@ -144,6 +152,7 @@ namespace allpix {
     template <typename T>
     void Configuration::set(const std::string& key, const T& val, std::initializer_list<std::string> units) {
         auto split = allpix::split<Units::UnitType>(allpix::to_string(val));
+        const std::scoped_lock config_lock{config_mutex_};
 
         std::string ret_str;
         for(auto& element : split) {
@@ -163,6 +172,8 @@ namespace allpix {
             str += ",";
         }
         str.pop_back();
+
+        const std::scoped_lock config_lock{config_mutex_};
         config_[key] = std::move(str);
         used_keys_.registerMarker(key);
         if(mark_used) {
@@ -188,6 +199,8 @@ namespace allpix {
         }
         str.pop_back();
         str += "]";
+
+        const std::scoped_lock config_lock{config_mutex_};
         config_[key] = str;
         used_keys_.registerMarker(key);
     }
