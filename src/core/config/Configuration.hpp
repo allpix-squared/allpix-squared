@@ -74,6 +74,13 @@ namespace allpix {
             void registerMarker(const std::string& key);
 
             /**
+             * @brief Method to unregister a key from the access marker
+             * @param key Key of the marker
+             * @warning This operation is not thread-safe
+             */
+            void removeMarker(const std::string& key);
+
+            /**
              * @brief Method to mark existing marker as accessed/used.
              * @param key Key of the marker
              * @note This is an atomic operation and thread-safe.
@@ -307,6 +314,18 @@ namespace allpix {
          * @param other Configuration to merge this one with
          */
         void merge(const Configuration& other);
+
+        /**
+         * @brief Remove a key-value pair if it exists
+         * @param key Key to remove
+         */
+        void remove(const std::string& key);
+
+        /**
+         * @brief Remove several key-value pairs if they exists
+         * @param keys Keys to remove
+         */
+        void remove(std::initializer_list<std::string> keys);
 
         /**
          * @brief Get all key value pairs

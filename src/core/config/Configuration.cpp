@@ -48,6 +48,8 @@ void Configuration::AccessMarker::registerMarker(const std::string& key) {
     markers_.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple());
 }
 
+void Configuration::AccessMarker::removeMarker(const std::string& key) { markers_.erase(key); }
+
 Configuration::Configuration(std::string name, std::filesystem::path path)
     : name_(std::move(name)), path_(std::move(path)) {}
 
@@ -184,6 +186,19 @@ void Configuration::merge(const Configuration& other) {
         if(!has(key)) {
             setText(key, value);
         }
+    }
+}
+
+void Configuration::remove(const std::string& key) {
+    if(has(key)) {
+        used_keys_.removeMarker(key);
+        config_.erase(key);
+    }
+}
+
+void Configuration::remove(std::initializer_list<std::string> keys) {
+    for(const auto& key : keys) {
+        remove(key);
     }
 }
 
