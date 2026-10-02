@@ -467,6 +467,8 @@ FieldMap DFISEParser::read_fields(const std::string& file_name, const std::strin
                         main_section = DFSection::DONOR_CONCENTRATION;
                     } else if(data_type == "AcceptorConcentration") {
                         main_section = DFSection::ACCEPTOR_CONCENTRATION;
+                    } else if(data_type == "ActiveDopingConcentration") {
+                        main_section = DFSection::ACTIVE_DOPING_CONCENTRATION;
                     } else {
                         main_section = DFSection::IGNORED;
                     }
@@ -579,6 +581,20 @@ FieldMap DFISEParser::read_fields(const std::string& file_name, const std::strin
                         main_section = DFSection::IGNORED;
                     }
                 }
+
+                // Filter correct electric field type
+                if(main_section == DFSection::ACTIVE_DOPING_CONCENTRATION) {
+                    observable = "ActiveDopingConcentration";
+                    if(key == "type" && value != "scalar") {
+                        main_section = DFSection::IGNORED;
+                    }
+                    if(key == "dimension" && std::stoul(value) == 1) {
+                        dimension = std::stoul(value);
+                    }
+                    if(key == "dimension" && std::stoul(value) != 1) {
+                        main_section = DFSection::IGNORED;
+                    }
+                }
             }
             continue;
         }
@@ -663,6 +679,19 @@ FieldMap DFISEParser::read_fields(const std::string& file_name, const std::strin
                 region_electric_field_num.clear();
             }
 
+            if(main_section == DFSection::ACTIVE_DOPING_CONCENTRATION && sub_section == DFSection::VALUES) {
+                if(data_count != region_electric_field_num.size()) {
+                    throw std::runtime_error("incorrect number of points");
+                }
+
+                for(size_t i = 0; i < region_electric_field_num.size(); i += 1) {
+                    auto x = region_electric_field_num[i];
+                    region_electric_field_map[region][observable].emplace_back(x, 0, 0);
+                }
+
+                region_electric_field_num.clear();
+            }
+
             // Close section
             if(sub_section != DFSection::NONE) {
                 sub_section = DFSection::NONE;
@@ -680,7 +709,7 @@ FieldMap DFISEParser::read_fields(const std::string& file_name, const std::strin
         // Handle data
         if((main_section == DFSection::ELECTRIC_FIELD || main_section == DFSection::ELECTROSTATIC_POTENTIAL ||
             main_section == DFSection::DOPING_CONCENTRATION || main_section == DFSection::DONOR_CONCENTRATION ||
-            main_section == DFSection::ACCEPTOR_CONCENTRATION) &&
+            main_section == DFSection::ACCEPTOR_CONCENTRATION || main_section == DFSection::ACTIVE_DOPING_CONCENTRATION) &&
            sub_section == DFSection::VALUES) {
             std::stringstream sstr(line);
             double num = NAN;
