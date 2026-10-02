@@ -56,6 +56,34 @@ void Configuration::AccessMarker::removeMarker(const std::string& key) { markers
 Configuration::Configuration(std::string name, std::filesystem::path path)
     : name_(std::move(name)), path_(std::move(path)) {}
 
+Configuration::Configuration(const Configuration& other) noexcept {
+    const std::scoped_lock<std::mutex> config_lock{other.config_mutex_};
+
+    name_ = other.name_;
+    path_ = other.path_;
+    config_ = other.config_;
+    used_keys_ = other.used_keys_;
+}
+
+Configuration& Configuration::operator=(const Configuration& other) {
+    if(this != &other) {
+        const std::scoped_lock config_lock(config_mutex_, other.config_mutex_);
+        name_ = other.name_;
+        path_ = other.path_;
+        config_ = other.config_;
+        used_keys_ = other.used_keys_;
+    }
+    return *this;
+}
+
+Configuration::Configuration(Configuration&& other) noexcept {
+    const std::scoped_lock<std::mutex> config_lock{other.config_mutex_};
+    name_ = std::move(other.name_);
+    path_ = std::move(other.path_);
+    config_ = std::move(other.config_);
+    used_keys_ = std::move(other.used_keys_);
+}
+
 bool Configuration::has(const std::string& key) const {
     const std::scoped_lock config_lock{config_mutex_};
     return config_.find(key) != config_.cend();
@@ -243,14 +271,14 @@ std::vector<std::string> Configuration::getUnusedKeys() const {
     const std::scoped_lock config_lock{config_mutex_};
 
     // Loop over all configuration keys, excluding internal ones
-    for(const auto& key_value : config_) {
+    for(const auto& [key, value] : config_) {
         // Skip internal keys starting with an underscore
-        if(!key_value.first.empty() && key_value.first.front() == '_') {
+        if(!key.empty() && key.front() == '_') {
             continue;
         }
         // Add those to result that have not been accessed:
-        if(!used_keys_.isUsed(key_value.first)) {
-            result.emplace_back(key_value.first);
+        if(!used_keys_.isUsed(key)) {
+            result.emplace_back(key);
         }
     }
 

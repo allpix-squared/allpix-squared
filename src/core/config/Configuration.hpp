@@ -115,36 +115,15 @@ namespace allpix {
         /**
          * @brief Allow copying the configuration
          */
-        Configuration(const Configuration& other) noexcept {
-            const std::scoped_lock<std::mutex> config_lock{other.config_mutex_};
-            name_ = other.name_;
-            path_ = other.path_;
-            config_ = other.config_;
-            used_keys_ = other.used_keys_;
-        };
-        Configuration& operator=(const Configuration& other) {
-            if(this != &other) {
-                const std::scoped_lock config_lock(config_mutex_, other.config_mutex_);
-                name_ = other.name_;
-                path_ = other.path_;
-                config_ = other.config_;
-                used_keys_ = other.used_keys_;
-            }
-            return *this;
-        };
+        Configuration(const Configuration& other) noexcept;
+        Configuration& operator=(const Configuration& other);
         /// @}
 
         /// @{
         /**
          * @brief Allow moving the configuration
          */
-        Configuration(Configuration&& other) noexcept {
-            const std::scoped_lock<std::mutex> config_lock{other.config_mutex_};
-            name_ = std::move(other.name_);
-            path_ = std::move(other.path_);
-            config_ = std::move(other.config_);
-            used_keys_ = std::move(other.used_keys_);
-        };
+        Configuration(Configuration&& other) noexcept;
         Configuration& operator=(Configuration&&) = default;
         /// @}
 
