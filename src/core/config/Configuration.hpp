@@ -66,7 +66,7 @@ namespace allpix {
             ~AccessMarker() = default;
             /* move constructor and operator */
             AccessMarker(AccessMarker&&) noexcept;
-            AccessMarker& operator=(AccessMarker&&);
+            AccessMarker& operator=(AccessMarker&&) noexcept;
 
             /**
              * @brief Method to register a key for a new access marker
@@ -125,7 +125,7 @@ namespace allpix {
          * @brief Allow moving the configuration
          */
         Configuration(Configuration&& other) noexcept;
-        Configuration& operator=(Configuration&&);
+        Configuration& operator=(Configuration&&) noexcept;
         /// @}
 
         /**

@@ -48,10 +48,10 @@ Configuration::AccessMarker& Configuration::AccessMarker::operator=(const Config
 
 Configuration::AccessMarker::AccessMarker(AccessMarker&& other) noexcept {
     const std::scoped_lock<std::mutex> config_lock{other.markers_mutex_};
-    markers_ = std::move(other.markers_);
+    markers_ = std::move(other.markers_); // NOLINT(cppcoreguidelines-prefer-member-initializer)
 }
 
-Configuration::AccessMarker& Configuration::AccessMarker::operator=(AccessMarker&& other) {
+Configuration::AccessMarker& Configuration::AccessMarker::operator=(AccessMarker&& other) noexcept {
     if(this != &other) {
         const std::scoped_lock config_lock(markers_mutex_, other.markers_mutex_);
         markers_ = std::move(other.markers_);
@@ -72,10 +72,12 @@ Configuration::Configuration(std::string name, std::filesystem::path path)
 Configuration::Configuration(const Configuration& other) noexcept {
     const std::scoped_lock<std::mutex> config_lock{other.config_mutex_};
 
+    // NOLINTBEGIN(cppcoreguidelines-prefer-member-initializer)
     name_ = other.name_;
     path_ = other.path_;
     config_ = other.config_;
     used_keys_ = other.used_keys_;
+    // NOLINTEND(cppcoreguidelines-prefer-member-initializer)
 }
 
 Configuration& Configuration::operator=(const Configuration& other) {
@@ -91,13 +93,15 @@ Configuration& Configuration::operator=(const Configuration& other) {
 
 Configuration::Configuration(Configuration&& other) noexcept {
     const std::scoped_lock<std::mutex> config_lock{other.config_mutex_};
+    // NOLINTBEGIN(cppcoreguidelines-prefer-member-initializer)
     name_ = std::move(other.name_);
     path_ = std::move(other.path_);
     config_ = std::move(other.config_);
     used_keys_ = std::move(other.used_keys_);
+    // NOLINTEND(cppcoreguidelines-prefer-member-initializer)
 }
 
-Configuration& Configuration::operator=(Configuration&& other) {
+Configuration& Configuration::operator=(Configuration&& other) noexcept {
     if(this != &other) {
         const std::scoped_lock config_lock(config_mutex_, other.config_mutex_);
         name_ = std::move(other.name_);
