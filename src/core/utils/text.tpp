@@ -31,8 +31,7 @@ namespace allpix {
     /**
      * The Magic Enum library is used for conversion between string and enum type
      */
-    template <typename T>
-    typename std::enable_if_t<std::is_enum_v<T>, T> from_string_impl(std::string str, type_tag<T> /*unused*/) {
+    template <typename T> std::enable_if_t<std::is_enum_v<T>, T> from_string_impl(std::string str, type_tag<T> /*unused*/) {
         str = from_string_impl(str, type_tag<std::string>());
 
         auto val = enum_cast<T>(str, true);
@@ -54,7 +53,7 @@ namespace allpix {
      * standard framework unit.
      */
     template <typename T>
-    typename std::enable_if_t<std::is_arithmetic_v<T>, T> from_string_impl(std::string str, type_tag<T> /*unused*/) {
+    std::enable_if_t<std::is_arithmetic_v<T>, T> from_string_impl(std::string str, type_tag<T> /*unused*/) {
         str = from_string_helper(str);
 
         // Find an optional set of units
