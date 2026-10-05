@@ -39,7 +39,7 @@ G4Material* Materials::get(const std::string& material) const {
     // Look in our materials definitions
     // FIXME tolower for this comparison but not for the rest
     auto material_lower = allpix::transform(material, ::tolower);
-    if(materials_.find(material_lower) != materials_.end()) {
+    if(materials_.contains(material_lower)) {
         LOG(TRACE) << "Found material \"" << material << "\" in internal database";
         return materials_.at(material_lower);
     }

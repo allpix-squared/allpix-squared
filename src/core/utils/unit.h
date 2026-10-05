@@ -18,8 +18,6 @@
 #include <string>
 #include <utility>
 
-// TODO [doc] Check if this class can be constexpressed?
-
 namespace allpix {
 
     /**
