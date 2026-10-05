@@ -189,8 +189,8 @@ namespace allpix {
              * @brief Explicit copy assignment operator to avoid copying std::once_flag
              */
             PointerWrapper& operator=(const PointerWrapper& rhs) {
-                BaseWrapper<T>::operator=(rhs);
                 loaded_ = rhs.loaded_.load();
+                BaseWrapper<T>::operator=(rhs);
                 return *this;
             };
 
@@ -203,8 +203,8 @@ namespace allpix {
              * @brief Explicit move assignment to avoid copying std::once_flag
              */
             PointerWrapper& operator=(PointerWrapper&& rhs) noexcept {
-                BaseWrapper<T>::operator=(std::move(rhs));
                 loaded_ = rhs.loaded_.load();
+                BaseWrapper<T>::operator=(std::move(rhs));
                 return *this;
             };
 
