@@ -48,9 +48,8 @@ namespace allpix {
                 LOG(PRNG) << "Using random number " << prn;
                 return prn;
             }
-            else {
-                return std::mt19937_64::operator()();
-            }
+
+            return std::mt19937_64::operator()();
         }
     };
 } // namespace allpix

@@ -494,7 +494,7 @@ namespace allpix {
          * @brief Set the size of a pixel
          * @param val Size of a pixel
          */
-        void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
+        void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = val; }
 
         /**
          * @brief Set the thickness of the sensor

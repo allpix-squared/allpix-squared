@@ -47,12 +47,12 @@ ConfigManager::ConfigManager(Configuration header,
     for(const auto& config : modules) {
         // Skip all ignored sections
         const std::string config_name = allpix::transform(config.getName(), ::tolower);
-        if(ignore_names_.find(config_name) != ignore_names_.end()) {
+        if(ignore_names_.contains(config_name)) {
             continue;
         }
 
         // Merge all global section with the global config
-        if(global_names_.find(config_name) != global_names_.end()) {
+        if(global_names_.contains(config_name)) {
             global_config_.merge(config);
             continue;
         }
@@ -128,7 +128,7 @@ std::list<Configuration>& ConfigManager::getDetectorConfigurations() { return de
  */
 Configuration& ConfigManager::addInstanceConfiguration(const ModuleIdentifier& identifier, const Configuration& config) {
     // Check uniqueness
-    if(instance_identifier_to_config_.find(identifier) != instance_identifier_to_config_.end()) {
+    if(instance_identifier_to_config_.contains(identifier)) {
         throw ModuleIdentifierAlreadyAddedError(identifier.getUniqueName(), identifier.getPriority());
     }
 
@@ -152,7 +152,7 @@ Configuration& ConfigManager::addInstanceConfiguration(const ModuleIdentifier& i
  */
 void ConfigManager::dropInstanceConfiguration(const ModuleIdentifier& identifier) {
     // Remove config from instance configs and from instance identifier map
-    if(instance_identifier_to_config_.find(identifier) != instance_identifier_to_config_.end()) {
+    if(instance_identifier_to_config_.contains(identifier)) {
         instance_configs_.erase(instance_identifier_to_config_[identifier]);
         instance_identifier_to_config_.erase(identifier);
     } else {

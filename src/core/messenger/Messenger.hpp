@@ -226,7 +226,7 @@ namespace allpix {
 
     private:
         // The global messenger which contains the shared delegate information
-        const Messenger& global_messenger_;
+        const Messenger& global_messenger_; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
         std::unordered_map<std::string, std::unordered_map<std::type_index, DelegateTypes>> messages_;
         std::vector<std::shared_ptr<BaseMessage>> sent_messages_;

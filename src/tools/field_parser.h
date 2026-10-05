@@ -188,7 +188,7 @@ namespace allpix {
          * point)
          */
         explicit FieldParser(const FieldQuantity quantity)
-            : N_(static_cast<std::underlying_type_t<FieldQuantity>>(quantity)) {};
+            : n_(static_cast<std::underlying_type_t<FieldQuantity>>(quantity)) {};
         ~FieldParser() = default;
 
         /**
@@ -291,7 +291,7 @@ namespace allpix {
 
             // Check that we have the right number of vector entries
             auto dimensions = field_data.getDimensions();
-            if(field_data.getData()->size() != dimensions[0] * dimensions[1] * dimensions[2] * N_) {
+            if(field_data.getData()->size() != dimensions[0] * dimensions[1] * dimensions[2] * n_) {
                 throw std::runtime_error("invalid data");
             }
 
@@ -350,13 +350,17 @@ namespace allpix {
             }
             file >> tmp >> tmp >> tmp; // ignore the incident pion direction
             file >> tmp >> tmp >> tmp; // ignore the magnetic field (specify separately)
-            double thickness = NAN, xpixsz = NAN, ypixsz = NAN;
+            double thickness = NAN;
+            double xpixsz = NAN;
+            double ypixsz = NAN;
             file >> thickness >> xpixsz >> ypixsz;
             thickness = Units::get(thickness, "um");
             xpixsz = Units::get(xpixsz, "um");
             ypixsz = Units::get(ypixsz, "um");
             file >> tmp >> tmp >> tmp >> tmp; // ignore temperature, flux, rhe (?) and new_drde (?)
-            size_t xsize = 0, ysize = 0, zsize = 0;
+            size_t xsize = 0;
+            size_t ysize = 0;
+            size_t zsize = 0;
             file >> xsize >> ysize >> zsize;
             file >> tmp;
 
@@ -365,7 +369,7 @@ namespace allpix {
             }
             auto field = std::make_shared<std::vector<double>>();
             auto vertices = xsize * ysize * zsize;
-            field->resize(vertices * N_);
+            field->resize(vertices * n_);
 
             // Loop through all the field data
             for(size_t i = 0; i < vertices; ++i) {
@@ -378,7 +382,9 @@ namespace allpix {
                 }
 
                 // Get index of field
-                size_t xind = 0, yind = 0, zind = 0;
+                size_t xind = 0;
+                size_t yind = 0;
+                size_t zind = 0;
                 file >> xind >> yind >> zind;
 
                 if(file.fail() || xind > xsize || yind > ysize || zind > zsize) {
@@ -389,12 +395,12 @@ namespace allpix {
                 zind--;
 
                 // Loop through components of field
-                for(size_t j = 0; j < N_; ++j) {
+                for(size_t j = 0; j < n_; ++j) {
                     double input = NAN;
                     file >> input;
 
                     // Set the field at a position
-                    (*field)[(xind * ysize * zsize * N_) + (yind * zsize * N_) + (zind * N_) + j] = Units::get(input, units);
+                    (*field)[(xind * ysize * zsize * n_) + (yind * zsize * n_) + (zind * n_) + j] = Units::get(input, units);
                 }
             }
             LOG_PROGRESS(INFO, "read_init") << "Reading field data: finished.";
@@ -406,7 +412,7 @@ namespace allpix {
                                 norm);
         }
 
-        size_t N_;
+        size_t n_;
         std::map<std::filesystem::path, FieldData<T>> field_map_;
     };
 
@@ -424,7 +430,7 @@ namespace allpix {
          * point)
          */
         explicit FieldWriter(const FieldQuantity quantity)
-            : N_(static_cast<std::underlying_type_t<FieldQuantity>>(quantity)) {};
+            : n_(static_cast<std::underlying_type_t<FieldQuantity>>(quantity)) {};
         ~FieldWriter() = default;
 
         /**
@@ -444,7 +450,7 @@ namespace allpix {
             auto path = std::filesystem::weakly_canonical(file_name);
 
             auto dimensions = field_data.getDimensions();
-            if(field_data.getData()->size() != N_ * dimensions[0] * dimensions[1] * dimensions[2]) {
+            if(field_data.getData()->size() != n_ * dimensions[0] * dimensions[1] * dimensions[2]) {
                 throw std::runtime_error("invalid field dimensions");
             }
 
@@ -518,7 +524,7 @@ namespace allpix {
 
             // Write the data block:
             auto data = field_data.getData();
-            auto max_points = data->size() / N_;
+            auto max_points = data->size() / n_;
 
             for(size_t xind = 0; xind < dimensions[0]; ++xind) {
                 for(size_t yind = 0; yind < dimensions[1]; ++yind) {
@@ -527,10 +533,10 @@ namespace allpix {
                         file << xind + 1 << " " << yind + 1 << " " << zind + 1;
 
                         // Vector or scalar field:
-                        for(size_t j = 0; j < N_; j++) {
+                        for(size_t j = 0; j < n_; j++) {
                             file << " "
-                                 << Units::convert(data->at(xind * dimensions[1] * dimensions[2] * N_ +
-                                                            yind * dimensions[2] * N_ + zind * N_ + j),
+                                 << Units::convert(data->at(xind * dimensions[1] * dimensions[2] * n_ +
+                                                            yind * dimensions[2] * n_ + zind * n_ + j),
                                                    units);
                         }
                         // End this line
@@ -544,7 +550,7 @@ namespace allpix {
             LOG_PROGRESS(INFO, "write_init") << "Writing field data: finished.";
         }
 
-        size_t N_;
+        size_t n_;
     };
 } // namespace allpix
 

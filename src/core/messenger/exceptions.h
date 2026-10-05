@@ -25,7 +25,6 @@ namespace allpix {
      * Raised if a module receives a message again while its \ref SingleBindDelegate "bound variable" is
      * already pointing to the earlier received message.
      */
-    // TODO [doc] Should be renamed to UnexpectedMessageError
     class UnexpectedMessageException : public RuntimeError {
     public:
         /**

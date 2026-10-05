@@ -72,14 +72,14 @@ namespace allpix {
 
     template <typename T> std::shared_ptr<T> LocalMessenger::fetchMessage(Module* module) {
         static_assert(std::is_base_of_v<BaseMessage, T>, "Fetched message should inherit from Message class");
-        std::type_index type_idx = typeid(T);
+        const std::type_index type_idx = typeid(T);
         return std::static_pointer_cast<T>(messages_.at(module->getUniqueName()).at(type_idx).single);
     }
 
     template <typename T> std::vector<std::shared_ptr<T>> LocalMessenger::fetchMultiMessage(Module* module) {
         static_assert(std::is_base_of_v<BaseMessage, T>, "Fetched message should inherit from Message class");
 
-        std::type_index type_idx = typeid(T);
+        const std::type_index type_idx = typeid(T);
 
         // Construct an empty vector in case no previous modules created one during dispatch
         auto base_messages = messages_.at(module->getUniqueName()).at(type_idx).multi;
