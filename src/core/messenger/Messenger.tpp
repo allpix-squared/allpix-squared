@@ -79,7 +79,6 @@ namespace allpix {
     template <typename T> std::vector<std::shared_ptr<T>> LocalMessenger::fetchMultiMessage(Module* module) {
         static_assert(std::is_base_of_v<BaseMessage, T>, "Fetched message should inherit from Message class");
 
-        // TODO: do nothing if T == BaseMessage; there is no need to cast (optimized out)?
         std::type_index type_idx = typeid(T);
 
         // Construct an empty vector in case no previous modules created one during dispatch
