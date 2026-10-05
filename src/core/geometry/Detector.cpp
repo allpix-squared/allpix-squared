@@ -41,7 +41,7 @@ Detector::Detector(std::string name,
                    std::shared_ptr<DetectorModel> model,
                    ROOT::Math::XYZPoint position,
                    const ROOT::Math::Rotation3D& orientation)
-    : Detector(std::move(name), std::move(position), orientation) {
+    : Detector(std::move(name), position, orientation) {
     model_ = std::move(model); // NOLINT
     // Check if valid model is supplied
     if(model_ == nullptr) {
@@ -59,7 +59,7 @@ Detector::Detector(std::string name,
  * model is added.
  */
 Detector::Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::Math::Rotation3D& orientation)
-    : name_(std::move(name)), position_(std::move(position)), orientation_(orientation), magnetic_field_on_(false) {}
+    : name_(std::move(name)), position_(position), orientation_(orientation), magnetic_field_on_(false) {}
 
 void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     model_ = std::move(model);
@@ -116,7 +116,7 @@ Pixel Detector::getPixel(const Pixel::Index& index) const {
     auto local_center = model_->getPixelCenter(index.x(), index.y());
     auto global_center = getGlobalPosition(local_center);
 
-    return {index, type, std::move(local_center), std::move(global_center), std::move(size)};
+    return {index, type, local_center, global_center, std::move(size)};
 }
 
 /**
@@ -184,7 +184,7 @@ void Detector::setWeightingPotentialFunction(FieldFunction<double> function,
 // in case a field gradient is needed inside the sensor.
 void Detector::setMagneticField(ROOT::Math::XYZVector b_field) {
     magnetic_field_on_ = true;
-    magnetic_field_ = std::move(b_field);
+    magnetic_field_ = b_field;
 }
 
 /**

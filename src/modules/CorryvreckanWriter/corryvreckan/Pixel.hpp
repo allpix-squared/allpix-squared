@@ -10,7 +10,7 @@
  */
 
 #ifndef CORRYVRECKAN_PIXEL_H
-#define CORRYVRECKAN_PIXEL_H 1
+#define CORRYVRECKAN_PIXEL_H
 
 #include "Object.hpp"
 
@@ -55,24 +55,24 @@ namespace corryvreckan {
          * is available. If `raw` is not available either, it should be set to 1.
          */
         Pixel(std::string detectorID, int col, int row, int raw, double charge, double timestamp)
-            : Object(std::move(detectorID), timestamp), m_column(col), m_row(row), m_raw(raw), m_charge(charge) {}
+            : Object(std::move(detectorID), timestamp), column_(col), row_(row), raw_(raw), charge_(charge) {}
 
         // Methods to get member variables:
         /**
          * @brief Get pixel row
          * @return Pixel row
          */
-        int row() const { return m_row; }
+        int row() const { return row_; }
         /**
          * @brief Get pixel column
          * @return Pixel column
          */
-        int column() const { return m_column; }
+        int column() const { return column_; }
         /**
          * @brief Get pixel coordinates
          * @return Pixel coordinates (column, row)
          */
-        std::pair<int, int> coordinates() const { return std::make_pair(m_column, m_row); }
+        std::pair<int, int> coordinates() const { return std::make_pair(column_, row_); }
 
         /**
          * @brief Get pixel raw value (charge equivalent depending on detector, e.g. ToT, ADC, ...)
@@ -81,22 +81,22 @@ namespace corryvreckan {
          * raw is a generic charge equivalent pixel value which can be ToT, ADC, ..., depending on the detector
          * if isBinary==true, the value will always be 1 and shouldn't be used for anything
          */
-        int raw() const { return m_raw; }
+        int raw() const { return raw_; }
         /**
          * @brief Get pixel charge in electrons
          * @return Pixel charge
          */
-        double charge() const { return m_charge; }
+        double charge() const { return charge_; }
 
         // Methods to set member variables:
         /**
          * @brief Set pixel raw value (charge equivalent depending on detector, e.g. ToT, ADC, ...)
          */
-        void setRaw(int raw) { m_raw = raw; }
+        void setRaw(int raw) { raw_ = raw; }
         /**
          * @brief Set pixel charge in electrons
          */
-        void setCharge(double charge) { m_charge = charge; }
+        void setCharge(double charge) { charge_ = charge; }
 
         /**
          * @brief Print an ASCII representation of Pixel to the given stream
@@ -111,10 +111,10 @@ namespace corryvreckan {
 
     private:
         // Member variables
-        int m_column;
-        int m_row;
-        int m_raw;
-        double m_charge;
+        int column_;
+        int row_;
+        int raw_;
+        double charge_;
     };
 
     // Vector type declaration

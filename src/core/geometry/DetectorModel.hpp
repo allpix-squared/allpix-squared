@@ -165,7 +165,7 @@ namespace allpix {
                     ROOT::Math::XYZVector offset,
                     ROOT::Math::RotationZ orientation,
                     Configuration config)
-                : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)), orientation_(orientation),
+                : type_(type), shape_(shape), size_(size), offset_(offset), orientation_(orientation),
                   config_(std::move(config)) {}
 
             // Actual parameters returned
@@ -416,7 +416,7 @@ namespace allpix {
          *
          * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual bool isWithinMatrix(const int x, const int y) const = 0;
+        virtual bool isWithinMatrix(int x, int y) const = 0;
 
         /**
          * @brief Returns if a position is within the grid of pixels defined for the device
@@ -438,7 +438,7 @@ namespace allpix {
          *
          * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual ROOT::Math::XYZPoint getPixelCenter(const int x, const int y) const = 0;
+        virtual ROOT::Math::XYZPoint getPixelCenter(int x, int y) const = 0;
         /**
          * @brief Return X,Y indices of a pixel corresponding to a local position in a sensor.
          * @param local_pos Position in local coordinates of the detector model
@@ -468,7 +468,7 @@ namespace allpix {
          *
          * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, const size_t distance) const = 0;
+        virtual std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, size_t distance) const = 0;
 
         /**
          * @brief Check if two pixel indices are neighbors to each other
@@ -479,7 +479,7 @@ namespace allpix {
          *
          * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const = 0;
+        virtual bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, size_t distance) const = 0;
 
     protected:
         /**
@@ -487,7 +487,7 @@ namespace allpix {
          * @param val Number of two dimensional pixels
          */
         void setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> val) {
-            number_of_pixels_ = std::move(val);
+            number_of_pixels_ = val;
         }
 
         /**
@@ -583,8 +583,8 @@ namespace allpix {
                                const SupportLayer::Location location,
                                const ROOT::Math::XYVector& hole_size,
                                ROOT::Math::XYVector hole_offset) {
-            ROOT::Math::XYZVector full_size(size.x(), size.y(), thickness);
-            ROOT::Math::XYZVector full_hole_size(hole_size.x(), hole_size.y(), thickness);
+            const ROOT::Math::XYZVector full_size(size.x(), size.y(), thickness);
+            const ROOT::Math::XYZVector full_hole_size(hole_size.x(), hole_size.y(), thickness);
             support_layers_.push_back(SupportLayer(
                 full_size, offset, std::move(material), std::move(type), location, full_hole_size, hole_offset));
         }

@@ -9,7 +9,7 @@
  */
 
 #ifndef CORRYVRECKAN_EVENT_H
-#define CORRYVRECKAN_EVENT_H 1
+#define CORRYVRECKAN_EVENT_H
 
 #include "Object.hpp"
 
