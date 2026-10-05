@@ -113,8 +113,8 @@ namespace allpix {
          */
         size_t getDimensionality() const {
             size_t dim = 3;
-            dim -= (dimensions_[0] == 1 ? 1u : 0);
-            dim -= (dimensions_[1] == 1 ? 1u : 0);
+            dim -= (dimensions_[0] == 1 ? 1U : 0);
+            dim -= (dimensions_[1] == 1 ? 1U : 0);
             return dim;
         }
 
@@ -159,7 +159,7 @@ namespace allpix {
 namespace cereal::detail {
     template <class T> struct Version<allpix::FieldData<T>> {
         static const std::uint32_t version;
-        static std::uint32_t registerVersion() {
+        static std::uint32_t registerVersion() noexcept {
             ::cereal::detail::StaticObject<Versions>::getInstance().mapping.emplace(
                 std::type_index(typeid(allpix::FieldData<T>)).hash_code(), APF_MIME_TYPE_VERSION);
             return APF_MIME_TYPE_VERSION;

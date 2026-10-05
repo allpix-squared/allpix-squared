@@ -585,13 +585,8 @@ namespace allpix {
                                ROOT::Math::XYVector hole_offset) {
             ROOT::Math::XYZVector full_size(size.x(), size.y(), thickness);
             ROOT::Math::XYZVector full_hole_size(hole_size.x(), hole_size.y(), thickness);
-            support_layers_.push_back(SupportLayer(std::move(full_size),
-                                                   std::move(offset),
-                                                   std::move(material),
-                                                   std::move(type),
-                                                   location,
-                                                   std::move(full_hole_size),
-                                                   std::move(hole_offset)));
+            support_layers_.push_back(SupportLayer(
+                full_size, offset, std::move(material), std::move(type), location, full_hole_size, hole_offset));
         }
 
         // Validation of the detector model

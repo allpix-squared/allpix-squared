@@ -142,7 +142,7 @@ namespace corryvreckan {
 
     protected:
         // Timestamp of the end of the event
-        double end_;
+        double end_{};
 
         // List with all triggers known to the event, containing the trigger ID and its timestamp
         std::map<uint32_t, double> trigger_list_;

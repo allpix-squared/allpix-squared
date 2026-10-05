@@ -98,8 +98,7 @@ void GeometryManager::loadGeometry(const std::list<Configuration>& detector_conf
 
         // Create the detector and add it without model
         // NOTE: cannot use make_shared here due to the private constructor
-        auto detector =
-            std::shared_ptr<Detector>(new Detector(geometry_section.getName(), std::move(position), orientation));
+        auto detector = std::shared_ptr<Detector>(new Detector(geometry_section.getName(), position, orientation));
         addDetector(detector);
 
         // Add a link to the detector to add the model later
@@ -209,7 +208,7 @@ void GeometryManager::addPoint(ROOT::Math::XYZPoint point) {
     if(closed_) {
         throw ModuleError("Geometry is already closed before adding detector");
     }
-    points_.push_back(std::move(point));
+    points_.push_back(point);
 }
 
 /**

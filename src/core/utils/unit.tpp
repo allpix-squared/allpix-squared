@@ -23,7 +23,7 @@ namespace allpix {
      * checked for overflow problems before the type is converted back to the original type.
      */
     template <typename T> T Units::get(T inp, const std::string& str) {
-        UnitType out = static_cast<UnitType>(inp) * get(str);
+        const auto out = static_cast<UnitType>(inp) * get(str);
         if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
            out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
             throw std::overflow_error("unit conversion overflows the type");
