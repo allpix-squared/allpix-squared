@@ -92,9 +92,10 @@ namespace allpix {
         };
 
         /**
-         * Default constructor
+         * Default constructor and destructor
          */
         PrimariesReader() = default;
+        virtual ~PrimariesReader() = default;
 
         /**
          * Purely virtual method to obtain a vector of primary particles for the current event. This methods needs to be

@@ -40,8 +40,8 @@ ConfigManager::ConfigManager(Configuration header,
 
     // Convert all global and ignored names to lower case and store them
     auto lowercase = [](const std::string& in) { return allpix::transform(in, ::tolower); };
-    std::transform(global.begin(), global.end(), std::inserter(global_names_, global_names_.end()), lowercase);
-    std::transform(ignore.begin(), ignore.end(), std::inserter(ignore_names_, ignore_names_.end()), lowercase);
+    std::ranges::transform(global, std::inserter(global_names_, global_names_.end()), lowercase);
+    std::ranges::transform(ignore, std::inserter(ignore_names_, ignore_names_.end()), lowercase);
 
     // Store all module configurations
     for(const auto& config : modules) {

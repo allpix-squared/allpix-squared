@@ -132,7 +132,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
                 LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
             }
-            auto min_element = std::min(std::abs(direction.x()), std::min(std::abs(direction.y()), std::abs(direction.z())));
+            auto min_element = std::min({std::abs(direction.x()), std::abs(direction.y()), std::abs(direction.z())});
             G4ThreeVector angref1;
             if(min_element == std::abs(direction.x())) {
                 angref1 = direction.cross({1, 0, 0});
@@ -271,7 +271,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             if(particle == nullptr) {
                 throw InvalidValueError(config_, "particle_code", "particle code does not exist.");
             }
-        } else if(isotopes_.find(particle_type_) != isotopes_.end() || particle_type_.substr(0, 3) == "ion") {
+        } else if(isotopes_.contains(particle_type_) || particle_type_.substr(0, 3) == "ion") {
             // In the case we are using a multithreaded version of Geant4, Ion tables may not be ready to use now
             // so we do use them later
             initialize_ion_as_particle_ = true;
@@ -310,7 +310,7 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
         auto* single_source = particle_source_->GetCurrentSource();
         G4ParticleDefinition* particle = nullptr;
 
-        if(isotopes_.find(particle_type_) != isotopes_.end()) {
+        if(isotopes_.contains(particle_type_)) {
             auto isotope = isotopes_[particle_type_];
             // Set radioactive isotope:
             particle = G4IonTable::GetIonTable()->GetIon(std::get<0>(isotope), std::get<1>(isotope), std::get<3>(isotope));

@@ -40,35 +40,35 @@ namespace allpix {
 
     // Getters for single and inverse units
     template <typename T> T Units::getSingle(T inp, std::string str) {
-        UnitType out = static_cast<UnitType>(inp) * getSingle(std::move(str));
+        const auto out = static_cast<UnitType>(inp) * getSingle(std::move(str));
         if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
            out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
             throw std::overflow_error("unit conversion overflows the type");
         }
         if constexpr(std::is_integral_v<T>) {
-            out = std::round(out);
+            return static_cast<T>(std::round(out));
         }
         return static_cast<T>(out);
     }
     template <typename T> T Units::getSingleInverse(T inp, std::string str) {
-        UnitType out = static_cast<UnitType>(inp) / getSingle(std::move(str));
+        const auto out = static_cast<UnitType>(inp) / getSingle(std::move(str));
         if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
            out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
             throw std::overflow_error("unit conversion overflows the type");
         }
         if constexpr(std::is_integral_v<T>) {
-            out = std::round(out);
+            return static_cast<T>(std::round(out));
         }
         return static_cast<T>(out);
     }
     template <typename T> T Units::getInverse(T inp, const std::string& str) {
-        UnitType out = static_cast<UnitType>(inp) / get(str);
+        const auto out = static_cast<UnitType>(inp) / get(str);
         if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
            out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
             throw std::overflow_error("unit conversion overflows the type");
         }
         if constexpr(std::is_integral_v<T>) {
-            out = std::round(out);
+            return static_cast<T>(std::round(out));
         }
         return static_cast<T>(out);
     }

@@ -169,7 +169,7 @@ namespace allpix {
         static std::tuple<LogLevel, LogFormat, std::string, uint64_t> set_module_before(const std::string& mod_name,
                                                                                         const Configuration& config,
                                                                                         const std::string& prefix = "",
-                                                                                        const uint64_t event = 0);
+                                                                                        uint64_t event = 0);
 
         /**
          * @brief Reset global log setting after running init/run/finalize
