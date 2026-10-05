@@ -26,7 +26,7 @@
 #include <thread>
 #include <vector>
 
-#if defined(__linux__) || (defined(__APPLE__) && !defined(__arm64__))
+#ifndef __arm64__
 #include <cpuid.h>
 #endif
 
@@ -105,8 +105,8 @@ int main(int argc, const char* argv[]) {
                       << G4VERSION_NUMBER % 10 << '\n';
 #endif
 
-            // The new apple m silicon does not include cpuid
-#if defined(__linux__) || (defined(__APPLE__) && !defined(__arm64__))
+            // ARM64 builds such as the new apple m silicon does not include cpuid
+#ifndef __arm64__
             std::array<char, 0x40> cpu_string{};
             std::array<unsigned int, 4> cpu_info = {0, 0, 0, 0};
             __cpuid(0x80000000, cpu_info[0], cpu_info[1], cpu_info[2], cpu_info[3]);

@@ -131,7 +131,7 @@ namespace allpix {
         std::shared_ptr<ThreadedHistogram<T>> CreateHistogram(ARGS&&... args) { // NOLINT
             // Get instance of histogram registry
             return histogram_manager_->registerHistogram<T>(this->getROOTDirectory(), std::forward<ARGS>(args)...);
-        };
+        }
 
         /**
          * @brief Creates a ThreadedHistogram object through the histogram manager, as well as a subdirectory for this to be
@@ -146,7 +146,7 @@ namespace allpix {
             // Get instance of histogram registry
             auto* full_directory = allpix::HistogramManager::registerSubdirectory(this->getROOTDirectory(), subdirectory);
             return histogram_manager_->registerHistogram<T>(full_directory, std::forward<ARGS>(args)...);
-        };
+        }
 
         /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
