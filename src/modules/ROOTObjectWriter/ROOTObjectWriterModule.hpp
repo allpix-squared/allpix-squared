@@ -45,6 +45,16 @@ namespace allpix {
          */
         ~ROOTObjectWriterModule() override;
 
+        /// @{
+        /**
+         * @brief Copying and moving the module is not allowed
+         */
+        ROOTObjectWriterModule(const ROOTObjectWriterModule&) = delete;
+        ROOTObjectWriterModule& operator=(const ROOTObjectWriterModule&) = delete;
+        ROOTObjectWriterModule(ROOTObjectWriterModule&&) = delete;
+        ROOTObjectWriterModule& operator=(ROOTObjectWriterModule&&) = delete;
+        /// @}
+
         /**
          * @brief Receive a single message containing objects of arbitrary type
          * @param message Message dispatched in the framework

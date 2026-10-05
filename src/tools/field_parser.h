@@ -190,7 +190,6 @@ namespace allpix {
          */
         explicit FieldParser(const FieldQuantity quantity)
             : n_(static_cast<std::underlying_type_t<FieldQuantity>>(quantity)) {};
-        ~FieldParser() = default;
 
         /**
          * @brief Parse a file and retrieve the field data.
@@ -432,7 +431,6 @@ namespace allpix {
          */
         explicit FieldWriter(const FieldQuantity quantity)
             : n_(static_cast<std::underlying_type_t<FieldQuantity>>(quantity)) {};
-        ~FieldWriter() = default;
 
         /**
          * @brief Write the field to a file

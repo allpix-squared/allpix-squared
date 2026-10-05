@@ -189,7 +189,7 @@ void ROOTObjectWriterModule::run(Event* event) {
 
         // Create a new branch of the correct type if this message was not received before
         auto index_tuple = std::make_tuple(type_idx, detector_name, message_name);
-        if(write_list_.find(index_tuple) == write_list_.end()) {
+        if(!write_list_.contains(index_tuple)) {
 
             std::string class_name = allpix::demangle(typeid(first_object).name());
             const std::string class_name_with_namespace = allpix::demangle(typeid(first_object).name(), true);
@@ -198,7 +198,7 @@ void ROOTObjectWriterModule::run(Event* event) {
             write_list_[index_tuple] = new std::vector<Object*>();
             auto* addr = &write_list_[index_tuple];
 
-            auto new_tree = (trees_.find(class_name) == trees_.end());
+            auto new_tree = !trees_.contains(class_name);
             if(new_tree) {
                 // Create new tree
                 output_file_->cd();
