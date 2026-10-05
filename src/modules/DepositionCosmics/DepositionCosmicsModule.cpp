@@ -191,7 +191,7 @@ void DepositionCosmicsModule::finalizeThread() {
 
     LOG(DEBUG) << "CRY instance reports simulation time of "
                << Units::display(cry_instance_time_simulated_, {"us", "ms", "s"});
-    const std::lock_guard<std::mutex> lock{stats_mutex_};
+    const std::scoped_lock lock{stats_mutex_};
     total_time_simulated_ += cry_instance_time_simulated_;
 }
 
