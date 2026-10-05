@@ -80,6 +80,12 @@ namespace allpix {
         }
 
         /**
+         * @brief Print an ASCII representation of this Object to the given stream
+         * @param out Stream to print to
+         */
+        virtual void print(std::ostream& out) const { out << "<unknown object>"; };
+
+        /**
          * @brief Override function to implement ROOT Print()
          * @warning Should not be used inside the framework but might assist in inspecting ROOT files with these objects.
          */
@@ -87,13 +93,6 @@ namespace allpix {
             print(std::cout);
             std::cout << '\n';
         }
-
-    protected:
-        /**
-         * @brief Print an ASCII representation of this Object to the given stream
-         * @param out Stream to print to
-         */
-        virtual void print(std::ostream& out) const { out << "<unknown object>"; };
 
     public:
         template <class T> class BaseWrapper {
