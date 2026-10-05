@@ -116,14 +116,14 @@ DetectorModel::DetectorModel(std::string type,
     using namespace ROOT::Math;
 
     // Sensor thickness
-    setSensorThickness(config.get<double>("sensor_thickness"));
+    set_sensor_thickness(config.get<double>("sensor_thickness"));
 
     // Excess around the sensor from the pixel grid
     auto default_sensor_excess = config.get<double>("sensor_excess", 0);
-    setSensorExcessTop(config.get<double>("sensor_excess_top", default_sensor_excess));
-    setSensorExcessBottom(config.get<double>("sensor_excess_bottom", default_sensor_excess));
-    setSensorExcessLeft(config.get<double>("sensor_excess_left", default_sensor_excess));
-    setSensorExcessRight(config.get<double>("sensor_excess_right", default_sensor_excess));
+    set_sensor_excess_top(config.get<double>("sensor_excess_top", default_sensor_excess));
+    set_sensor_excess_bottom(config.get<double>("sensor_excess_bottom", default_sensor_excess));
+    set_sensor_excess_left(config.get<double>("sensor_excess_left", default_sensor_excess));
+    set_sensor_excess_right(config.get<double>("sensor_excess_right", default_sensor_excess));
 
     // Sensor material:
     sensor_material_ = config.get<SensorMaterial>("sensor_material", SensorMaterial::SILICON);

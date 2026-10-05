@@ -234,7 +234,7 @@ void Allpix::load() {
     ROOT::EnableThreadSafety();
 
     // Set the default units to use
-    allpix::register_units();
+    register_units();
 
     // Set the ROOT style
     set_style();

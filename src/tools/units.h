@@ -20,7 +20,7 @@ namespace allpix {
     /**
      * @brief Sets the default unit conventions
      */
-    static void register_units() {
+    inline void register_units() {
         LOG(TRACE) << "Adding physical units";
 
         // LENGTH
