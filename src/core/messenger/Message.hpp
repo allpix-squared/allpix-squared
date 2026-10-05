@@ -134,7 +134,8 @@ namespace allpix {
         /**
          * @brief Does nothing if message does not contain objects
          */
-        template <typename U = T> void skip_object_cleanup(std::enable_if_t<!std::is_base_of_v<Object, U>>* = nullptr) {}
+        template <typename U = T>
+        void skip_object_cleanup(std::enable_if_t<!std::is_base_of_v<Object, U>>* /*unused*/ = nullptr) {}
 
         std::vector<T> data_;
     };
