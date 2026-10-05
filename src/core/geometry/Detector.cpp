@@ -116,7 +116,7 @@ Pixel Detector::getPixel(const Pixel::Index& index) const {
     auto local_center = model_->getPixelCenter(index.x(), index.y());
     auto global_center = getGlobalPosition(local_center);
 
-    return {index, type, local_center, global_center, std::move(size)};
+    return {index, type, local_center, global_center, size};
 }
 
 /**

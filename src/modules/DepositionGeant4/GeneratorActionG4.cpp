@@ -60,7 +60,7 @@ static void parse_macro_file_and_prepare_commands(const std::string& file_name, 
                 throw ModuleError(
                     "The number of particles must be defined in the main configuration file, not in the macro.");
             }
-            if(line.rfind("/gps/", 0) == 0 || line.rfind("/process/", 0) == 0) {
+            if(line.starts_with("/gps/") || line.starts_with("/process/")) {
                 cmd_list.push_back(line);
             } else if(line.at(0) == '#') {
                 LOG(DEBUG) << "Filtering Geant4 macro comment: " << line;
@@ -271,7 +271,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             if(particle == nullptr) {
                 throw InvalidValueError(config_, "particle_code", "particle code does not exist.");
             }
-        } else if(isotopes_.contains(particle_type_) || particle_type_.substr(0, 3) == "ion") {
+        } else if(isotopes_.contains(particle_type_) || particle_type_.starts_with("ion")) {
             // In the case we are using a multithreaded version of Geant4, Ion tables may not be ready to use now
             // so we do use them later
             initialize_ion_as_particle_ = true;
@@ -325,7 +325,7 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
                 LOG_ONCE(WARNING)
                     << "A radioactive isotope is used as particle source, but the source energy is not set to zero.";
             }
-        } else if(particle_type_.substr(0, 3) == "ion") {
+        } else if(particle_type_.starts_with("ion")) {
             // Parse particle type as ion with components /Z/A/Q/E/D
             std::smatch ion;
             if(std::regex_match(particle_type_,
