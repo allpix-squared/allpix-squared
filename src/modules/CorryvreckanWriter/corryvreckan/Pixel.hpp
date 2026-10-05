@@ -111,10 +111,10 @@ namespace corryvreckan {
 
     private:
         // Member variables
-        int column_;
-        int row_;
-        int raw_;
-        double charge_;
+        int column_{};
+        int row_{};
+        int raw_{};
+        double charge_{};
     };
 
     // Vector type declaration

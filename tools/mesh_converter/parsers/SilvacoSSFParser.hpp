@@ -32,13 +32,14 @@ namespace mesh_converter {
      */
     class SilvacoSSFParser : public MeshParser {
 
-    private:
+    protected:
         // Read the grid
         MeshMap read_meshes(const std::string& file_name) override;
 
         // Read the field for the requested observable
         FieldMap read_fields(const std::string& file_name, const std::string& observable) override;
 
+    private:
         // Resolve the .grd/.dat file name handed over by the converter to the raw input file
         static std::string resolve_file(const std::string& file_name);
 

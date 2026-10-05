@@ -116,8 +116,8 @@ namespace mesh_converter {
         bool valid_{};
         double cut_;
 
-        std::array<Point, 4> grid_elements;
-        std::array<Point, 4> field_elements;
+        std::array<Point, 4> grid_elements_;
+        std::array<Point, 4> field_elements_;
 
     public:
         /**
@@ -148,11 +148,11 @@ namespace mesh_converter {
             LOG(TRACE) << "Constructing " << dimensions << "D element at " << reference_ << " with mesh points:";
             for(; begin < end; begin++) {
                 LOG(TRACE) << "\t\t" << (*grid_)[*begin];
-                grid_elements[idx] = (*grid_)[*begin];
-                field_elements[idx++] = (*field_)[*begin];
+                grid_elements_[idx] = (*grid_)[*begin];
+                field_elements_[idx++] = (*field_)[*begin];
             }
 
-            MeshElement element(dimensions, grid_elements, field_elements);
+            const MeshElement element(dimensions, grid_elements_, field_elements_);
             valid_ = element.isValid(cut_, reference_);
             if(valid_) {
                 LOG(DEBUG) << element.print(reference_);

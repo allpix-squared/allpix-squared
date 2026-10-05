@@ -92,10 +92,9 @@ namespace allpix {
         };
 
         /**
-         * Default constructor and destructor
+         * Default constructor
          */
         PrimariesReader() = default;
-        virtual ~PrimariesReader() = default;
 
         /**
          * Purely virtual method to obtain a vector of primary particles for the current event. This methods needs to be
@@ -119,7 +118,7 @@ namespace allpix {
          * @param event_num  Event number
          */
         void set_event_num(uint64_t event_num) { event_num_ = event_num; }
-        uint64_t event_num_;
+        uint64_t event_num_{};
     };
 } // namespace allpix
 
