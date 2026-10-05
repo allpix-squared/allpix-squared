@@ -209,27 +209,27 @@ namespace allpix {
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
-        auto x_ind = (bins_[0] == 1 ? 0 : int_floor(x * static_cast<double>(bins_[0])));
-        if(x_ind < 0 || x_ind >= static_cast<int>(bins_[0])) {
+        const auto x_ind = static_cast<size_t>(bins_[0] == 1 ? 0 : int_floor(x * static_cast<double>(bins_[0])));
+        if(x_ind >= bins_[0]) {
             return false;
         }
 
-        auto y_ind = (bins_[1] == 1 ? 0 : int_floor(y * static_cast<double>(bins_[1])));
-        if(y_ind < 0 || y_ind >= static_cast<int>(bins_[1])) {
+        const auto y_ind = static_cast<size_t>(bins_[1] == 1 ? 0 : int_floor(y * static_cast<double>(bins_[1])));
+        if(y_ind >= bins_[1]) {
             return false;
         }
 
-        auto z_ind = int_floor(static_cast<double>(bins_[2]) * (z - thickness_domain_.first) /
-                               (thickness_domain_.second - thickness_domain_.first));
+        const auto z_ind_signed = int_floor(static_cast<double>(bins_[2]) * (z - thickness_domain_.first) /
+                                            (thickness_domain_.second - thickness_domain_.first));
         // Clamp to field indices if required - we do this here (again) to not be affected by floating-point rounding:
-        z_ind = (extrapolate_z ? std::clamp(z_ind, 0, static_cast<int>(bins_[2]) - 1) : z_ind);
-        if(z_ind < 0 || z_ind >= static_cast<int>(bins_[2])) {
+        const auto z_ind =
+            static_cast<size_t>(extrapolate_z ? std::clamp(z_ind_signed, 0, static_cast<int>(bins_[2]) - 1) : z_ind_signed);
+        if(z_ind >= bins_[2]) {
             return false;
         }
 
         // Compute total index
-        index = static_cast<size_t>(x_ind) * bins_[1] * bins_[2] * N + static_cast<size_t>(y_ind) * bins_[2] * N +
-                static_cast<size_t>(z_ind) * N;
+        index = x_ind * bins_[1] * bins_[2] * N + y_ind * bins_[2] * N + z_ind * N;
         return true;
     }
 
