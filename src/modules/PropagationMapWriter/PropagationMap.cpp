@@ -34,7 +34,7 @@ PropagationMap::PropagationMap(const std::shared_ptr<DetectorModel>& model,
                                std::array<double, 2> offset,
                                std::pair<double, double> thickness_domain) {
 
-    const std::lock_guard field_lock{field_mutex_};
+    const std::scoped_lock field_lock{field_mutex_};
 
     // Set detector model:
     setModel(model);
@@ -72,7 +72,7 @@ void PropagationMap::add(const ROOT::Math::XYZPoint& local_pos, const FieldTable
         return;
     }
 
-    const std::lock_guard field_lock{field_mutex_};
+    const std::scoped_lock field_lock{field_mutex_};
     // Add the map values starting from the given index
     for(size_t i = 0; i < 25; i++) {
         (*field_)[field_index + i] += table[i];
@@ -87,7 +87,7 @@ void PropagationMap::checkField() {
     size_t low_statistics = 0;
     size_t statistics = 0;
 
-    const std::lock_guard field_lock{field_mutex_};
+    const std::scoped_lock field_lock{field_mutex_};
 
     for(const auto& bin : normalization_table_) {
         empty_bins += (bin == 0 ? 1 : 0);
@@ -107,7 +107,7 @@ void PropagationMap::checkField() {
 }
 
 std::shared_ptr<std::vector<double>> PropagationMap::getNormalizedField() {
-    const std::lock_guard field_lock{field_mutex_};
+    const std::scoped_lock field_lock{field_mutex_};
 
     // Loop over field and apply normalization:
     for(size_t i = 0; i < field_->size(); i++) {

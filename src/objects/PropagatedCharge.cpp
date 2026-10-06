@@ -41,8 +41,7 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                                    double global_time,
                                    CarrierState state,
                                    const DepositedCharge* deposited_charge)
-    : SensorCharge(std::move(local_position), std::move(global_position), type, charge, local_time, global_time),
-      state_(state) {
+    : SensorCharge(local_position, global_position, type, charge, local_time, global_time), state_(state) {
     deposited_charge_ = PointerWrapper<DepositedCharge>(deposited_charge);
     if(deposited_charge != nullptr) {
         mc_particle_ = deposited_charge->mc_particle_;
@@ -57,8 +56,8 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                                    double global_time,
                                    CarrierState state,
                                    const DepositedCharge* deposited_charge)
-    : PropagatedCharge(std::move(local_position),
-                       std::move(global_position),
+    : PropagatedCharge(local_position,
+                       global_position,
                        type,
                        std::accumulate(pulses.begin(),
                                        pulses.end(),

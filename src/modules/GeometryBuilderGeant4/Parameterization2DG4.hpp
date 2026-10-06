@@ -20,6 +20,7 @@
 #include <G4VPVParameterisation.hh>
 #include <G4VPhysicalVolume.hh>
 
+// NOLINTBEGIN(readability-avoid-const-params-in-decls)
 namespace allpix {
     /**
      * @brief Represents a 2D Geant4 parameterization in the X,Y plane
@@ -46,7 +47,7 @@ namespace allpix {
          * @param copy_id Id of the volume on the grid
          * @param phys_volume Physical volume to place on the grid
          */
-        void ComputeTransformation(const G4int, G4VPhysicalVolume*) const override;
+        void ComputeTransformation(const G4int /*copy_id*/, G4VPhysicalVolume* /*phys_volume*/) const override;
 
         G4VSolid* ComputeSolid(G4int copy_id, G4VPhysicalVolume* phys_volume) override;
         void ComputeDimensions(G4Box& box, G4int copy_id, const G4VPhysicalVolume* phys_volume) const override;
@@ -85,5 +86,6 @@ namespace allpix {
         bool check_overlaps_;
     };
 } // namespace allpix
+// NOLINTEND(readability-avoid-const-params-in-decls)
 
 #endif /* ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_PARAMETERIZATION_2D_HH_ */

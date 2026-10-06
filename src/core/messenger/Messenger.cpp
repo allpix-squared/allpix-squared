@@ -53,7 +53,7 @@ static bool check_send(Module* source, BaseMessage* message, BaseDelegate* deleg
  * Messages should be bound during construction, so this function only gives useful information outside the constructor
  */
 bool Messenger::hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& message) {
-    const std::lock_guard<std::mutex> lock(mutex_);
+    const std::scoped_lock lock(mutex_);
 
     const BaseMessage* inst = message.get();
     const std::type_index type_idx = typeid(*inst);
@@ -97,7 +97,7 @@ bool Messenger::isSatisfied(BaseDelegate* delegate, Event* event) {
 void Messenger::add_delegate(const std::type_info& message_type,
                              Module* module,
                              const std::shared_ptr<BaseDelegate>& delegate) {
-    const std::lock_guard<std::mutex> lock(mutex_);
+    const std::scoped_lock lock(mutex_);
 
     // Register generic or specific delegate depending on flag
     std::string message_name;
@@ -123,7 +123,7 @@ void Messenger::add_delegate(const std::type_info& message_type,
  * @throws std::out_of_range if a delegate is removed which is never registered
  */
 void Messenger::remove_delegate(BaseDelegate* delegate) {
-    const std::lock_guard<std::mutex> lock(mutex_);
+    const std::scoped_lock lock(mutex_);
 
     auto iter = delegate_to_iterator_.find(delegate);
     if(iter == delegate_to_iterator_.end()) {

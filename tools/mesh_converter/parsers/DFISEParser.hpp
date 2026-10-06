@@ -13,6 +13,7 @@
 
 #include "../MeshParser.hpp"
 
+#include <cstdint>
 #include <iostream>
 #include <map>
 #include <vector>
@@ -21,7 +22,7 @@ namespace mesh_converter {
 
     class DFISEParser : public MeshParser {
         // Sections to read in DF-ISE file
-        enum class DFSection {
+        enum class DFSection : std::uint8_t {
             NONE = 0,
             IGNORED,
             HEADER,
@@ -42,7 +43,7 @@ namespace mesh_converter {
             VALUES
         };
 
-    private:
+    protected:
         // Read the grid
         MeshMap read_meshes(const std::string& file_name) override;
 

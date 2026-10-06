@@ -51,6 +51,16 @@ namespace allpix {
          */
         ~ROOTObjectReaderModule() override;
 
+        /// @{
+        /**
+         * @brief Copying and moving the module is not allowed
+         */
+        ROOTObjectReaderModule(const ROOTObjectReaderModule&) = delete;
+        ROOTObjectReaderModule& operator=(const ROOTObjectReaderModule&) = delete;
+        ROOTObjectReaderModule(ROOTObjectReaderModule&&) = delete;
+        ROOTObjectReaderModule& operator=(ROOTObjectReaderModule&&) = delete;
+        /// @}
+
         /**
          * @brief Open the ROOT file containing the stored output data
          */

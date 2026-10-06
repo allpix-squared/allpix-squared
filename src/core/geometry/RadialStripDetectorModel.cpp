@@ -110,10 +110,10 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
 
     // Set number of strips; x-value is the maximum number of strips
     // in all rows, y-value is the number of rows
-    setNPixels({*std::ranges::max_element(number_of_strips_), strip_rows});
+    set_n_pixels({*std::ranges::max_element(number_of_strips_), strip_rows});
     // Pixel size is defined as the rectangular wrapper size divided by the maximum
     // number of strips (x-value) or strip rows (y-value)
-    setPixelSize({getSize().x() / number_of_pixels_.x(), getSize().y() / number_of_pixels_.y()});
+    set_pixel_size({getSize().x() / number_of_pixels_.x(), getSize().y() / number_of_pixels_.y()});
 
     // If radius of the sensor center wasn't provided, fall back to the average radius
     if(getCenterRadius() < 1e-6) {

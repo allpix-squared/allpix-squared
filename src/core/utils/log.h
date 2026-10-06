@@ -53,7 +53,6 @@ namespace allpix {
      * Should almost never be instantiated directly. The \ref LOG macro should be used instead to pass all the information.
      * This leads to a cleaner interface for sending log messages.
      */
-    // TODO [DOC] This just be renamed to Log?
     class DefaultLogger {
     public:
         /**
@@ -308,7 +307,6 @@ namespace allpix {
      * @param stream The stream to suppress
      */
     // suppress a (logging) stream
-    // TODO [doc] rewrite as a lowercase function in a namespace?
     inline void SUPPRESS_STREAM(std::ostream& stream) { stream.setstate(std::ios::failbit); }
 
 /**
@@ -324,7 +322,6 @@ namespace allpix {
      * @brief Release an suppressed stream so it can write again
      * @param stream The stream to release
      */
-    // TODO [doc] rewrite as a lowercase function in a namespace?
     inline void RELEASE_STREAM(std::ostream& stream) { stream.clear(); }
     // NOLINTEND(cppcoreguidelines-macro-usage)
 } // namespace allpix

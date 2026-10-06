@@ -34,6 +34,16 @@ namespace allpix {
     public:
         ~WorkerRunManager() override;
 
+        /// @{
+        /**
+         * @brief Copying and moving the run manager is not allowed
+         */
+        WorkerRunManager(const WorkerRunManager&) = delete;
+        WorkerRunManager& operator=(const WorkerRunManager&) = delete;
+        WorkerRunManager(WorkerRunManager&&) = delete;
+        WorkerRunManager& operator=(WorkerRunManager&&) = delete;
+        /// @}
+
         /**
          * @brief Executes specified number of events.
          *

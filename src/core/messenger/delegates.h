@@ -175,7 +175,7 @@ namespace allpix {
         std::shared_ptr<Detector> getDetector() const override { return obj_->getDetector(); }
 
     protected:
-        T* const obj_;
+        T* const obj_; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
     };
 
     /**

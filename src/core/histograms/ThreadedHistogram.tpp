@@ -9,8 +9,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#pragma once
-
 #include "ThreadedHistogram.hpp" // NOLINT(misc-header-include-cycle)
 
 #include <concepts>

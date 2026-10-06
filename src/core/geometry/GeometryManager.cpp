@@ -98,8 +98,7 @@ void GeometryManager::loadGeometry(const std::list<Configuration>& detector_conf
 
         // Create the detector and add it without model
         // NOTE: cannot use make_shared here due to the private constructor
-        auto detector =
-            std::shared_ptr<Detector>(new Detector(geometry_section.getName(), std::move(position), orientation));
+        auto detector = std::shared_ptr<Detector>(new Detector(geometry_section.getName(), position, orientation));
         addDetector(detector);
 
         // Add a link to the detector to add the model later
@@ -209,7 +208,7 @@ void GeometryManager::addPoint(ROOT::Math::XYZPoint point) {
     if(closed_) {
         throw ModuleError("Geometry is already closed before adding detector");
     }
-    points_.push_back(std::move(point));
+    points_.push_back(point);
 }
 
 /**
@@ -226,7 +225,7 @@ void GeometryManager::addModel(std::shared_ptr<DetectorModel> model) {
     }
 
     LOG(TRACE) << "Registering new model " << model->getType();
-    if(model_names_.find(model->getType()) != model_names_.end()) {
+    if(model_names_.contains(model->getType())) {
         throw DetectorModelExistsError(model->getType());
     }
 
@@ -234,10 +233,8 @@ void GeometryManager::addModel(std::shared_ptr<DetectorModel> model) {
     models_.push_back(std::move(model));
 }
 
-bool GeometryManager::needsModel(const std::string& name) const {
-    return nonresolved_models_.find(name) != nonresolved_models_.end();
-}
-bool GeometryManager::hasModel(const std::string& name) const { return model_names_.find(name) != model_names_.end(); }
+bool GeometryManager::needsModel(const std::string& name) const { return nonresolved_models_.contains(name); }
+bool GeometryManager::hasModel(const std::string& name) const { return model_names_.contains(name); }
 
 /**
  * @throws InvalidDetectorError If a model with this name does not exist
@@ -273,7 +270,7 @@ void GeometryManager::addDetector(std::shared_ptr<Detector> detector) {
         throw DetectorInvalidNameError(detector->getName());
     }
 
-    if(detector_names_.find(detector->getName()) != detector_names_.end()) {
+    if(detector_names_.contains(detector->getName())) {
         throw DetectorExistsError(detector->getName());
     }
 
@@ -281,9 +278,7 @@ void GeometryManager::addDetector(std::shared_ptr<Detector> detector) {
     detectors_.push_back(std::move(detector));
 }
 
-bool GeometryManager::hasDetector(const std::string& name) const {
-    return detector_names_.find(name) != detector_names_.end();
-}
+bool GeometryManager::hasDetector(const std::string& name) const { return detector_names_.contains(name); }
 
 std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectors() {
     if(!closed_) {

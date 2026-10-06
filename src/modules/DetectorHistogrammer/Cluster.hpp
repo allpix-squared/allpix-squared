@@ -94,7 +94,7 @@ namespace allpix {
 
         double cluster_charge_{};
 
-        int minX_, minY_, maxX_, maxY_;
+        int min_x_, min_y_, max_x_, max_y_;
     };
 } // namespace allpix
 #endif /*ALLPIX_DETECTOR_HISTOGRAMMER_CLUSTER_H */

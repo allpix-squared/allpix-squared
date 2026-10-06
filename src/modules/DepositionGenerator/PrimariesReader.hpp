@@ -119,7 +119,7 @@ namespace allpix {
          * @param event_num  Event number
          */
         void set_event_num(uint64_t event_num) { event_num_ = event_num; }
-        uint64_t event_num_;
+        uint64_t event_num_{};
     };
 } // namespace allpix
 

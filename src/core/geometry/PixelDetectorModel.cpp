@@ -40,10 +40,10 @@ PixelDetectorModel::PixelDetectorModel(std::string type,
     using namespace ROOT::Math;
 
     // Number of pixels
-    setNPixels(config.get<DisplacementVector2D<Cartesian2D<unsigned int>>>("number_of_pixels"));
+    set_n_pixels(config.get<DisplacementVector2D<Cartesian2D<unsigned int>>>("number_of_pixels"));
     // Size of the pixels
     auto pixel_size = config.get<XYVector>("pixel_size");
-    setPixelSize(std::move(pixel_size));
+    set_pixel_size(pixel_size);
 }
 
 void PixelDetectorModel::validate() {

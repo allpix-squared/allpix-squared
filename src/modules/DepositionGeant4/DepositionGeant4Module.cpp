@@ -117,7 +117,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
         std::ifstream file(config.getPath("file_name", true));
         std::string line;
         while(std::getline(file, line)) {
-            if(line.starts_with("/gps/position") || line.rfind("/gps/pos/centre") == 0) {
+            if(line.starts_with("/gps/position") || line.starts_with("/gps/pos/centre")) {
                 LOG(TRACE) << "Macro contains source position: \"" << line << "\"";
                 std::stringstream sstr(line);
                 std::string command;

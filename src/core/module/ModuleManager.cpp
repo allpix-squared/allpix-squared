@@ -826,7 +826,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
                 this->module_execution_time_[module.get()] += duration;
 
                 if(plot) {
-                    const std::lock_guard<std::mutex> stat_lock{event->stats_mutex_};
+                    const std::scoped_lock stat_lock{Event::stats_mutex_};
                     event_time += duration;
                     this->module_event_time_[module.get()]->Fill(
                         std::chrono::duration<double>(std::chrono::nanoseconds(duration)).count());

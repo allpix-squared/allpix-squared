@@ -177,6 +177,8 @@ namespace allpix {
          */
         ThreadPool(const ThreadPool& rhs) = delete;
         ThreadPool& operator=(const ThreadPool& rhs) = delete;
+        ThreadPool(ThreadPool&& rhs) = delete;
+        ThreadPool& operator=(ThreadPool&& rhs) = delete;
         /// @}
 
         /**

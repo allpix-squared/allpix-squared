@@ -29,6 +29,9 @@ namespace allpix {
     public:
         Materials(const Materials&) = delete;
         void operator=(const Materials&) = delete;
+        Materials(Materials&&) = default;
+        Materials& operator=(Materials&&) = default;
+        virtual ~Materials() = default;
 
         static Materials& getInstance();
 

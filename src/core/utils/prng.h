@@ -23,17 +23,31 @@ namespace allpix {
      */
     class RandomNumberGenerator : public std::mt19937_64 {
     public:
-        /// @{
         /**
-         * @brief Disallow copy-assignment
+         * @brief Default constructor
          */
-        RandomNumberGenerator& operator=(const RandomNumberGenerator&) = delete;
+        RandomNumberGenerator() = default;
+
+        /**
+         * @brief Default destructor
+         */
+        ~RandomNumberGenerator() = default;
 
         /// @{
         /**
-         * @brief Disallow move assignment
+         * @brief Disallow copying
          */
+        RandomNumberGenerator(const RandomNumberGenerator&) = delete;
+        RandomNumberGenerator& operator=(const RandomNumberGenerator&) = delete;
+        /// @}
+
+        /// @{
+        /**
+         * @brief Disallow moving
+         */
+        RandomNumberGenerator(RandomNumberGenerator&&) = delete;
         RandomNumberGenerator& operator=(RandomNumberGenerator&&) = delete;
+        /// @}
 
         /**
          * Redefine function operator to retrieve pseudo-random numbers. This allows us to log the number at retrieval.
@@ -48,9 +62,8 @@ namespace allpix {
                 LOG(PRNG) << "Using random number " << prn;
                 return prn;
             }
-            else {
-                return std::mt19937_64::operator()();
-            }
+
+            return std::mt19937_64::operator()();
         }
     };
 } // namespace allpix

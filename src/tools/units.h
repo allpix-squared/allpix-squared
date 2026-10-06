@@ -20,7 +20,7 @@ namespace allpix {
     /**
      * @brief Sets the default unit conventions
      */
-    static void register_units() {
+    inline void register_units() {
         LOG(TRACE) << "Adding physical units";
 
         // LENGTH
@@ -68,7 +68,7 @@ namespace allpix {
 
         // ANGLES
         // NOTE: these are fake units
-        Units::add("deg", 3.14159265358979323846 / 180.0);
+        Units::add("deg", std::numbers::pi / 180.0);
         Units::add("rad", 1);
         Units::add("mrad", 1e-3);
         Units::add("urad", 1e-6);

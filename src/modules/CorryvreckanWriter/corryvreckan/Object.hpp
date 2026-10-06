@@ -40,16 +40,31 @@ namespace corryvreckan {
         /**
          * @brief Required default constructor
          */
-        Object();
+        Object() = default;
         explicit Object(std::string detectorID);
         explicit Object(double timestamp);
         Object(std::string detectorID, double timestamp);
-        Object(const Object&);
 
         /**
          * @brief Required virtual destructor
          */
-        ~Object() override;
+        ~Object() = default;
+
+        /// @{
+        /**
+         * @brief Use default copy behaviour
+         */
+        Object(const Object&) = default;
+        Object& operator=(const Object&) = default;
+        /// @}
+
+        /// @{
+        /**
+         * @brief Use default move behaviour
+         */
+        Object(Object&&) = default;
+        Object& operator=(Object&&) = default;
+        /// @}
 
         // Methods to get member variables
         const std::string& getDetectorID() const { return m_detectorID; }
@@ -63,16 +78,6 @@ namespace corryvreckan {
         void setDetectorID(std::string detectorID) { m_detectorID = std::move(detectorID); }
 
         /**
-         * @brief ROOT class definition
-         */
-        ClassDefOverride(Object, 5); // NOLINT
-
-    protected:
-        // Member variables
-        std::string m_detectorID;
-        double m_timestamp{0};
-
-        /**
          * @brief Print an ASCII representation of this Object to the given stream
          * @param out Stream to print to
          */
@@ -82,10 +87,20 @@ namespace corryvreckan {
          * @brief Override function to implement ROOT Print()
          * @warning Should not be used inside the framework but might assist in inspecting ROOT files with these objects.
          */
-        void Print(Option_t*) const override {
+        void Print(Option_t* /*option*/) const override {
             print(std::cout);
             std::cout << '\n';
         }
+
+        /**
+         * @brief ROOT class definition
+         */
+        ClassDefOverride(Object, 5); // NOLINT
+
+    protected:
+        // Member variables
+        std::string m_detectorID;
+        double m_timestamp{0};
     };
 
     /**

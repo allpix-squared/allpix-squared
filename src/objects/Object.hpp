@@ -79,7 +79,6 @@ namespace allpix {
             this->SetBit(1ULL << 14U);
         }
 
-    protected:
         /**
          * @brief Print an ASCII representation of this Object to the given stream
          * @param out Stream to print to
@@ -90,7 +89,7 @@ namespace allpix {
          * @brief Override function to implement ROOT Print()
          * @warning Should not be used inside the framework but might assist in inspecting ROOT files with these objects.
          */
-        void Print(Option_t*) const override {
+        void Print(Option_t* /*option*/) const override {
             print(std::cout);
             std::cout << '\n';
         }
@@ -190,8 +189,8 @@ namespace allpix {
              * @brief Explicit copy assignment operator to avoid copying std::once_flag
              */
             PointerWrapper& operator=(const PointerWrapper& rhs) {
-                BaseWrapper<T>::operator=(rhs);
                 loaded_ = rhs.loaded_.load();
+                BaseWrapper<T>::operator=(rhs);
                 return *this;
             };
 
@@ -204,8 +203,8 @@ namespace allpix {
              * @brief Explicit move assignment to avoid copying std::once_flag
              */
             PointerWrapper& operator=(PointerWrapper&& rhs) noexcept {
-                BaseWrapper<T>::operator=(std::move(rhs));
                 loaded_ = rhs.loaded_.load();
+                BaseWrapper<T>::operator=(std::move(rhs));
                 return *this;
             };
 

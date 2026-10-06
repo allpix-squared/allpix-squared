@@ -28,7 +28,10 @@ namespace allpix {
      */
     class G4ExceptionHandler : public G4VExceptionHandler {
     public:
-        G4bool Notify(const char*, const char* code, G4ExceptionSeverity severity, const char* description) override {
+        G4bool Notify(const char* /*originOfException*/,
+                      const char* code,
+                      G4ExceptionSeverity severity,
+                      const char* description) override {
             std::string message = "Caught Geant4 exception " + std::string(code) + ": " + std::string(description);
             if(severity == G4ExceptionSeverity::JustWarning && std::string(code) != "pl0003") {
                 LOG(WARNING) << message;
