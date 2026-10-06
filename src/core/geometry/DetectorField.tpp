@@ -221,7 +221,9 @@ namespace allpix {
 
         const auto z_ind_signed = int_floor(static_cast<double>(bins_[2]) * (z - thickness_domain_.first) /
                                             (thickness_domain_.second - thickness_domain_.first));
-        // Clamp to field indices if required - we do this here (again) to not be affected by floating-point rounding:
+        // Clamp to field indices if required - we do this here (again) to not be affected by floating-point rounding.
+        // The cast of a signed integer to size_t is intentional: z_ind_signed is invalid if < 0 or > bins_[2]. Casting a
+        // negative value to size_t will end up at SIZE_MAX, and will therefore be above bins_[2] and hence be invalid.
         const auto z_ind =
             static_cast<size_t>(extrapolate_z ? std::clamp(z_ind_signed, 0, static_cast<int>(bins_[2]) - 1) : z_ind_signed);
         if(z_ind >= bins_[2]) {
