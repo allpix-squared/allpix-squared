@@ -12,7 +12,7 @@
 #ifndef ALLPIX_GEANT4_LOG_H
 #define ALLPIX_GEANT4_LOG_H
 
-#include "core/utils/log.h"
+#include "core/log/log.h"
 
 #include <G4UIsession.hh>
 

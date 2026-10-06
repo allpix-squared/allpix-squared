@@ -33,7 +33,7 @@
 #include "core/utils/text.h"
 #include "core/utils/type.h"
 
-#include "core/utils/log.h"
+#include "core/log/log.h"
 
 namespace allpix {
     /**

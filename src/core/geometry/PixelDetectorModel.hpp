@@ -24,7 +24,7 @@
 #include "core/config/ConfigStack.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/DetectorModel.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "objects/Pixel.hpp"
 #include "tools/ROOT.h"
 

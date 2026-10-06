@@ -22,7 +22,7 @@
 
 #include "core/geometry/DetectorField.hpp"
 #include "core/geometry/DetectorModel.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 
 using namespace allpix;
 

@@ -17,7 +17,7 @@
 #include <G4Types.hh>
 
 #include "core/log/LoggerManager.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 
 using namespace allpix;
 

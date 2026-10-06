@@ -16,7 +16,7 @@
 #include <cmath>
 #include <utility>
 
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "octree/Octree.hpp"
 
 namespace mesh_converter {

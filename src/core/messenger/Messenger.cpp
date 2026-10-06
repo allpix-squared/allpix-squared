@@ -23,8 +23,8 @@
 #include <vector>
 
 #include "Message.hpp"
+#include "core/log/log.h"
 #include "core/module/Module.hpp"
-#include "core/utils/log.h"
 #include "core/utils/type.h"
 #include "delegates.h"
 

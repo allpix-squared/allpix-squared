@@ -21,7 +21,7 @@
 
 #include "MeshParser.hpp"
 #include "core/config/Configuration.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "parsers/DFISEParser.hpp"
 #include "parsers/SilvacoParser.hpp"
 #include "parsers/SilvacoSSFParser.hpp"

@@ -27,10 +27,10 @@
 #include "core/config/exceptions.h"
 #include "core/geometry/Detector.hpp"
 #include "core/log/LoggerManager.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/messenger/delegates.h"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 
 using namespace allpix;
 

@@ -36,7 +36,7 @@
 #include "core/geometry/RadialStripDetectorModel.hpp"
 #include "core/geometry/StaggeredPixelDetectorModel.hpp"
 #include "core/geometry/SupportLayer.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "tools/liang_barsky.h"
 
 using namespace allpix;

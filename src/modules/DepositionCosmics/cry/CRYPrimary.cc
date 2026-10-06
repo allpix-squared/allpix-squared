@@ -47,7 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // sampled from the flux distribution.
 //
 
-#include "core/utils/log.h"
+#include "core/log/log.h"
 
 #include "CRYAbsFunction.h"
 #include "CRYBinning.h"

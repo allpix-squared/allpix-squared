@@ -18,8 +18,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "core/log/log.h"
 #include "core/utils/env.h"
-#include "core/utils/log.h"
 #include "tools/field_parser.h"
 #include "tools/units.h"
 

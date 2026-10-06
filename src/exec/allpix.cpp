@@ -40,9 +40,9 @@
 #include "core/Allpix.hpp"
 #include "core/config/exceptions.h"
 #include "core/log/LoggerManager.hpp"
+#include "core/log/log.h"
 #include "core/utils/env.h"
 #include "core/utils/exceptions.h"
-#include "core/utils/log.h"
 
 using namespace allpix;
 using namespace std::chrono_literals;

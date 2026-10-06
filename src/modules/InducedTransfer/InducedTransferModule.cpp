@@ -21,10 +21,10 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
+#include "core/log/log.h"
 #include "core/messenger/delegates.h"
 #include "core/module/Event.hpp"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/Pixel.hpp"
 #include "objects/PixelCharge.hpp"

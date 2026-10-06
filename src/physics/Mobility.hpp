@@ -18,7 +18,7 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
 #include "tools/tabulated_pow.h"

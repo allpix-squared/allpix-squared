@@ -22,8 +22,8 @@
 #include <G4Material.hh>
 #include <G4NistManager.hh>
 
+#include "core/log/log.h"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "core/utils/text.h"
 
 using namespace allpix;

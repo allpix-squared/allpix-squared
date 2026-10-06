@@ -22,7 +22,7 @@
 #include <thread>
 
 #include "core/log/LogContext.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 
 using namespace allpix;
 
