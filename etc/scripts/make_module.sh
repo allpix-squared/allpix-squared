@@ -105,6 +105,7 @@ if [ "$type" = 2 ]; then
     eval $command
     # Change header file
     command="sed ${opt} \
+        -e 's/UniqueModule/DetectorModule/g' \
         -e 's/ unique / detector-specific /g' \
         -e 's/param geo_manager.*/param detector Pointer to the detector for this module instance/g' \
         -e 's/GeometryManager\* geo\_manager/std::shared\_ptr\<Detector\> detector/g' \
@@ -114,12 +115,12 @@ if [ "$type" = 2 ]; then
     # Change implementation file
     command="sed ${opt} \
         -e 's/GeometryManager\* geo_manager/std::shared\_ptr\<Detector\> detector/g' \
-        -e 's/Module(config\, messenger, geo_manager)/Module\(config\, messenger\, std::move(detector)\)/g' \
+        -e 's/UniqueModule(config\, messenger, geo_manager)/DetectorModule\(config\, messenger\, std::move(detector)\)/g' \
         -e 's/bindMulti/bindSingle/g' \
         -e '/for(auto/d' \
         -e 's/\s\{8\}/\ \ \ \ /' \
-        -e '/geo_manager_/d' \
-        -e 's/detector->get/detector_->get/g' \
+        -e '/get_geometry_manager()/d' \
+        -e 's/detector->get/getDetector()->get/g' \
         -e '/    }/d' \
         -e '/Loop/d' \
         -e 's/auto messages/auto message/g' \
