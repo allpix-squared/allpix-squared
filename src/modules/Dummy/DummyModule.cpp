@@ -30,6 +30,9 @@ DummyModule::DummyModule(Configuration& config, Messenger* messenger, GeometryMa
     // Allow multithreading of the simulation. Only enabled if this module is thread-safe. See manual for more details.
     // allow_multithreading();
 
+    // Require sequential event processing. See manual for more details
+    // set_sequence_required();
+
     // Set a default for a configuration parameter, this will be used if no user configuration is provided:
     config_.setDefault<int>("setting", 13);
 
