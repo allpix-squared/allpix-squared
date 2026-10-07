@@ -59,7 +59,7 @@ void StreamSink::LevelFormatter::format(const spdlog::details::log_msg& msg,
     std::string badge;
     if(short_form_) {
         badge = "(";
-        badge += enum_name(level).substr(0, 1);
+        badge += enum_name(level)[0];
         badge += ") ";
     } else {
         badge = "(";

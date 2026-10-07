@@ -60,7 +60,7 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config,
 #endif
 
     // Read Geant4 verbosity configuration, fallback to old value but warn
-    config_.setAlias("log_level_geant4", "log_level_g4cour", true);
+    config_.setAlias("log_level_geant4", "log_level_g4cout", true);
     auto g4_log_level = config_.get<std::string>("log_level_geant4", "WARNING");
 
     // Set Geant4 log level
