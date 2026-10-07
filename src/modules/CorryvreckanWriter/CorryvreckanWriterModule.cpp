@@ -67,12 +67,12 @@ void CorryvreckanWriterModule::initialize() {
     output_mc_truth_ = config_.get<bool>("output_mctruth");
 
     reference_ = config_.get<std::string>("reference");
-    if(!get_geometry_manager()->hasDetector(reference_)) {
+    if(!getGeometryManager()->hasDetector(reference_)) {
         throw InvalidValueError(config_, "reference", "detector not defined");
     }
     dut_ = config_.getArray<std::string>("dut", std::vector<std::string>());
     for(auto& dut : dut_) {
-        if(!get_geometry_manager()->hasDetector(dut)) {
+        if(!getGeometryManager()->hasDetector(dut)) {
             throw InvalidValueError(config_, "dut", "detector not defined");
         }
     }
@@ -258,7 +258,7 @@ void CorryvreckanWriterModule::finalize() {
 
         geometry_file << "# Allpix Squared detector geometry - https://cern.ch/allpix-squared" << '\n' << '\n';
 
-        auto detectors = get_geometry_manager()->getDetectors();
+        auto detectors = getGeometryManager()->getDetectors();
         for(auto& detector : detectors) {
             geometry_file << "[" << detector->getName() << "]" << '\n';
             geometry_file << "position = " << Units::display(detector->getPosition().x(), {"mm", "um"}) << ", "
@@ -297,7 +297,7 @@ void CorryvreckanWriterModule::finalize() {
             }
 
             // Get the material budget if available:
-            auto budget = get_geometry_manager()->getExternalObject<double>(detector->getName(), "material_budget");
+            auto budget = getGeometryManager()->getExternalObject<double>(detector->getName(), "material_budget");
             if(budget != nullptr) {
                 LOG(DEBUG) << "Found calculated material budget for detector " << detector->getName() << ", storing.";
                 geometry_file << "material_budget = " << *budget << '\n';

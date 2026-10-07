@@ -53,7 +53,7 @@ DepositionGeneratorModule::DepositionGeneratorModule(Configuration& config,
     config_.set("number_of_particles", 1);
 
     // Add the particle source position to the geometry
-    get_geometry_manager()->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
+    getGeometryManager()->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
 }
 
 void DepositionGeneratorModule::initialize() {

@@ -382,10 +382,10 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     }
 
     // Apply the visualization attributes to all elements that exist
-    for(const auto& name : get_geometry_manager()->getExternalObjectNames()) {
+    for(const auto& name : getGeometryManager()->getExternalObjectNames()) {
 
         auto set_vis_attribute = [this, name](const std::string& volume, const G4VisAttributes& attr) {
-            auto log = get_geometry_manager()->getExternalObject<G4LogicalVolume>(name, volume);
+            auto log = getGeometryManager()->getExternalObject<G4LogicalVolume>(name, volume);
             // Only set attributes if object exists and it does not yet have attributes:
             if(log != nullptr && log->GetVisAttributes() == nullptr) {
                 log->SetVisAttributes(attr);
@@ -401,7 +401,7 @@ void VisualizationGeant4Module::set_visualization_attributes() {
         set_vis_attribute("passive_material_log", PassiveMaterialVisAtt);
 
         auto supports_log =
-            get_geometry_manager()->getExternalObject<std::vector<std::shared_ptr<G4LogicalVolume>>>(name, "supports_log");
+            getGeometryManager()->getExternalObject<std::vector<std::shared_ptr<G4LogicalVolume>>>(name, "supports_log");
         if(supports_log != nullptr) {
             for(auto& support_log : *supports_log) {
                 support_log->SetVisAttributes(supportVisAtt);
@@ -440,11 +440,11 @@ void VisualizationGeant4Module::add_visualization_volumes() {
     // Only place the pixel matrix for the visualization if we have no simple view
     if(!config_.get<bool>("simple_view")) {
         // Loop through detectors
-        for(auto& detector : get_geometry_manager()->getDetectors()) {
-            auto sensor_log = get_geometry_manager()->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
-            auto pixel_log = get_geometry_manager()->getExternalObject<G4LogicalVolume>(detector->getName(), "pixel_log");
+        for(auto& detector : getGeometryManager()->getDetectors()) {
+            auto sensor_log = getGeometryManager()->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
+            auto pixel_log = getGeometryManager()->getExternalObject<G4LogicalVolume>(detector->getName(), "pixel_log");
             auto pixel_param =
-                get_geometry_manager()->getExternalObject<G4VPVParameterisation>(detector->getName(), "pixel_param");
+                getGeometryManager()->getExternalObject<G4VPVParameterisation>(detector->getName(), "pixel_param");
 
             // Continue if a required external object is missing
             if(sensor_log == nullptr || pixel_log == nullptr || pixel_param == nullptr) {
@@ -460,7 +460,7 @@ void VisualizationGeant4Module::add_visualization_volumes() {
                 detector->getModel()->getNPixels().x() * detector->getModel()->getNPixels().y(),
                 pixel_param.get(),
                 false);
-            get_geometry_manager()->setExternalObject(detector->getName(), "pixel_param_phys", pixel_param_phys);
+            getGeometryManager()->setExternalObject(detector->getName(), "pixel_param_phys", pixel_param_phys);
         }
     }
 }

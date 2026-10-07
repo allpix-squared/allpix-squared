@@ -310,7 +310,7 @@ void ROOTObjectWriterModule::finalize() {
     // Save the detectors to the output file
     auto* detectors_dir = output_file_->mkdir("detectors");
     auto* models_dir = output_file_->mkdir("models");
-    for(auto& detector : get_geometry_manager()->getDetectors()) {
+    for(auto& detector : getGeometryManager()->getDetectors()) {
         detectors_dir->cd();
         LOG(TRACE) << "Writing detector configuration for: " << detector->getName();
         auto* detector_dir = detectors_dir->mkdir(detector->getName().c_str());

@@ -218,7 +218,7 @@ void DepositionLaserModule::initialize() {
 
     // Check for unsupported detector materials, warn user if present
 
-    const std::vector<std::shared_ptr<Detector>> detectors = get_geometry_manager()->getDetectors();
+    const std::vector<std::shared_ptr<Detector>> detectors = getGeometryManager()->getDetectors();
     for(const auto& detector : detectors) {
         auto material = detector->getModel()->getSensorMaterial();
         if(material != SensorMaterial::SILICON && !is_user_optics_) {
@@ -226,7 +226,7 @@ void DepositionLaserModule::initialize() {
         }
     }
     // Check for incompatible passive objects, warn user if there are any
-    auto passive_configs = get_geometry_manager()->getPassiveElements();
+    auto passive_configs = getGeometryManager()->getPassiveElements();
     for(const auto& item : passive_configs) {
         auto shape = item.get<std::string>("type");
         if(shape != "box") {
@@ -555,7 +555,7 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(con
 
     const double c = TMath::C() * 100; // speed of light in mm/ns
 
-    const std::vector<std::shared_ptr<Detector>> detectors = get_geometry_manager()->getDetectors();
+    const std::vector<std::shared_ptr<Detector>> detectors = getGeometryManager()->getDetectors();
     std::vector<std::pair<std::shared_ptr<Detector>, std::pair<double, double>>> intersection_segments;
 
     for(const auto& detector : detectors) {
@@ -661,7 +661,7 @@ DepositionLaserModule::intersect_with_passives(const ROOT::Math::XYZPoint& posit
                                                const ROOT::Math::XYZVector& direction_global) const {
 
     std::optional<std::pair<double, std::string>> result{};
-    auto passive_configs = get_geometry_manager()->getPassiveElements();
+    auto passive_configs = getGeometryManager()->getPassiveElements();
 
     for(const auto& item : passive_configs) {
         auto shape = item.get<std::string>("type");
@@ -669,7 +669,7 @@ DepositionLaserModule::intersect_with_passives(const ROOT::Math::XYZPoint& posit
             continue;
         }
 
-        auto [passive_position, passive_orientation] = get_geometry_manager()->getPassiveElementOrientation(item.getName());
+        auto [passive_position, passive_orientation] = getGeometryManager()->getPassiveElementOrientation(item.getName());
         auto passive_size = item.get<ROOT::Math::XYZVector>("size");
 
         const ROOT::Math::Rotation3D rotation_center(passive_orientation);

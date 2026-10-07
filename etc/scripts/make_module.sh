@@ -129,7 +129,7 @@ if [ "$type" = 2 ]; then
         -e 's/bindMulti/bindSingle/g' \
         -e '/for(auto/d' \
         -e 's/\s\{8\}/\ \ \ \ /' \
-        -e '/get_geometry_manager()/d' \
+        -e '/getGeometryManager()/d' \
         -e 's/detector->get/getDetector()->get/g' \
         -e '/    }/d' \
         -e '/Loop/d' \

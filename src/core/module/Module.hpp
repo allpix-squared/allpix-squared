@@ -331,7 +331,7 @@ namespace allpix {
          * @brief Get the geometry manager
          * @return Pointer to geometry manager
          */
-        GeometryManager* get_geometry_manager() const { return geo_manager_; }
+        GeometryManager* getGeometryManager() const { return geo_manager_; }
 
     private:
         GeometryManager* geo_manager_{};

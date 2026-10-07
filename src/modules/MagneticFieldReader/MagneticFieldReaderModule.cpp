@@ -54,7 +54,7 @@ void MagneticFieldReaderModule::initialize() {
 
         const MagneticFieldFunction function = [b_field](const ROOT::Math::XYZPoint&) noexcept { return b_field; };
 
-        get_geometry_manager()->setMagneticFieldFunction(function, type);
+        getGeometryManager()->setMagneticFieldFunction(function, type);
         LOG(INFO) << "Set constant magnetic field: " << Units::display(b_field, {"T", "mT"});
     } else if(field_model == MagneticField::MESH) {
         type = MagneticFieldType::CUSTOM;
@@ -94,17 +94,16 @@ void MagneticFieldReaderModule::initialize() {
                 return ROOT::Math::XYZVector(bfieldx, bfieldy, bfieldz);
             };
 
-        get_geometry_manager()->setMagneticFieldFunction(function, type);
+        getGeometryManager()->setMagneticFieldFunction(function, type);
         LOG(INFO) << "Set meshed magnetic field from file";
     }
 
-    auto detectors = get_geometry_manager()->getDetectors();
+    auto detectors = getGeometryManager()->getDetectors();
     for(auto& detector : detectors) {
         // TODO(simonspa): the magnetic field is calculated once for the center position of the detector. This could be
         // extended to a function enabling a gradient in the magnetic field inside the sensor
         auto position = detector->getPosition();
-        detector->setMagneticField(detector->getOrientation().Inverse() *
-                                   get_geometry_manager()->getMagneticField(position));
+        detector->setMagneticField(detector->getOrientation().Inverse() * getGeometryManager()->getMagneticField(position));
         LOG(DEBUG) << "Magnetic field in detector " << detector->getName() << ": "
                    << Units::display(detector->getMagneticField(detector->getLocalPosition(position)), {"T", "mT"});
     }

@@ -271,7 +271,7 @@ void ROOTObjectReaderModule::initialize() {
             }
             if(det_idx != INT_MAX) {
                 if(split[det_idx] != "global") {
-                    message_info_array_.back().detector = get_geometry_manager()->getDetector(split[det_idx]);
+                    message_info_array_.back().detector = getGeometryManager()->getDetector(split[det_idx]);
                 }
             }
         }
