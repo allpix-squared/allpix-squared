@@ -40,7 +40,7 @@ InducedTransferModule::InducedTransferModule(Configuration& config, Messenger* m
     allow_multithreading();
 
     // Save detector model
-    model_ = detector_->getModel();
+    model_ = getDetector()->getModel();
 
     // Set default value for config variables and store value
     config_.setDefault<unsigned int>("distance", 1);
@@ -53,7 +53,7 @@ InducedTransferModule::InducedTransferModule(Configuration& config, Messenger* m
 void InducedTransferModule::initialize() {
 
     // This module requires a weighting potential - otherwise everything is lost...
-    if(!detector_->hasWeightingPotential()) {
+    if(!getDetector()->hasWeightingPotential()) {
         throw ModuleError("This module requires a weighting potential.");
     }
 }
@@ -99,8 +99,8 @@ void InducedTransferModule::run(Event* event) {
         // Loop over NxN pixels:
         auto idx = Pixel::Index(xpixel, ypixel);
         for(const auto& pixel_index : model_->getNeighbors(idx, distance_)) {
-            auto ramo_end = detector_->getWeightingPotential(position_end, pixel_index);
-            auto ramo_start = detector_->getWeightingPotential(position_start, pixel_index);
+            auto ramo_end = getDetector()->getWeightingPotential(position_end, pixel_index);
+            auto ramo_start = getDetector()->getWeightingPotential(position_start, pixel_index);
 
             // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
             auto induced =
@@ -134,13 +134,13 @@ void InducedTransferModule::run(Event* event) {
         }
 
         // Get pixel object from detector
-        auto pixel = detector_->getPixel(pixel_index_charge.first.x(), pixel_index_charge.first.y());
+        auto pixel = getDetector()->getPixel(pixel_index_charge.first.x(), pixel_index_charge.first.y());
 
         pixel_charges.emplace_back(pixel, std::round(charge), prop_charges);
         LOG(DEBUG) << "Set of " << charge << " charges combined at " << pixel.getIndex();
     }
 
     // Dispatch message of pixel charges
-    auto pixel_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
+    auto pixel_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), getDetector());
     messenger_->dispatchMessage(this, pixel_message, event);
 }

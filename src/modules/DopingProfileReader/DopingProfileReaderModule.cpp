@@ -52,7 +52,7 @@ void DopingProfileReaderModule::initialize() {
     auto field_model = config_.get<DopingProfile>("model");
 
     // set depth of doping profile
-    auto model = detector_->getModel();
+    auto model = getDetector()->getModel();
     auto doping_depth = config_.get<double>("doping_depth", model->getSensorSize().z());
     if(doping_depth - model->getSensorSize().z() > std::numeric_limits<double>::epsilon()) {
         throw InvalidValueError(config_, "doping_depth", "doping depth can not be larger than the sensor thickness");
@@ -89,13 +89,13 @@ void DopingProfileReaderModule::initialize() {
         }
         LOG(DEBUG) << "Doping profile has offset of " << offset << " fractions of the field size";
 
-        detector_->setDopingProfileGrid(field_data.getData(),
-                                        field_data.getDimensions(),
-                                        field_data.getSize(),
-                                        field_mapping,
-                                        field_scale,
-                                        {{offset.x(), offset.y()}},
-                                        thickness_domain);
+        getDetector()->setDopingProfileGrid(field_data.getData(),
+                                            field_data.getDimensions(),
+                                            field_data.getSize(),
+                                            field_mapping,
+                                            field_scale,
+                                            {{offset.x(), offset.y()}},
+                                            thickness_domain);
 
     } else if(field_model == DopingProfile::CONSTANT) {
         LOG(TRACE) << "Adding constant doping concentration";
@@ -104,7 +104,7 @@ void DopingProfileReaderModule::initialize() {
         LOG(INFO) << "Set constant doping concentration of " << Units::display(concentration, {"/cm/cm/cm"});
         FieldFunction<double> function = [concentration](const ROOT::Math::XYZPoint&) noexcept { return concentration; };
 
-        detector_->setDopingProfileFunction(std::move(function), FieldType::CONSTANT);
+        getDetector()->setDopingProfileFunction(std::move(function), FieldType::CONSTANT);
     } else if(field_model == DopingProfile::REGIONS) {
         LOG(TRACE) << "Adding doping concentration depending on sensor region";
 
@@ -120,7 +120,7 @@ void DopingProfileReaderModule::initialize() {
             LOG(INFO) << "Set constant doping concentration of " << Units::display(region.back(), {"/cm/cm/cm"})
                       << " at sensor depth " << Units::display(region.front(), {"um", "mm"});
         }
-        FieldFunction<double> function = [concentration_map, thickness = detector_->getModel()->getSensorSize().z()](
+        FieldFunction<double> function = [concentration_map, thickness = getDetector()->getModel()->getSensorSize().z()](
                                              const ROOT::Math::XYZPoint& position) {
             // Lower bound returns the first element that is *not less* than the given key - in this case, the z position
             // should always be *before* the region boundary set in the vector
@@ -131,7 +131,7 @@ void DopingProfileReaderModule::initialize() {
             return concentration_map.rbegin()->second;
         };
 
-        detector_->setDopingProfileFunction(std::move(function), FieldType::CUSTOM1D);
+        getDetector()->setDopingProfileFunction(std::move(function), FieldType::CUSTOM1D);
     }
 
     // Produce doping_concentration_histograms if needed
@@ -176,7 +176,7 @@ void DopingProfileReaderModule::create_output_plots() {
         throw InvalidValueError(config_, "output_plots_project", "can only project on x, y or z axis");
     }
 
-    auto model = detector_->getModel();
+    auto model = getDetector()->getModel();
 
     // If we need to plot a single pixel, we use size and position of the pixel at the origin
     auto single_pixel = config_.get<bool>("output_plots_single_pixel", true);
@@ -280,7 +280,7 @@ void DopingProfileReaderModule::create_output_plots() {
             // Get doping concentration from detector - directly convert to double
             // and 1/cm3 to fill root doping_concentration_histograms
             auto concentration = static_cast<double>(
-                Units::convert(detector_->getDopingConcentration(ROOT::Math::XYZPoint(x, y, z)), "/cm/cm/cm"));
+                Units::convert(getDetector()->getDopingConcentration(ROOT::Math::XYZPoint(x, y, z)), "/cm/cm/cm"));
             // Fill the main doping_concentration_histogram
             if(project == 'x') {
                 doping_concentration_histogram->Fill(y, z, concentration);

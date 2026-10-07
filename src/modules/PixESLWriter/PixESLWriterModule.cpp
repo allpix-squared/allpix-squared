@@ -54,7 +54,7 @@ void PixESLWriterModule::initialize() {
     const auto number_of_events = global_config.get<uint64_t>("number_of_events");
 
     // Calculate the active matrix area
-    auto model = detector_->getModel();
+    auto model = getDetector()->getModel();
     LOG(DEBUG) << "Calculating rate for active matrix size of " << Units::display(model->getMatrixSize(), {"mm"});
     const auto matrix_area = model->getMatrixSize().x() * model->getMatrixSize().y();
     LOG(INFO) << "Active matrix area : " << matrix_area << " mm^2";
@@ -76,8 +76,8 @@ void PixESLWriterModule::initialize() {
 
     // Set up file writer:
     writer_ = std::make_unique<apx::Writer>(output_file_,
-                                            detector_->getName(),
-                                            detector_->getType(),
+                                            getDetector()->getName(),
+                                            getDetector()->getType(),
                                             properties,
                                             number_of_events,
                                             "Allpix Squared",

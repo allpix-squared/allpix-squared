@@ -48,7 +48,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     : DetectorModule(config, messenger, std::move(detector)), top_z_(getDetector()->getModel()->getSensorSize().z() / 2) {
 
     // Save detector model
-    model_ = detector_->getModel();
+    model_ = getDetector()->getModel();
 
     // Require deposits message for single detector
     messenger_->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
@@ -110,27 +110,27 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
 }
 
 void ProjectionPropagationModule::initialize() {
-    if(detector_->getElectricFieldType() != FieldType::LINEAR) {
+    if(getDetector()->getElectricFieldType() != FieldType::LINEAR) {
         throw ModuleError("This module should only be used with linear electric fields.");
     }
 
-    if(detector_->hasDopingProfile() && detector_->getDopingProfileType() != FieldType::CONSTANT) {
+    if(getDetector()->hasDopingProfile() && getDetector()->getDopingProfileType() != FieldType::CONSTANT) {
         throw ModuleError("This module should only be used with constant doping concentration.");
     }
 
     // Prepare recombination model
-    recombination_ = Recombination(config_, detector_->hasDopingProfile());
+    recombination_ = Recombination(config_, getDetector()->hasDopingProfile());
 
-    if(detector_->hasMagneticField() && !config_.get<bool>("ignore_magnetic_field")) {
+    if(getDetector()->hasMagneticField() && !config_.get<bool>("ignore_magnetic_field")) {
         throw ModuleError("This module should not be used with magnetic fields. Add the option 'ignore_magnetic_field' to "
                           "the configuration if you would like to continue.");
     }
-    if(detector_->hasMagneticField() && config_.get<bool>("ignore_magnetic_field")) {
+    if(getDetector()->hasMagneticField() && config_.get<bool>("ignore_magnetic_field")) {
         LOG(WARNING) << "A magnetic field is switched on, but is set to be ignored for this module.";
     }
 
     // Find correct top side
-    if(detector_->getElectricField({0, 0, top_z_}).z() > detector_->getElectricField({0, 0, -top_z_}).z()) {
+    if(getDetector()->getElectricField({0, 0, top_z_}).z() > getDetector()->getElectricField({0, 0, -top_z_}).z()) {
         top_z_ *= -1;
     }
     if(propagate_type_ == CarrierType::HOLE) {
@@ -244,11 +244,11 @@ void ProjectionPropagationModule::run(Event* event) {
             }
 
             // Get the electric field at the position of the deposited charge and the top of the sensor:
-            auto efield = detector_->getElectricField(position);
+            auto efield = getDetector()->getElectricField(position);
             double efield_mag = std::sqrt(efield.Mag2());
-            auto efield_top = detector_->getElectricField(ROOT::Math::XYZPoint(0., 0., top_z_));
+            auto efield_top = getDetector()->getElectricField(ROOT::Math::XYZPoint(0., 0., top_z_));
             double efield_mag_top = std::sqrt(efield_top.Mag2());
-            double doping = detector_->getDopingConcentration(position);
+            double doping = getDetector()->getDopingConcentration(position);
             double diffusion_time = 0;
 
             // Only project if within the depleted region (i.e. efield not zero)
@@ -269,11 +269,11 @@ void ProjectionPropagationModule::run(Event* event) {
 
                 auto local_position_diffusion = position + diffusion_vec;
 
-                auto efield_diffusion = detector_->getElectricField(local_position_diffusion);
+                auto efield_diffusion = getDetector()->getElectricField(local_position_diffusion);
                 const double efield_mag_diffusion = std::sqrt(efield_diffusion.Mag2());
 
                 if(efield_mag_diffusion < std::numeric_limits<double>::epsilon() &&
-                   (detector_->getModel()->isWithinSensor(position))) {
+                   (getDetector()->getModel()->isWithinSensor(position))) {
                     LOG(TRACE) << "Charge carrier remains within undepleted volume";
 
                     // Add position after diffusion to line graphs:
@@ -292,7 +292,7 @@ void ProjectionPropagationModule::run(Event* event) {
                     if(std::sqrt((stop - ROOT::Math::XYZVector(start)).Mag2()) < 0.00001) {
                         return stop;
                     }
-                    auto efield_center = detector_->getElectricField((stop + ROOT::Math::XYZVector(start)) / 2.);
+                    auto efield_center = getDetector()->getElectricField((stop + ROOT::Math::XYZVector(start)) / 2.);
                     const double efield_center_mag = std::sqrt(efield_center.Mag2());
                     if(efield_center_mag > std::numeric_limits<double>::epsilon()) {
                         return interval(start, (stop + ROOT::Math::XYZVector(start)) / 2.);
@@ -301,17 +301,17 @@ void ProjectionPropagationModule::run(Event* event) {
                 };
 
                 position = interval(position, local_position_diffusion);
-                efield = detector_->getElectricField(position);
+                efield = getDetector()->getElectricField(position);
                 efield_mag = std::sqrt(efield.Mag2());
                 diffusion_time = integration_time_ * std::sqrt((position - initial_position).Mag2() /
                                                                (local_position_diffusion - initial_position).Mag2());
 
-                if(!detector_->getModel()->isWithinSensor(position)) {
+                if(!getDetector()->getModel()->isWithinSensor(position)) {
                     LOG(TRACE) << "Charge carrier diffused outside the sensor volume";
 
                     // Add position at sensor intercept:
                     if(output_linegraphs_) {
-                        auto intercept = detector_->getModel()->getSensorIntercept(initial_position, position);
+                        auto intercept = getDetector()->getModel()->getSensorIntercept(initial_position, position);
                         output_plot_points.back().addPoint(intercept, deposit.getGlobalTime() + diffusion_time);
                     }
 
@@ -368,7 +368,7 @@ void ProjectionPropagationModule::run(Event* event) {
             // Check if charge carrier is still alive via its survival probability, evaluated once
             const allpix::uniform_real_distribution<double> survival(0, 1);
             if(recombination_(
-                   type, detector_->getDopingConcentration(position), survival(event->getRandomEngine()), drift_time)) {
+                   type, getDetector()->getDopingConcentration(position), survival(event->getRandomEngine()), drift_time)) {
                 LOG(DEBUG) << "Recombined " << charge_per_step << " charge carriers (" << type << ") at "
                            << Units::display(position, {"mm", "um"});
                 recombined_charges_count += charge_per_step;
@@ -394,7 +394,7 @@ void ProjectionPropagationModule::run(Event* event) {
             }
 
             // Only add if within sensor volume:
-            if(!detector_->getModel()->isWithinSensor(local_position)) {
+            if(!getDetector()->getModel()->isWithinSensor(local_position)) {
                 LOG(DEBUG) << "Charge carriers outside sensor volume at " << Units::display(local_position, {"mm", "um"});
                 // FIXME: drop charges if it ends up outside the sensor, could be optimized to estimate position on border
                 continue;
@@ -411,7 +411,7 @@ void ProjectionPropagationModule::run(Event* event) {
                 group_size_histo_->Fill(charge_per_step);
             }
 
-            auto global_position = detector_->getGlobalPosition(local_position);
+            auto global_position = getDetector()->getGlobalPosition(local_position);
 
             // Produce charge carrier at this position
             propagated_charges.emplace_back(local_position,
@@ -448,7 +448,7 @@ void ProjectionPropagationModule::run(Event* event) {
     }
 
     // Create a new message with propagated charges
-    auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
+    auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), getDetector());
 
     // Dispatch the message with propagated charges
     messenger_->dispatchMessage(this, std::move(propagated_charge_message), event);

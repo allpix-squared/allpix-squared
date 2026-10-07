@@ -41,7 +41,7 @@ PropagationMapWriterModule::PropagationMapWriterModule(Configuration& config,
 
     allow_multithreading();
 
-    model_ = detector_->getModel();
+    model_ = getDetector()->getModel();
 
     // This module requires both DepositedCharge and PixelCharge information
     messenger_->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
@@ -68,7 +68,7 @@ PropagationMapWriterModule::PropagationMapWriterModule(Configuration& config,
 }
 
 void PropagationMapWriterModule::initialize() {
-    LOG(DEBUG) << "Setting up propagation map for detector " << detector_->getName();
+    LOG(DEBUG) << "Setting up propagation map for detector " << getDetector()->getName();
 
     const auto pixel_size = model_->getPixelSize();
     const auto thickness = model_->getSensorSize().z();

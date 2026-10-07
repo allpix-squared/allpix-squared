@@ -206,7 +206,7 @@ void NetlistWriterModule::run(Event* event) {
             LOG(DEBUG) << "Received pixel " << index << ", charge " << Units::display(inputcharge, "e");
 
             // Get pixel address
-            auto detector_model = detector_->getModel();
+            auto detector_model = getDetector()->getModel();
             auto idx = std::to_string(index.x() * static_cast<int>(detector_model->getNPixels().Y()) + index.y());
 
             if(target_ == Target::SPECTRE) {
