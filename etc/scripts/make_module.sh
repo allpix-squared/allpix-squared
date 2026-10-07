@@ -21,13 +21,13 @@ select yn in "unique" "detector"; do
     esac
 done
 
-# Ask for module type:
+# Ask for event order requirement:
 echo -e "Event order requirements?\n"
 sequence=0
-select yn in "Module" "SequentialModule"; do
+select yn in "Yes" "No"; do
     case $yn in
-        Module ) sequence=0; break;;
-        SequentialModule ) sequence=1; break;;
+        No ) sequence=0; break;;
+        Yes ) sequence=1; break;;
     esac
 done
 
@@ -128,16 +128,11 @@ if [ "$type" = 2 ]; then
     eval $command
 fi
 
-# Change to SequentialModule if required
+# Enable sequence requirement if applicable
 if [ "$sequence" = 1 ]; then
-    # Change header file
-    command="sed ${opt} \
-        -e 's/public Module/public SequentialModule/g' \
-        $MODDIR/$MODNAME/${MODNAME}Module.hpp"
-    eval $command
     # Change implementation file
     command="sed ${opt} \
-        -e 's/ Module/ SequentialModule/g' \
+        -e 's/ \/\/ set_sequence_required();/ set_sequence_required();/g' \
         $MODDIR/$MODNAME/${MODNAME}Module.cpp"
     eval $command
 fi
