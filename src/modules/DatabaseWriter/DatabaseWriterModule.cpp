@@ -35,7 +35,7 @@ DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* mes
     allow_multithreading();
 
     // Require sequential event processing
-    set_sequence_required();
+    set_sequence_required(config_.get<bool>("require_sequence"));
 
     // Bind to all messages with filter
     messenger_->registerFilter(this, &DatabaseWriterModule::filter);
@@ -55,11 +55,6 @@ DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* mes
 
     // Select pixel hit timing information to be saved:
     timing_global_ = config_.get<bool>("global_timing");
-
-    // Waive sequence requirement if requested by user
-    if(!config_.get<bool>("require_sequence")) {
-        waive_sequence_requirement();
-    }
 }
 
 void DatabaseWriterModule::prepare_statements(const std::shared_ptr<pqxx::connection>& connection) {
