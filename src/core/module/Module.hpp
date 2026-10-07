@@ -312,36 +312,6 @@ namespace allpix {
         static Logger& generate_logger(const Configuration& config);
     };
 
-    /**
-     * @brief A Module that always ensure to execute events in the order of event numbers. It
-     * implements buffering out of the box so interested modules can directly use it
-     */
-    class SequentialModule : public Module {
-        friend class Event;
-        friend class ModuleManager;
-        friend class Messenger;
-
-    public:
-        explicit SequentialModule(Configuration& config) : Module(config) {}
-        explicit SequentialModule(Configuration& config, std::shared_ptr<Detector> detector)
-            : Module(config, std::move(detector)) {}
-
-    protected:
-        /**
-         * @brief Release strict sequence processing requirement
-         */
-        void waive_sequence_requirement(bool waive = true);
-
-    private:
-        /**
-         * @brief Checks if this module needs to be executed in correct event sequence
-         *
-         * @return true if strict event sequence is required and false if any processing order is valid
-         */
-        bool require_sequence() const override { return sequence_required_; }
-        bool sequence_required_{true};
-    };
-
     class UniqueModule : public Module {
         friend class Event;
         friend class ModuleManager;
