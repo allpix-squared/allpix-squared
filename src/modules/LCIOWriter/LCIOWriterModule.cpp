@@ -142,7 +142,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
         has_short_config = true;
     }
 
-    auto detectors = geo_manager_->getDetectors();
+    auto detectors = get_geometry_manager()->getDetectors();
 
     if(has_short_config) {
         auto out_col_name = config_.get<std::string>("output_collection_name");
@@ -485,17 +485,17 @@ void LCIOWriterModule::finalize() {
             throw ModuleError("Cannot write to GEAR geometry file");
         }
 
-        auto detectors = geo_manager_->getDetectors();
+        auto detectors = get_geometry_manager()->getDetectors();
         geometry_file << "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
                       << "<!-- ?xml-stylesheet type=\"text/xsl\" href=\"https://cern.ch/allpix-squared/\"? -->\n"
                       << "<gear>\n";
 
         geometry_file << "  <global detectorName=\"" << detector_name_ << "\"/>\n";
-        if(geo_manager_->getMagneticFieldType() == MagneticFieldType::CONSTANT) {
-            const ROOT::Math::XYZVector b_field = geo_manager_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
+        if(get_geometry_manager()->getMagneticFieldType() == MagneticFieldType::CONSTANT) {
+            const ROOT::Math::XYZVector b_field = get_geometry_manager()->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
             geometry_file << R"(  <BField type="ConstantBField" x=")" << Units::convert(b_field.x(), "T") << "\" y=\""
                           << Units::convert(b_field.y(), "T") << "\" z=\"" << Units::convert(b_field.z(), "T") << "\"/>\n";
-        } else if(geo_manager_->getMagneticFieldType() == MagneticFieldType::NONE) {
+        } else if(get_geometry_manager()->getMagneticFieldType() == MagneticFieldType::NONE) {
             geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>\n";
         } else {
             LOG(WARNING) << "Field type not handled by GEAR geometry. Writing null magnetic field instead.";
