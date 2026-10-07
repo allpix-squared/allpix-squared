@@ -18,8 +18,8 @@
 #include <G4StateManager.hh>
 #include <G4UImanager.hh>
 
+#include "core/log/log.h"
 #include "core/utils/enum.h"
-#include "core/utils/log.h"
 #include "tools/geant4/G4ExceptionHandler.hpp"
 #include "tools/geant4/G4LoggingDestination.hpp"
 #include "tools/geant4/WorkerRunManager.hpp"

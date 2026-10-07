@@ -17,14 +17,14 @@
 #include "exceptions.h"
 
 #include "core/config/Configuration.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
 
 namespace allpix {
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Charge carrier detrapping time models
      */
     class DetrappingModel {
@@ -50,7 +50,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief No detrapping
      */
     class NoDetrapping : virtual public DetrappingModel {
@@ -59,7 +59,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Constant detrapping rate of charge carriers
      */
     class ConstantDetrapping : virtual public DetrappingModel {

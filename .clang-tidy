@@ -13,7 +13,7 @@ Checks: [
   'cppcoreguidelines-*','-cppcoreguidelines-pro-bounds-pointer-arithmetic',
   'google-*','-google-build-using-namespace','-google-explicit-constructor','-google-runtime-int',
   'hicpp-*',
-  'llvm-*','-llvm-header-guard','-llvm-include-order',
+  'llvm-*','-llvm-header-guard','-llvm-include-order','-llvm-prefer-static-over-anonymous-namespace',
   'misc-*','-misc-include-cleaner','-misc-non-private-member-variables-in-classes',
   'modernize-*','-modernize-use-designated-initializers','-modernize-use-nodiscard','-modernize-use-trailing-return-type',
   'performance-*',
@@ -27,9 +27,10 @@ Checks: [
 ]
 WarningsAsErrors: '*'
 HeaderFileExtensions: ['', 'h', 'hpp', 'tpp']
+HeaderFilterRegex: '^(?!.*spdlog/).*'
 CheckOptions:
   misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: 'true'
-  misc-include-cleaner.IgnoreHeaders: 'Eigen/*;Math/*;G4*'
+  misc-include-cleaner.IgnoreHeaders: 'Eigen/*;Math/*;G4*;spdlog/*'
   modernize-use-override.IgnoreDestructors: 'true'
   cppcoreguidelines-avoid-do-while.IgnoreMacros: 'true'
   readability-identifier-naming.NamespaceCase: lower_case

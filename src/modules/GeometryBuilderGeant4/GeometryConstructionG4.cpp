@@ -38,8 +38,8 @@
 #include "PassiveMaterialConstructionG4.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/log/log.h"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
 #include "tools/geant4/G4LoggingDestination.hpp"
@@ -136,12 +136,12 @@ void GeometryConstructionG4::check_overlaps() {
     LOG(TRACE) << "Checking overlaps";
     bool overlapFlag = false;
 
-    auto current_level = G4LoggingDestination::getG4coutReportingLevel();
-    G4LoggingDestination::setG4coutReportingLevel(LogLevel::ERROR);
+    auto current_level = G4LoggingDestination::getG4ReportingLevel();
+    G4LoggingDestination::setG4ReportingLevel(LogLevel::ERROR);
     for(auto* volume : (*phys_volume_store)) {
         overlapFlag = volume->CheckOverlaps(1000, 0., false) || overlapFlag;
     }
-    G4LoggingDestination::setG4coutReportingLevel(current_level);
+    G4LoggingDestination::setG4ReportingLevel(current_level);
 
     if(overlapFlag) {
         LOG(ERROR) << "Overlapping volumes detected.";
@@ -197,8 +197,8 @@ void GeometryConstructionG4::verify_transforms() const {
         auto local_g4 = static_cast<ROOT::Math::XYZVector>(coord_g4) + detector->getModel()->getSensorCenter();
 
         if((local_g4 - local).mag2() > 0.001) {
-            LOG(FATAL) << "Model \"" << detector->getModel()->getType() << "\" has invalid coordinate transformation";
-            LOG(FATAL) << "Coordinate transformation test for detector " << detector->getName() << '\n'
+            LOG(ERROR) << "Model \"" << detector->getModel()->getType() << "\" has invalid coordinate transformation";
+            LOG(ERROR) << "Coordinate transformation test for detector " << detector->getName() << '\n'
                        << "Global test vector:      " << Units::display(global, {"mm", "um"}) << '\n'
                        << "In local coordinates:    " << Units::display(local, {"mm", "um"}) << '\n'
                        << "In G4 local coordinates: " << Units::display(local_g4, {"mm", "um"});

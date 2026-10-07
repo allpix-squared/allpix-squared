@@ -30,9 +30,9 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "core/utils/text.h"
 #include "core/utils/unit.h"
 #include "tools/geant4/MTRunManager.hpp"

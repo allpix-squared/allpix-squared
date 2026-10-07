@@ -146,7 +146,7 @@ FUNCTION(add_default_fail_conditions name)
         TEST ${name}
         PROPERTY FAIL_REGULAR_EXPRESSION)
     IF(NOT EXPRESSIONS_FAIL)
-        # Unless they are part of the pass condition, no WARNING, ERROR or FATAL logs should appear:
+        # Unless they are part of the pass condition, no WARNING or ERROR logs should appear:
         GET_PROPERTY(
             EXPRESSIONS_PASS
             TEST ${name}
@@ -162,12 +162,6 @@ FUNCTION(add_default_fail_conditions name)
                 TEST ${name}
                 APPEND
                 PROPERTY FAIL_REGULAR_EXPRESSION "ERROR")
-        ENDIF()
-        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "FATAL")
-            SET_PROPERTY(
-                TEST ${name}
-                APPEND
-                PROPERTY FAIL_REGULAR_EXPRESSION "FATAL")
         ENDIF()
     ENDIF()
 ENDFUNCTION()
@@ -302,6 +296,9 @@ FUNCTION(add_allpix_test)
         STRING(REPLACE " " ";" TESTDATA ${TESTDATA})
         SET_PROPERTY(TEST ${TEST_NAME} PROPERTY REQUIRED_FILES "${TESTDATA}")
     ENDIF()
+
+    # Disable color for the test:
+    SET_PROPERTY(TEST ${TEST_NAME} PROPERTY ENVIRONMENT NO_COLOR=1)
 ENDFUNCTION()
 
 # Macro for adding module tests to CTest

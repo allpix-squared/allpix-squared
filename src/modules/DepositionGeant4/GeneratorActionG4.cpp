@@ -38,8 +38,8 @@
 #include <Randomize.hh>
 
 #include "core/config/exceptions.h"
+#include "core/log/log.h"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "tools/ROOT.h"
 #include "tools/geant4/geant4.h"
 

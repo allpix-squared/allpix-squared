@@ -17,7 +17,7 @@
 #include <sstream>
 #include <string>
 
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "core/utils/text.h"
 
 using namespace mesh_converter;

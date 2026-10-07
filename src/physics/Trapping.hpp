@@ -17,14 +17,14 @@
 #include "exceptions.h"
 
 #include "core/config/Configuration.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
 
 namespace allpix {
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Charge carrier trapping models
      */
     class TrappingModel {
@@ -58,7 +58,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief No trapping
      */
     class NoTrapping : virtual public TrappingModel {
@@ -67,7 +67,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Constant trapping rate of charge carriers
      */
     class ConstantTrapping : virtual public TrappingModel {
@@ -79,7 +79,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Ljubljana / Kramberger effective trapping model for charge carriers in silicon
      *
      * Parametrization taken from https://doi.org/10.1016/S0168-9002(01)01263-3, effective trapping time from Eq. 4 with beta
@@ -95,7 +95,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Dortmund / Krasel effective trapping model for charge carriers in silicon
      *
      * Parametrization taken from https://doi.org/10.1109/TNS.2004.839096, effective trapping time from Eq. 3 with gamma
@@ -110,7 +110,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Effective trapping model developed by the CMS Tracker Group
      *
      * Parametrization taken from https://doi.org/10.1088/1748-0221/11/04/P04023, effective trapping time from Table 2.
@@ -127,7 +127,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Ljubljana High-Fluence / Mandic effective trapping model
      *
      * Parametrization taken from https://doi.org/10.1088/1748-0221/15/11/P11018, section 5.
@@ -142,7 +142,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Custom trapping model for charge carriers
      */
     class CustomTrapping : virtual public TrappingModel {

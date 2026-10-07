@@ -20,8 +20,8 @@
 #include <TH1.h>
 #include <TObject.h>
 
+#include "core/log/log.h"
 #include "core/module/ThreadPool.hpp"
-#include "core/utils/log.h"
 
 namespace allpix {
 

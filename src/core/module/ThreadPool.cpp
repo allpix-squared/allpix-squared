@@ -21,7 +21,8 @@
 #include <mutex>
 #include <thread>
 
-#include "core/utils/log.h"
+#include "core/log/LogContext.hpp"
+#include "core/log/log.h"
 
 using namespace allpix;
 
@@ -81,7 +82,7 @@ void ThreadPool::checkException() {
     // If exception has been thrown, destroy pool and propagate it
     if(exception_ptr_) {
         destroy();
-        Log::setSection("");
+        log_context::reset();
         std::rethrow_exception(exception_ptr_);
     }
 }

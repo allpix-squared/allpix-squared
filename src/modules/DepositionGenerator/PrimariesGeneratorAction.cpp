@@ -24,7 +24,7 @@
 #include <G4TransportationManager.hh>
 
 #include "core/config/exceptions.h"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
 #include "tools/geant4/geant4.h"

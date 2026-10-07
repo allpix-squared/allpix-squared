@@ -24,7 +24,7 @@
 namespace allpix {
 
     /**
-     * @ingroup PassiveMaterialModel
+     * @ingroup PassiveMaterialModels
      * @brief Model of a rectangular box.
      */
     class BoxModel : public PassiveMaterialModel {

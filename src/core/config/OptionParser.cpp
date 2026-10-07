@@ -15,7 +15,7 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/config/FileParser.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "core/utils/text.h"
 
 using namespace allpix;

@@ -16,39 +16,45 @@
 #include <G4String.hh>
 #include <G4Types.hh>
 
-#include "core/utils/log.h"
+#include "core/log/LoggerManager.hpp"
+#include "core/log/log.h"
 
 using namespace allpix;
 
 G4LoggingDestination* G4LoggingDestination::instance = nullptr;
-allpix::LogLevel G4LoggingDestination::reporting_level_g4cout = allpix::LogLevel::TRACE;
-allpix::LogLevel G4LoggingDestination::reporting_level_g4cerr = allpix::LogLevel::WARNING;
 
-void G4LoggingDestination::setG4coutReportingLevel(LogLevel level) { G4LoggingDestination::reporting_level_g4cout = level; }
+namespace {
+    /**
+     * @brief This module's own permanent logger (topic "Geant4"), seeded from the global default level/format the first
+     * time a Geant4 message is received
+     */
+    Logger& geant4_logger() { return LoggerManager::getInstance().getLogger("Geant4"); }
+} // namespace
 
-void G4LoggingDestination::setG4cerrReportingLevel(LogLevel level) { G4LoggingDestination::reporting_level_g4cerr = level; }
+void G4LoggingDestination::setG4ReportingLevel(LogLevel level) { geant4_logger().setLevel(level); }
 
-LogLevel G4LoggingDestination::getG4coutReportingLevel() { return G4LoggingDestination::reporting_level_g4cout; }
-
-LogLevel G4LoggingDestination::getG4cerrReportingLevel() { return G4LoggingDestination::reporting_level_g4cerr; }
+LogLevel G4LoggingDestination::getG4ReportingLevel() { return geant4_logger().getLevel(); }
 
 void G4LoggingDestination::process_message(LogLevel level, std::string& msg) {
-    if(!msg.empty() && level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty()) {
-        // Remove line-break always added to G4String
-        msg.pop_back();
-        auto prev_section = Log::getSection();
-        Log::setSection("Geant4");
-        allpix::Log().getStream(level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__) << msg;
-        Log::setSection(prev_section);
+    if(msg.empty()) {
+        return;
     }
+
+    auto& logger = geant4_logger();
+    if(!logger.shouldLog(level)) {
+        return;
+    }
+    // Remove line-break always added to G4String
+    msg.pop_back();
+    logger.log(level) << msg;
 }
 
 G4int G4LoggingDestination::ReceiveG4cout(const G4String& msg) {
-    process_message(G4LoggingDestination::reporting_level_g4cout, const_cast<G4String&>(msg)); // NOLINT
+    process_message(LogLevel::DEBUG, const_cast<G4String&>(msg)); // NOLINT
     return 0;
 }
 
 G4int G4LoggingDestination::ReceiveG4cerr(const G4String& msg) {
-    process_message(G4LoggingDestination::reporting_level_g4cerr, const_cast<G4String&>(msg)); // NOLINT
+    process_message(LogLevel::WARNING, const_cast<G4String&>(msg)); // NOLINT
     return 0;
 }

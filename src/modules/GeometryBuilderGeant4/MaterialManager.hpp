@@ -12,7 +12,7 @@
 #ifndef ALLPIX_GEANT4_MATERIALS_H
 #define ALLPIX_GEANT4_MATERIALS_H
 
-#include "core/utils/log.h"
+#include "core/log/log.h"
 
 #include <G4Material.hh>
 #include <G4NistManager.hh>

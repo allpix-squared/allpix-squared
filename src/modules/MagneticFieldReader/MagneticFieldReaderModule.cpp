@@ -23,9 +23,9 @@
 
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
-#include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/field_parser.h"
 

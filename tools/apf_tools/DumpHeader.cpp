@@ -18,7 +18,8 @@
 #include <string>
 #include <vector>
 
-#include "core/utils/log.h"
+#include "core/log/log.h"
+#include "core/utils/env.h"
 #include "core/utils/unit.h"
 #include "tools/field_parser.h"
 #include "tools/units.h"
@@ -57,7 +58,9 @@ int main(int argc, const char* argv[]) {
         register_units();
 
         // Add cout as the default logging stream
-        Log::addStream(std::cout);
+        const auto no_color = allpix::getenv("NO_COLOR");
+        allpix::LoggerManager::getInstance().addStream(
+            std::cout, no_color.has_value() ? allpix::SinkStyle::PLAIN : allpix::SinkStyle::COLOR);
 
         // If no arguments are provided, print the help:
         bool print_help = false;
@@ -75,8 +78,8 @@ int main(int argc, const char* argv[]) {
                 print_help = true;
             } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
                 try {
-                    const LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
-                    Log::setReportingLevel(log_level);
+                    const auto log_level = Log::getLevelFromString(std::string(argv[++i]));
+                    LoggerManager::getInstance().setGlobalLevel(log_level);
                 } catch(std::invalid_argument& e) {
                     LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
                 }
@@ -117,7 +120,7 @@ int main(int argc, const char* argv[]) {
         }
 
     } catch(std::exception& e) {
-        LOG(FATAL) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
+        LOG(ERROR) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
         return_code = 127;
     }
 

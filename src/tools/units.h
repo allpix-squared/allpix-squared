@@ -12,7 +12,7 @@
 #ifndef ALLPIX_ADD_UNITS_H
 #define ALLPIX_ADD_UNITS_H
 
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "core/utils/unit.h"
 
 namespace allpix {

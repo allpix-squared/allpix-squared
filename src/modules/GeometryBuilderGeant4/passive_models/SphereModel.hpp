@@ -22,7 +22,7 @@
 namespace allpix {
 
     /**
-     * @ingroup PassiveMaterialModel
+     * @ingroup PassiveMaterialModels
      * @brief Model of an sphere with inner and outer radius.
      */
     class SphereModel : public PassiveMaterialModel {

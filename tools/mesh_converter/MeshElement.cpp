@@ -20,7 +20,7 @@
 #include <Eigen/Core>
 #include <octree/Octree.hpp>
 
-#include "core/utils/log.h"
+#include "core/log/log.h"
 
 #define MIN_VOLUME 1e-12
 

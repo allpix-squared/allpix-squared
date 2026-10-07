@@ -25,8 +25,8 @@
 #include "core/geometry/Detector.hpp"
 #include "core/geometry/DetectorField.hpp"
 #include "core/geometry/DetectorModel.hpp"
+#include "core/log/log.h"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/Pixel.hpp"
 

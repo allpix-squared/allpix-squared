@@ -22,7 +22,7 @@
 namespace allpix {
 
     /**
-     * @ingroup PassiveMaterialModel
+     * @ingroup PassiveMaterialModels
      * @brief Model of an cylinder with inner and outer radius.
      */
     class CylinderModel : public PassiveMaterialModel {

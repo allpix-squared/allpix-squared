@@ -13,17 +13,28 @@ IF(NOT ALLPIX_VERSION)
     ADD_DEFINITIONS(-DALLPIX_PROJECT_VERSION="")
 ENDIF()
 
+# Logging backend
+FIND_PACKAGE(spdlog REQUIRED)
+
 # Find required Allpix Squared tools
 GET_FILENAME_COMPONENT(ALLPIX_SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../src/" ABSOLUTE)
 INCLUDE_DIRECTORIES(${ALLPIX_SRC})
 INCLUDE_DIRECTORIES(${ALLPIX_SRC}/tools)
 
+SET(ALLPIX_LOG_SRCS
+    ${ALLPIX_SRC}/core/log/LogContext.cpp
+    ${ALLPIX_SRC}/core/log/Logger.cpp
+    ${ALLPIX_SRC}/core/log/LoggerManager.cpp
+    ${ALLPIX_SRC}/core/log/Sinks.cpp)
+
 # Small field converter tool
-ADD_EXECUTABLE(field_converter FieldConverter.cpp ${ALLPIX_SRC}/core/utils/log.cpp ${ALLPIX_SRC}/core/utils/text.cpp
+ADD_EXECUTABLE(field_converter FieldConverter.cpp ${ALLPIX_LOG_SRCS} ${ALLPIX_SRC}/core/utils/text.cpp
                                ${ALLPIX_SRC}/core/utils/unit.cpp)
 
 # Set compiler options
 TARGET_COMPILE_OPTIONS(field_converter PRIVATE ${ALLPIX_CXX_FLAGS})
+TARGET_COMPILE_DEFINITIONS(field_converter PUBLIC SPDLOG_USE_STD_FORMAT SPDLOG_HEADER_ONLY)
+TARGET_LINK_LIBRARIES(field_converter PUBLIC spdlog::spdlog_header_only)
 
 # Create install target
 INSTALL(
@@ -32,11 +43,13 @@ INSTALL(
     RUNTIME DESTINATION bin)
 
 # Tiny header dump tool for APF
-ADD_EXECUTABLE(apf_dump DumpHeader.cpp ${ALLPIX_SRC}/core/utils/log.cpp ${ALLPIX_SRC}/core/utils/text.cpp
+ADD_EXECUTABLE(apf_dump DumpHeader.cpp ${ALLPIX_LOG_SRCS} ${ALLPIX_SRC}/core/utils/text.cpp
                         ${ALLPIX_SRC}/core/utils/unit.cpp)
 
 # Set compiler options
 TARGET_COMPILE_OPTIONS(apf_dump PRIVATE ${ALLPIX_CXX_FLAGS})
+TARGET_COMPILE_DEFINITIONS(apf_dump PUBLIC SPDLOG_USE_STD_FORMAT SPDLOG_HEADER_ONLY)
+TARGET_LINK_LIBRARIES(apf_dump PUBLIC spdlog::spdlog_header_only)
 
 # Create install target
 INSTALL(

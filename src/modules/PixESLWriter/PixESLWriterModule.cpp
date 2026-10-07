@@ -17,8 +17,8 @@
 
 #include <libapx/writer.hpp>
 
+#include "core/log/log.h"
 #include "core/utils/distributions.h"
-#include "core/utils/log.h"
 
 using namespace allpix;
 

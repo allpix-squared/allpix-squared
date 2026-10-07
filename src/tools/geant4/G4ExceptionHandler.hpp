@@ -12,8 +12,8 @@
 #ifndef ALLPIX_GEANT4_EXCEPTIONS_H
 #define ALLPIX_GEANT4_EXCEPTIONS_H
 
+#include "core/log/log.h"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 
 #include <G4VExceptionHandler.hh>
 

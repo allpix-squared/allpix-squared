@@ -118,7 +118,7 @@ RUN mkdir -p ${HEPMC3DIR}/src ${HEPMC3DIR}/build && \
     rm -rf ${HEPMC3DIR}
 
 # Install Allpix Squared dependencies
-RUN apt-get install -y postgresql-server-dev-all libeigen3-dev libboost-random-dev python3-lxml
+RUN apt-get install -y postgresql-server-dev-all libeigen3-dev libboost-random-dev python3-lxml libspdlog-dev
 
 # Add layer for libpqxx, we need a newer version than available in the repos
 ENV PQXX_VERSION=7.10.1

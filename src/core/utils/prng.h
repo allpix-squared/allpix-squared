@@ -12,7 +12,7 @@
 #ifndef ALLPIX_PRNG_H
 #define ALLPIX_PRNG_H
 
-#include "core/utils/log.h"
+#include "core/log/log.h"
 
 #include <random>
 

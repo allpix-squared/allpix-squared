@@ -20,7 +20,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "tools/ROOT.h"
 
 #include <G4LogicalVolume.hh>

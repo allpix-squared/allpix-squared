@@ -18,7 +18,7 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
 #include "tools/tabulated_pow.h"
@@ -26,7 +26,7 @@
 namespace allpix {
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Charge carrier mobility models
      */
     class MobilityModel {
@@ -52,7 +52,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Jacoboni/Canali mobility model for charge carriers in silicon
      *
      * Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2). All parameters are taken
@@ -93,7 +93,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Canali mobility model
      *
      * This model differs from the Jacoboni version only by the value of the electron v_m. The difference is most likely a
@@ -107,7 +107,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Fast implementation of the Canali mobility model
      *
      * This model uses a pre-calculated lookup table for the required power calculations in the range relevant for
@@ -153,7 +153,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Hamburg (Klanner-Scharf) parametrization for <100> silicon
      *
      * http://dx.doi.org/10.1016/j.nima.2015.07.057
@@ -199,7 +199,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Hamburg (Klanner-Scharf) high-field parametrization for <100> silicon
      *
      * http://dx.doi.org/10.1016/j.nima.2015.07.057
@@ -220,7 +220,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Masetti mobility model for charge carriers in silicon
      *
      * Parameterization variables from https://doi.org/10.1109/T-ED.1983.21207, formulae (1) for electrons and (4) for holes.
@@ -287,7 +287,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Combination of the Masetti and Canali mobility models for charge carriers in silicon ("extended Canali model")
      *
      * Based on the combination of the models as implemented in Synopsys Sentaurus TCAD
@@ -311,7 +311,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Arora mobility model for charge carriers in silicon
      *
      * Parameterization variables from https://doi.org/10.1109/T-ED.1982.20698 (values from Table 1, formulae 8 for electrons
@@ -354,7 +354,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Ruch-Kino mobility model for charge carriers in GaAs:Cr
      *
      * Model from https://doi.org/10.1103/PhysRev.174.921
@@ -391,7 +391,7 @@ namespace allpix {
     };
 
     /*
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Quay mobility model for charge carriers in different semiconductor materials
      *
      * Quay (https://doi.org/10.1016/0038-1101(87)90063-3) uses a parametrization of the saturation velocity VSat taken from
@@ -465,7 +465,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Levinshtein mobility models for charge carriers in gallium nitride
      *
      * Model and parameters are based on https://doi.org/10.1016/S0038-1101(02)00256-3
@@ -514,7 +514,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Constant mobility of electrons and holes
      */
     class ConstantMobility : public MobilityModel {
@@ -532,7 +532,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Custom mobility model for charge carriers
      */
     class Custom : public MobilityModel {

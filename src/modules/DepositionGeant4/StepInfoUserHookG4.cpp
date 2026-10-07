@@ -14,7 +14,7 @@
 #include "DepositionGeant4Module.hpp"
 #include "StepInfoUserHookG4.hpp"
 
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "tools/geant4/MTRunManager.hpp"
 
 using namespace allpix;

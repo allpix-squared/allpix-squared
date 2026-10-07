@@ -7,7 +7,10 @@ INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 # Create core library
 ADD_LIBRARY(
     AllpixCore SHARED
-    utils/log.cpp
+    log/LogContext.cpp
+    log/Logger.cpp
+    log/LoggerManager.cpp
+    log/Sinks.cpp
     utils/text.cpp
     utils/unit.cpp
     module/Module.cpp
@@ -39,9 +42,12 @@ TARGET_COMPILE_OPTIONS(AllpixCore PRIVATE ${ALLPIX_CXX_FLAGS})
 # Link the dependencies
 TARGET_LINK_LIBRARIES(AllpixCore PUBLIC ${ALLPIX_DEPS_LIBRARIES})
 TARGET_LINK_LIBRARIES(AllpixCore PRIVATE ${ALLPIX_LIBRARIES})
+TARGET_LINK_LIBRARIES(AllpixCore PUBLIC spdlog::spdlog_header_only)
 
 # Define compile-time library extension
 TARGET_COMPILE_DEFINITIONS(AllpixCore PRIVATE SHARED_LIBRARY_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}")
+TARGET_COMPILE_DEFINITIONS(AllpixCore PUBLIC SPDLOG_USE_STD_FORMAT SPDLOG_HEADER_ONLY)
+
 # Link the DL libraries
 TARGET_LINK_LIBRARIES(AllpixCore PRIVATE ${CMAKE_DL_LIBS})
 

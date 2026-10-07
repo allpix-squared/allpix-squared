@@ -11,19 +11,16 @@ i.e. lower levels also include messages from all higher levels. The global log 
 `log_level`. The log level can be overridden for a specific module by adding the `log_level` parameter to the respective
 configuration section. The following log levels are supported:
 
-- **FATAL**:
+- **ERROR**:
   Indicates a fatal error that will lead to direct termination of the application. Typically only emitted in the main
   executable after catching exceptions as they are the preferred way of fatal error handling (as discussed in
   [Section 4.9](../04_framework/09_error_reporting.md)). An example of a fatal error is an invalid configuration parameter.
+  Can be used to provide extra information that may help in finding the problem (for example used to indicate the reason a
+  dynamic library cannot be loaded).
 
 - **STATUS**:
   Important information about the status of the simulation. Is only used for messages which have to be logged in every run
   such as the global seed for pseudo-random number generators and the current progress of the run.
-
-- **ERROR**:
-  Severe error that should not occur during a normal well-configured simulation run. Frequently leads to a fatal error and
-  can be used to provide extra information that may help in finding the problem (for example used to indicate the reason a
-  dynamic library cannot be loaded).
 
 - **WARNING**:
   Indicate conditions that should not occur normally and possibly lead to unexpected results. The framework will however

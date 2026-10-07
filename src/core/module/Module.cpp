@@ -24,17 +24,19 @@
 #include <TDirectory.h>
 
 #include "core/config/Configuration.hpp"
+#include "core/config/exceptions.h"
 #include "core/geometry/Detector.hpp"
+#include "core/log/LoggerManager.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/messenger/delegates.h"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 
 using namespace allpix;
 
 Module::Module(Configuration& config) : Module(config, nullptr) {}
 Module::Module(Configuration& config, std::shared_ptr<Detector> detector)
-    : config_(config), detector_(std::move(detector)) {}
+    : config_(config), logger_(generate_logger(config)), detector_(std::move(detector)) {}
 /**
  * @note The remove_delegate can throw in theory, but this should never happen in practice
  */
@@ -45,7 +47,7 @@ Module::~Module() {
             delegate.first->remove_delegate(delegate.second);
         }
     } catch(std::out_of_range&) {
-        LOG(FATAL) << "Internal fault, cannot delete bound message (should never happen)";
+        LOG(ERROR) << "Internal fault, cannot delete bound message (should never happen)";
         std::abort();
     }
 }
@@ -187,6 +189,27 @@ bool Module::check_delegates(Messenger* messenger, Event* event) {
     return std::all_of(delegates_.cbegin(), delegates_.cend(), [messenger, event](auto& delegate) {
         return !delegate.second->isRequired() || messenger->isSatisfied(delegate.second, event);
     });
+}
+
+std::string Module::module_unique_name(const Configuration& config) {
+    auto identifier = config.get<std::string>("identifier", std::string());
+    return identifier.empty() ? config.getName() : config.getName() + ":" + identifier;
+}
+
+Logger& Module::generate_logger(const Configuration& config) {
+    auto& manager = LoggerManager::getInstance();
+
+    auto level = manager.getDefault().getLevel();
+    if(config.has("log_level")) {
+        auto log_level_string = config.get<std::string>("log_level");
+        try {
+            level = Log::getLevelFromString(log_level_string);
+        } catch(std::invalid_argument& e) {
+            throw InvalidValueError(config, "log_level", e.what());
+        }
+    }
+
+    return manager.getLogger(module_unique_name(config), level);
 }
 
 void SequentialModule::waive_sequence_requirement(bool waive) { sequence_required_ = !waive; }
