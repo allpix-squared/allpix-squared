@@ -375,7 +375,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
     }
     // Convert to correct generator function
     auto module_generator =
-        reinterpret_cast<Module* (*)(Configuration&, Messenger*, std::shared_ptr<Detector>)>(generator); // NOLINT
+        reinterpret_cast<DetectorModule* (*)(Configuration&, Messenger*, std::shared_ptr<Detector>)>(generator); // NOLINT
 
     // Handle empty type and name arrays:
     bool instances_created = false;

@@ -61,21 +61,11 @@ namespace allpix {
 
     public:
         /**
-         * @brief Base constructor for unique modules
+         * @brief Base constructor for modules
          * @param config Configuration for this module
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
-         * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        explicit Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
-        /**
-         * @brief Base constructor for detector modules
-         * @param config Configuration for this module
-         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
-         * @param detector Detector bound to this module
-         * @warning Detector modules should not forget to forward their detector to the base constructor. An
-         *          \ref InvalidModuleStateException will be raised if the module failed to so.
-         */
-        explicit Module(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
+        explicit Module(Configuration& config, Messenger* messenger);
         /**
          * @brief Essential virtual destructor.
          *
@@ -105,7 +95,7 @@ namespace allpix {
          *
          * Detector modules always have a linked detector and unique modules are guaranteed not to have one.
          */
-        std::shared_ptr<Detector> getDetector() const { return detector_; }
+        virtual std::shared_ptr<Detector> getDetector() const { return nullptr; }
 
         /**
          * @brief Get the unique name of this module
@@ -231,8 +221,6 @@ namespace allpix {
         Logger& logger_;
 
         Messenger* messenger_{};
-        std::shared_ptr<Detector> detector_;
-        GeometryManager* geo_manager_{};
 
     private:
         /**
@@ -345,6 +333,60 @@ namespace allpix {
          */
         bool require_sequence() const override { return sequence_required_; }
         bool sequence_required_{true};
+    };
+
+    class UniqueModule : public Module {
+        friend class Event;
+        friend class ModuleManager;
+        friend class Messenger;
+
+    public:
+        /**
+         * @brief Base constructor for unique modules
+         * @param config Configuration for this module
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         * @param geo_manager Pointer to the geometry manager, containing the detectors
+         */
+        explicit UniqueModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+            : Module(config, messenger), geo_manager_(geo_manager) {};
+
+        /**
+         * @brief Get the geometry manager
+         * @return Pointer to geometry manager
+         */
+        GeometryManager* get_geometry_manager() const { return geo_manager_; }
+
+    private:
+        GeometryManager* geo_manager_{};
+    };
+
+    class DetectorModule : public Module {
+        friend class Event;
+        friend class ModuleManager;
+        friend class Messenger;
+
+    public:
+        /**
+         * @brief Base constructor for detector modules
+         * @param config Configuration for this module
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         * @param detector Detector bound to this module
+         * @warning Detector modules should not forget to forward their detector to the base constructor. An
+         *          \ref InvalidModuleStateException will be raised if the module failed to so.
+         */
+        explicit DetectorModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
+            : Module(config, messenger), detector_(std::move(detector)) {};
+
+        /**
+         * @brief Get the detector linked to this module
+         * @return Linked detector or a null pointer if this is an unique module
+         *
+         * Detector modules always have a linked detector and unique modules are guaranteed not to have one.
+         */
+        std::shared_ptr<Detector> getDetector() const override { return detector_; }
+
+    private:
+        std::shared_ptr<Detector> detector_;
     };
 
 } // namespace allpix
