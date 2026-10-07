@@ -82,11 +82,12 @@ thread_local std::vector<SensitiveDetectorActionG4*> DepositionGeant4Module::sen
  * Includes the particle source point to the geometry using \ref GeometryManager::addPoint.
  */
 DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : SequentialModule(config, messenger, geo_manager) {
+    : UniqueModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
+
     // Waive any sequence requirement: base module not sequential, but derived modules might be
-    waive_sequence_requirement();
+    set_sequence_required(false);
 
     // Set default physics list
     config_.setDefault("physics_list", "FTFP_BERT_LIV");

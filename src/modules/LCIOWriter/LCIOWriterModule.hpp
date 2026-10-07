@@ -30,7 +30,7 @@ namespace allpix {
      *
      * Create LCIO file, compatible to EUTelescope analysis framework.
      */
-    class LCIOWriterModule : public SequentialModule {
+    class LCIOWriterModule : public UniqueModule {
     public:
         /**
          * @brief Constructor for this unique module

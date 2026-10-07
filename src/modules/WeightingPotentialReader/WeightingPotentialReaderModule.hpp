@@ -26,7 +26,7 @@ namespace allpix {
      * @ingroup Modules
      * @brief Module to read weighting potentials
      */
-    class WeightingPotentialReaderModule : public Module {
+    class WeightingPotentialReaderModule : public DetectorModule {
         /**
          * @brief Different weighting potential types
          */

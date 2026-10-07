@@ -32,7 +32,7 @@ namespace allpix {
      * Displays the geometry constructed in \ref GeometryBuilderGeant4Module. Allows passing a variety of options to
      * configure both the visualization viewer as well as the display of the various detector components and the beam.
      */
-    class VisualizationGeant4Module : public Module {
+    class VisualizationGeant4Module : public UniqueModule {
         /**
          * @brief Different viewing modes
          */

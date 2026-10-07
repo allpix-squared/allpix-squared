@@ -27,7 +27,7 @@ namespace allpix {
      * @brief Module to construct a GDML Output of the geometry
 
      */
-    class GDMLOutputWriterModule : public Module {
+    class GDMLOutputWriterModule : public UniqueModule {
     public:
         /**
          * @brief Constructor for this unique module

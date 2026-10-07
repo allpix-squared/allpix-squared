@@ -27,7 +27,7 @@ namespace allpix {
      * @ingroup Modules
      * @brief Module which generates netlists to be fed to SPICE simulators
      */
-    class NetlistWriterModule : public Module {
+    class NetlistWriterModule : public DetectorModule {
     public:
         enum class Target : std::uint8_t {
             SPICE,

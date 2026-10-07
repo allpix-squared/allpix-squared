@@ -28,7 +28,7 @@ namespace allpix {
      * @ingroup Modules
      * @brief Module which writes out data for the PixESL framework
      */
-    class PixESLWriterModule : public SequentialModule {
+    class PixESLWriterModule : public DetectorModule {
     public:
         /**
          * @brief Constructor

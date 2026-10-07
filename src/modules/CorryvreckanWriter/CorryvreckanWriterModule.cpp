@@ -44,9 +44,12 @@
 using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : SequentialModule(config, messenger, geo_manager) {
+    : UniqueModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
+
+    // Require sequential event processing
+    set_sequence_required();
 
     // Require PixelHit messages for single detector
     messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);

@@ -23,7 +23,7 @@ namespace allpix {
      *
      * More detailed explanation of module
      */
-    class DopingProfileReaderModule : public Module {
+    class DopingProfileReaderModule : public DetectorModule {
         /**
          * @brief Different doping profile types
          */

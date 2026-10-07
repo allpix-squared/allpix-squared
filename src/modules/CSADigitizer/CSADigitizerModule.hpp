@@ -36,7 +36,7 @@ namespace allpix {
      * with Krummenacher feedack circuit while adding electronics
      * noise and simulating the threshold as well as accounting for threshold dispersion and ADC noise.
      */
-    class CSADigitizerModule : public Module {
+    class CSADigitizerModule : public DetectorModule {
 
         /**
          * @brief Different implemented digitization models

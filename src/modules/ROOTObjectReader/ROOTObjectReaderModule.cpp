@@ -46,7 +46,7 @@
 using namespace allpix;
 
 ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config, messenger, geo_manager) {
+    : UniqueModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 }

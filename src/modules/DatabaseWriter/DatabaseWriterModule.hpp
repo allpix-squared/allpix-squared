@@ -29,7 +29,7 @@ namespace allpix {
      * Listens to all objects dispatched in the framework and stores a representation of every object to the specified
      * database.
      */
-    class DatabaseWriterModule : public SequentialModule {
+    class DatabaseWriterModule : public UniqueModule {
     public:
         /**
          * @brief Constructor for this unique module

@@ -34,7 +34,7 @@ namespace allpix {
      * @ingroup Modules
      * @brief Module to generate and write pre-calculated propagation maps relating deposition position & assigned pixel
      */
-    class PropagationMapWriterModule : public Module {
+    class PropagationMapWriterModule : public DetectorModule {
     public:
         /**
          * @brief Constructor

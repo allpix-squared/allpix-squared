@@ -36,7 +36,7 @@ namespace allpix {
      *
      * More detailed explanation of module
      */
-    class DepositionLaserModule : public Module {
+    class DepositionLaserModule : public UniqueModule {
 
         enum class BeamGeometry : std::uint8_t {
             CYLINDRICAL,

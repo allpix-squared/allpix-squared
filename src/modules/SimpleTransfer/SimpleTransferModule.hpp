@@ -38,7 +38,7 @@ namespace allpix {
      * propagated charges within a certain distance from the implants and within the pixel grid, charges in the rest of the
      * sensor are ignored. The module combines all the propagated charges to a set of charges at a specific pixel.
      */
-    class SimpleTransferModule : public Module {
+    class SimpleTransferModule : public DetectorModule {
     public:
         /**
          * @brief Constructor for this detector-specific module

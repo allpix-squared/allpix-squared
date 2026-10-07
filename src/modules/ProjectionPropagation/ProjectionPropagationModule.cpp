@@ -45,7 +45,7 @@ using namespace allpix;
 ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
                                                          Messenger* messenger,
                                                          std::shared_ptr<Detector> detector)
-    : Module(config, messenger, std::move(detector)), top_z_(detector_->getModel()->getSensorSize().z() / 2) {
+    : DetectorModule(config, messenger, std::move(detector)), top_z_(getDetector()->getModel()->getSensorSize().z() / 2) {
 
     // Save detector model
     model_ = detector_->getModel();

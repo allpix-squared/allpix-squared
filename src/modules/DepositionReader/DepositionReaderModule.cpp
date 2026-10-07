@@ -48,9 +48,12 @@
 using namespace allpix;
 
 DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : SequentialModule(config, messenger, geo_manager) {
+    : UniqueModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
+
+    // Require sequential event processing
+    set_sequence_required();
 
     config_.setDefault<size_t>("detector_name_chars", 0);
     config_.setDefault<std::string>("unit_length", "mm");

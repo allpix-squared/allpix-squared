@@ -34,7 +34,7 @@ namespace allpix {
      * sub-directory, it creates a Hits tree. Upon receiving the Pixel Hit messages, it writes the information to
      * the respective trees.
      */
-    class RCEWriterModule : public SequentialModule {
+    class RCEWriterModule : public UniqueModule {
     public:
         /**
          * @brief Constructor for this unique module

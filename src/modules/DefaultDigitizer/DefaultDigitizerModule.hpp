@@ -38,7 +38,7 @@ namespace allpix {
      * propagation of the signal of collected charges through the amplifier, comparator and ADC while adding electronics
      * noise and simulating the threshold as well as accounting for threshold dispersion and ADC noise.
      */
-    class DefaultDigitizerModule : public Module {
+    class DefaultDigitizerModule : public DetectorModule {
     public:
         /**
          * @brief Constructor for this detector-specific module

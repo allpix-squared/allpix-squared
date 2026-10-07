@@ -32,7 +32,7 @@ namespace allpix {
      * This modules takes pulses created by the TransientPropagation module and compines the individual induced charges from
      * each of the PropagatedCharges at every pixel into PixelCharges.
      */
-    class PulseTransferModule : public Module {
+    class PulseTransferModule : public DetectorModule {
     public:
         /**
          * @brief Constructor for the PulseTransfer module

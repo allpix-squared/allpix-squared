@@ -37,7 +37,7 @@ using namespace allpix;
 PropagationMapWriterModule::PropagationMapWriterModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(config, messenger, std::move(detector)) {
+    : DetectorModule(config, messenger, std::move(detector)) {
 
     allow_multithreading();
 

@@ -39,7 +39,7 @@ namespace allpix {
      *
      * Generates a hitmap of all the produced pixel hits, together with a histogram of the cluster size
      */
-    class DetectorHistogrammerModule : public Module {
+    class DetectorHistogrammerModule : public DetectorModule {
     public:
         /**
          * @brief Constructor for this detector-specific module

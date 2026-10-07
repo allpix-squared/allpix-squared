@@ -310,9 +310,12 @@ static void write_proteus_config(const std::string& device_path,
 }
 
 RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : SequentialModule(config, messenger, geo_manager) {
+    : UniqueModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
+
+    // Require sequential event processing
+    set_sequence_required();
 
     assert(messenger && "messenger must be non-null");
     assert(geo_manager && "geo_manager must be non-null");

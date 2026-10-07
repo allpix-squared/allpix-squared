@@ -41,7 +41,7 @@ DepositionGeneratorModule::DepositionGeneratorModule(Configuration& config,
     allow_multithreading();
 
     // Do *not* waive sequence requirement - we're reading from file and this should happen sequentially
-    waive_sequence_requirement(false);
+    set_sequence_required();
 
     file_model_ = config_.get<PrimariesReader::FileModel>("model");
 

@@ -101,9 +101,12 @@ static std::array<long double, 3> getRotationAnglesFromMatrix(const ROOT::Math::
 }
 
 LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : SequentialModule(config, messenger, geo_manager) {
+    : UniqueModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
+
+    // Require sequential event processing
+    set_sequence_required();
 
     // Set configuration defaults:
     config_.setDefault("file_name", "output.slcio");

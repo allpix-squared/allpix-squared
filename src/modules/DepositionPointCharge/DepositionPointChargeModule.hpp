@@ -22,7 +22,7 @@ namespace allpix {
      *
      * This module can deposit charge carriers at defined positions inside the sensitive volume of the detector
      */
-    class DepositionPointChargeModule : public Module {
+    class DepositionPointChargeModule : public DetectorModule {
         /**
          * @brief Types of deposition
          */

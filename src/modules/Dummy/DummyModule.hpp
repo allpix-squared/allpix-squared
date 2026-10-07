@@ -32,7 +32,7 @@ namespace allpix {
      * methods, the messenger and event interfaces. It also serves as wireframe for new modules, which can take the structure
      * for a quicker start.
      */
-    class DummyModule : public Module {
+    class DummyModule : public UniqueModule {
     public:
         /**
          * @brief Constructor for this unique module
