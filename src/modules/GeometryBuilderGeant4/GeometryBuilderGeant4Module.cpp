@@ -75,7 +75,7 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config,
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
     ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
 
-    geometry_construction_ = new GeometryConstructionG4(geo_manager_, config_);
+    geometry_construction_ = new GeometryConstructionG4(get_geometry_manager(), config_);
 }
 
 /**

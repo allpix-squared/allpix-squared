@@ -43,7 +43,7 @@ DummyModule::DummyModule(Configuration& config, Messenger* messenger, GeometryMa
 void DummyModule::initialize() {
 
     // Loop over detectors and perform some initialization or similar:
-    for(auto& detector : geo_manager_->getDetectors()) {
+    for(auto& detector : get_geometry_manager()->getDetectors()) {
         // In this simple case we just print the name of this detector:
         LOG(DEBUG) << "Detector with name " << detector->getName();
     }

@@ -130,13 +130,13 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
                 const ROOT::Math::XYZPoint source_position(
                     Units::get(pos_x, units), Units::get(pos_y, units), Units::get(pos_z, units));
                 LOG(DEBUG) << "Found source positioned at " << Units::display(source_position, {"mm", "cm"});
-                geo_manager_->addPoint(source_position);
+                get_geometry_manager()->addPoint(source_position);
             }
         }
     }
 
     // Add the particle source position to the geometry
-    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
+    get_geometry_manager()->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
 }
 
 /**
@@ -171,9 +171,10 @@ void DepositionGeant4Module::initialize() {
             throw InvalidValueError(config_, "pai_model", "model has to be either 'pai' or 'paiphoton'");
         }
 
-        for(auto& detector : geo_manager_->getDetectors()) {
+        for(auto& detector : get_geometry_manager()->getDetectors()) {
             // Get logical volume
-            auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
+            auto logical_volume =
+                get_geometry_manager()->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
             if(logical_volume == nullptr) {
                 throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
             }
@@ -268,9 +269,10 @@ void DepositionGeant4Module::initialize() {
         // Create target region
         auto* region = new G4Region("Target");
 
-        for(auto& detector : geo_manager_->getDetectors()) {
+        for(auto& detector : get_geometry_manager()->getDetectors()) {
             // Get the logical volume
-            auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
+            auto logical_volume =
+                get_geometry_manager()->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
             if(logical_volume == nullptr) {
                 throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
             }
@@ -289,7 +291,7 @@ void DepositionGeant4Module::initialize() {
     // If one of the sensors is carbon-based, switch on the NRESP71 model
     // See https://geant4-forum.web.cern.ch/t/i-can-not-simulated-c12-n-be9-reaction/6112/11 for details
     if(G4ParticleHPManager::GetInstance() != nullptr) {
-        for(auto& detector : geo_manager_->getDetectors()) {
+        for(auto& detector : get_geometry_manager()->getDetectors()) {
             const auto material = detector->getModel()->getSensorMaterial();
             if(material == SensorMaterial::DIAMOND || material == SensorMaterial::SILICON_CARBIDE) {
                 LOG(INFO) << "Found detector with " << enum_name(material) << " sensor, enabling NRESP71 model";
@@ -313,7 +315,7 @@ void DepositionGeant4Module::initialize() {
         // Define the production cut as one fifth of the minimum size (thickness, pitch) among the detectors
         double min_size = std::numeric_limits<double>::max();
         std::string min_detector;
-        for(auto& detector : geo_manager_->getDetectors()) {
+        for(auto& detector : get_geometry_manager()->getDetectors()) {
             auto model = detector->getModel();
             const double prev_min_size = min_size;
             min_size =
@@ -337,7 +339,7 @@ void DepositionGeant4Module::initialize() {
         // Find minimum ionization energy from used detectors
         min_charge_creation_energy = std::numeric_limits<double>::max();
         std::string min_detector;
-        for(auto& detector : geo_manager_->getDetectors()) {
+        for(auto& detector : get_geometry_manager()->getDetectors()) {
             const double this_min_charge_creation_energy =
                 allpix::ionization_energies[detector->getModel()->getSensorMaterial()];
             if(this_min_charge_creation_energy < min_charge_creation_energy) {
@@ -351,7 +353,7 @@ void DepositionGeant4Module::initialize() {
     user_limits_world_->SetUserMinEkine(min_charge_creation_energy);
 
     // Set user limits on world volume:
-    auto world_log_volume = geo_manager_->getExternalObject<G4LogicalVolume>("", "world_log");
+    auto world_log_volume = get_geometry_manager()->getExternalObject<G4LogicalVolume>("", "world_log");
     if(world_log_volume != nullptr) {
         // Quickly estimate longest distance in world and limit max track length
         auto* world_box = dynamic_cast<G4Box*>(world_log_volume->GetSolid());
@@ -396,7 +398,7 @@ void DepositionGeant4Module::initialize() {
 
     // If requested, prepare output plots
     if(output_plots_) {
-        for(auto& detector : geo_manager_->getDetectors()) {
+        for(auto& detector : get_geometry_manager()->getDetectors()) {
             LOG(TRACE) << "Creating output plots for detector " << detector->getName();
 
             // Plot axis are in kilo electrons - convert from framework units!
@@ -534,15 +536,15 @@ void DepositionGeant4Module::finalizeThread() {
 }
 
 void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
-    if(geo_manager_->hasMagneticField()) {
-        auto* magneticField = new MagneticField(geo_manager_);
+    if(get_geometry_manager()->hasMagneticField()) {
+        auto* magneticField = new MagneticField(get_geometry_manager());
         auto* globalFieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
         globalFieldMgr->SetDetectorField(magneticField);
         globalFieldMgr->CreateChordFinder(magneticField);
     }
 
     // Loop through all detectors and set the sensitive detector action that handles the particle passage
-    for(auto& detector : geo_manager_->getDetectors()) {
+    for(auto& detector : get_geometry_manager()->getDetectors()) {
         // Get ionization energy and Fano factor
         auto model = detector->getModel();
         auto charge_creation_energy =
@@ -559,7 +561,7 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
         // Get model of the sensitive device
         auto* sensitive_detector_action = new SensitiveDetectorActionG4(
             detector, track_info_manager_.get(), charge_creation_energy, fano_factor, cutoff_time);
-        auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
+        auto logical_volume = get_geometry_manager()->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
         }
@@ -579,7 +581,7 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
         } else if(config_.get<bool>("deposit_in_backside_implants")) {
             regex = "implant_log_backside_.*";
         }
-        for(const auto& implant : geo_manager_->getExternalObjects<G4LogicalVolume>(detector->getName(), regex)) {
+        for(const auto& implant : get_geometry_manager()->getExternalObjects<G4LogicalVolume>(detector->getName(), regex)) {
             implant->SetUserLimits(user_limits_.get());
             implant->SetSensitiveDetector(sensitive_detector_action);
         }

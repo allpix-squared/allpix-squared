@@ -332,7 +332,7 @@ RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, Ge
 void RCEWriterModule::initialize() {
     // We need a sorted list of names to assign monotonic, numeric ids
     std::vector<std::string> detector_names;
-    for(const auto& detector : geo_manager_->getDetectors()) {
+    for(const auto& detector : get_geometry_manager()->getDetectors()) {
         detector_names.push_back(detector->getName());
     }
     std::ranges::sort(detector_names);
@@ -378,7 +378,7 @@ void RCEWriterModule::initialize() {
     // Write proteus config files
     auto device_path = createOutputFile(config_.get<std::string>("device_file"), "toml");
     auto geometry_path = createOutputFile(config_.get<std::string>("geometry_file"), "toml");
-    write_proteus_config(device_path, geometry_path, detector_names, *geo_manager_, *getConfigManager());
+    write_proteus_config(device_path, geometry_path, detector_names, *get_geometry_manager(), *getConfigManager());
 }
 
 void RCEWriterModule::run(Event* event) {
