@@ -209,5 +209,3 @@ Logger& Module::generate_logger(const Configuration& config) {
 
     return manager.getLogger(module_unique_name(config), level);
 }
-
-void SequentialModule::waive_sequence_requirement(bool waive) { sequence_required_ = !waive; }

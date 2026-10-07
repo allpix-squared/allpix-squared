@@ -213,6 +213,11 @@ namespace allpix {
         void allow_multithreading() { set_multithreading(true); }
 
         /**
+         * @brief Sets the sequence requirement flag
+         */
+        void set_sequence_required(bool sequence_requred = true) { sequence_required_ = sequence_requred; }
+
+        /**
          * @brief Get the module configuration for internal use
          * @return Configuration of the module
          */
@@ -284,9 +289,12 @@ namespace allpix {
         bool multithreading_{false};
 
         /**
-         * @brief Checks if object is instance of SequentialModule class
+         * @brief Checks if this module needs to be executed in correct event sequence
+         *
+         * @return true if strict event sequence is required and false if any processing order is valid
          */
-        virtual bool require_sequence() const { return false; }
+        bool require_sequence() const { return sequence_required_; }
+        bool sequence_required_{false};
 
         /**
          * @brief Get this module identifier unique name directly from the instance configuration
@@ -314,10 +322,9 @@ namespace allpix {
         friend class Messenger;
 
     public:
-        explicit SequentialModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-            : Module(config, messenger, geo_manager) {}
-        explicit SequentialModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-            : Module(config, messenger, std::move(detector)) {}
+        explicit SequentialModule(Configuration& config) : Module(config) {}
+        explicit SequentialModule(Configuration& config, std::shared_ptr<Detector> detector)
+            : Module(config, std::move(detector)) {}
 
     protected:
         /**
