@@ -31,6 +31,16 @@ select yn in "Yes" "No"; do
     esac
 done
 
+# Ask for multithreading capability:
+echo -e "Allow for multithreading?\n"
+multithreading=0
+select yn in "Yes" "No"; do
+    case $yn in
+        Yes ) multithreading=1; break;;
+        No ) multithreading=0; break;;
+    esac
+done
+
 # Ask for the message type to run over
 echo ""
 read -p "Input message type? " MESSAGETYPE
@@ -134,6 +144,15 @@ if [ "$sequence" = 1 ]; then
     # Change implementation file
     command="sed ${opt} \
         -e 's/ \/\/ set_sequence_required();/ set_sequence_required();/g' \
+        $MODDIR/$MODNAME/${MODNAME}Module.cpp"
+    eval $command
+fi
+
+# Enable multithreading if allowed
+if [ "$multithreading" = 1 ]; then
+    # Change implementation file
+    command="sed ${opt} \
+        -e 's/ \/\/ allow_multithreading();/ allow_multithreading();/g' \
         $MODDIR/$MODNAME/${MODNAME}Module.cpp"
     eval $command
 fi
