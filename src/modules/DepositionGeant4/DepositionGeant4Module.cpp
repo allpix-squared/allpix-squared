@@ -537,7 +537,7 @@ void DepositionGeant4Module::finalizeThread() {
 
 void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
     if(getGeometryManager()->hasMagneticField()) {
-        auto* magneticField = new MagneticField(getGeometryManager());
+        auto* magneticField = new MagneticField(getGeometryManager()); // NOLINT(cppcoreguidelines-owning-memory)
         auto* globalFieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
         globalFieldMgr->SetDetectorField(magneticField);
         globalFieldMgr->CreateChordFinder(magneticField);
