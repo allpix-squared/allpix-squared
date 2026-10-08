@@ -127,6 +127,7 @@ void InducedTransferModule::run(Event* event) {
     for(auto& pixel_index_charge : pixel_map) {
         double charge = 0;
         std::vector<const PropagatedCharge*> prop_charges;
+        prop_charges.reserve(pixel_index_charge.second.size());
         for(auto& prop_pair : pixel_index_charge.second) {
             charge += prop_pair.first;
             prop_charges.push_back(prop_pair.second);
@@ -140,6 +141,6 @@ void InducedTransferModule::run(Event* event) {
     }
 
     // Dispatch message of pixel charges
-    auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
+    auto pixel_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
     messenger_->dispatchMessage(this, pixel_message, event);
 }

@@ -182,7 +182,7 @@ void SimpleTransferModule::run(Event* event) {
     total_transferred_charges_ += transferred_charges_count;
 
     // Dispatch message of pixel charges
-    auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
+    auto pixel_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
     messenger_->dispatchMessage(this, pixel_message, event);
 }
 
