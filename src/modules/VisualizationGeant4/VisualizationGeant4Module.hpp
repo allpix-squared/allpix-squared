@@ -64,6 +64,16 @@ namespace allpix {
          */
         ~VisualizationGeant4Module() override;
 
+        /// @{
+        /**
+         * @brief Copying and moving the module is not allowed
+         */
+        VisualizationGeant4Module(const VisualizationGeant4Module&) = delete;
+        VisualizationGeant4Module& operator=(const VisualizationGeant4Module&) = delete;
+        VisualizationGeant4Module(VisualizationGeant4Module&&) = delete;
+        VisualizationGeant4Module& operator=(VisualizationGeant4Module&&) = delete;
+        /// @}
+
         /**
          * @brief Initializes visualization and apply configuration parameters
          */
