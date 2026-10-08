@@ -75,8 +75,8 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config,
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
     ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
 
-    geometry_construction_ =
-        new GeometryConstructionG4(getGeometryManager(), config_); // NOLINT(cppcoreguidelines-owning-memory)
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
+    geometry_construction_ = new GeometryConstructionG4(getGeometryManager(), config_);
 }
 
 /**
