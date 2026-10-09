@@ -121,9 +121,6 @@ namespace allpix {
 
         // Local messenger used to dispatch messages in this event
         std::unique_ptr<LocalMessenger> local_messenger_;
-
-        // Mutex for execution time
-        static std::mutex stats_mutex_;
     };
 
 } // namespace allpix
