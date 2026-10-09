@@ -185,9 +185,8 @@ namespace allpix {
                 return;
             }
             if(ccd >= thickness_) {
-                // Full collection limit: lambdas -> infinity. for this condition, Use a very large number.
-                lambda_electron_ = 1e12 * thickness_;
-                lambda_hole_ = ratio_ * lambda_electron_;
+                // Ideal full collection limit
+                no_trapping_ =  true;
                 return;
             }
             if(ratio_ <= 0) {
@@ -204,6 +203,9 @@ namespace allpix {
                         double /*timestep*/,
                         double /*efield_mag*/,
                         double dx_drift) const override {
+                            if(no_trapping_) {
+                                return false; // carrier is not trapped
+                            }
 
             const double lambda = (type == CarrierType::ELECTRON ? lambda_electron_ : lambda_hole_);
             if(lambda <= 0) {
@@ -213,6 +215,9 @@ namespace allpix {
         }
 
     private:
+
+        bool no_trapping_{false};
+
         double thickness_{};
         double ratio_{1.3};
 
@@ -340,7 +345,7 @@ namespace allpix {
          * Trapping model constructor
          * @param config Configuration of the calling module
          */
-        explicit Trapping(const Configuration& config) {
+        explicit Trapping(const Configuration& config, double sensor_thickness) {
             try {
                 auto model = config.get<std::string>("trapping_model", "none");
                 std::ranges::transform(
@@ -365,7 +370,7 @@ namespace allpix {
                 } else if(model == "pcdiamond") {
                     model_ = std::make_unique<PCDiamond>(
                         config.get<double>("pcdiamond_ccd"),
-                        config.get<double>("pcdiamond_thickness"),
+                        sensor_thickness,
                         config.get<double>("pcdiamond_lambda_ratio",
                                            1.3) //  the assumed ratio of h-drift distance to e-drift distance
                     );

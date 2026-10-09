@@ -163,7 +163,7 @@ void TransientPropagationModule::initialize() {
     recombination_ = Recombination(config_, detector_->hasDopingProfile());
 
     // Prepare trapping model
-    trapping_ = Trapping(config_);
+    trapping_ = Trapping(config_, model_->getSensorSize().z());
 
     // Prepare detrapping model
     detrapping_ = Detrapping(config_);

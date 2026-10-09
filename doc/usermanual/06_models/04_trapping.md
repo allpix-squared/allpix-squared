@@ -167,9 +167,7 @@ This model can be selected in the configuration file via the parameter `trapping
 
 ### Polycrystalline Diamond
 
-The polycrystalline diamond trapping model \[[@is-haqzai]\] describes trapping in pcCVD diamond using the
-charge collection distance $`\text{CCD}`$ as detector-level input. For a planar sensor of thickness $`d`$, the charge
-collection efficiency can be written as
+The polycrystalline diamond trapping model \[[@is-haqzai]\] describes trapping in pcCVD diamond using the charge collection distance $`\text{CCD}`$ as detector-level input. For a planar sensor of thickness $`d`$, the charge collection efficiency can be written as
 
 ```math
 \text{CCE} = \frac{Q}{Q_0} \approx \frac{\text{CCD}}{d}
@@ -177,38 +175,49 @@ collection efficiency can be written as
 
 where $`Q_0`$ is the charge expected without trapping and $`Q`$ is the collected charge in the presence of trapping.
 
-The model maps the provided $`\text{CCD}`$ value to effective electron and hole trapping lengths using the Hecht relation
+The model maps the provided $`\text{CCD}`$ value to effective electron and hole trapping lengths using the Hecht relation for charge generation distributed throughout the detector thickness,
 
 ```math
-\frac{Q}{Q_0} =
-\frac{\lambda_e}{d}\left(1 - e^{-d/\lambda_e}\right) +
-\frac{\lambda_h}{d}\left(1 - e^{-d/\lambda_h}\right)
+\frac{Q}{Q_0}
+\approx
+\frac{\text{CCD}}{d}
+=
+\frac{\lambda_e}{d}
+\left[
+1-\frac{\lambda_e}{d}
+\left(1-e^{-d/\lambda_e}\right)
+\right]
++
+\frac{\lambda_h}{d}
+\left[
+1-\frac{\lambda_h}{d}
+\left(1-e^{-d/\lambda_h}\right)
+\right]
 ```
 
-where $`\lambda_e`$ and $`\lambda_h`$ are the electron and hole trapping lengths, respectively. The ratio between both
-trapping lengths is configured as
+where $`\lambda_e`$ and $`\lambda_h`$ are the electron and hole trapping lengths, respectively. The ratio between both trapping lengths is configured as
 
 ```math
 r = \frac{\lambda_h}{\lambda_e}
 ```
 
-such that $`\lambda_h = r\lambda_e`$. For the given sensor thickness, CCD, and ratio $`r`$, the model solves the Hecht
-relation for $`\lambda_e`$ and derives $`\lambda_h`$ from the configured ratio.
+such that $`\lambda_h = r\lambda_e`$. For the given sensor thickness, CCD, and ratio $`r`$, the model numerically solves the above relation for $`\lambda_e`$ and derives $`\lambda_h = r\lambda_e`$ from the configured ratio.
 
-During charge-carrier transport, the trapping probability is calculated from the drift distance $`\Delta x`$ of the current
-simulation step as
+During charge-carrier transport, the trapping probability is calculated from the drift distance $`\Delta x`$ of the current simulation step as
 
 ```math
 p_{e,h} = 1 - \exp\left(-\frac{\Delta x}{\lambda_{e,h}}\right)
 ```
 
 where $`\lambda_{e,h}`$ is the trapping length of the respective charge carrier.
+The electron and hole trapping lengths represent the effective mean drift distances before trapping. The step distance is the magnitude of the drift displacement during the current propagation step.
+
+For CCD values greater than or equal to the sensor thickness, the model applies the ideal full-collection limit and disables trapping. Non-positive CCD values result in immediate trapping.
 
 This model can be selected in the configuration file via the parameter `trapping_model = "pcdiamond"`:
 
 ```ini
 trapping_model = "pcdiamond"
-pcdiamond_thickness = 500um
 pcdiamond_ccd = 260um
 pcdiamond_lambda_ratio = 1.3
 ```

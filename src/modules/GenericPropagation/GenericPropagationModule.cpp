@@ -340,7 +340,7 @@ void GenericPropagationModule::initialize() {
     }
 
     // Prepare trapping model
-    trapping_ = Trapping(config_);
+    trapping_ = Trapping(config_, model_->getSensorSize().z());
 
     // Prepare trapping model
     detrapping_ = Detrapping(config_);
