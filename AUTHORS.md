@@ -84,4 +84,5 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Koen Wolters, [kwolters](https://gitlab.cern.ch/kwolters)
 * Don C. Wong, Brown University, CERN, [dwong](https://gitlab.cern.ch/dwong)
 * Samuel Wood, University of Oxford, [sam-sw](https://github.com/sam-sw)
+* Xiangyu Xie, Paul Scherrer Institute, [xiangyuxie](https://github.com/xiangyuxie)
 * Jixing Ye, University of Trento, [jiye](https://gitlab.cern.ch/jiye)
