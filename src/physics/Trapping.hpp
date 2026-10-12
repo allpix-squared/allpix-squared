@@ -343,6 +343,7 @@ namespace allpix {
         /**
          * Trapping model constructor
          * @param config Configuration of the calling module
+         * @param sensor_thickness Thickness of the sensor, used by the pcdiamond trapping model
          */
         explicit Trapping(const Configuration& config, double sensor_thickness) {
             try {
