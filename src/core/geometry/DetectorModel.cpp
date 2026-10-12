@@ -36,7 +36,7 @@
 #include "core/geometry/RadialStripDetectorModel.hpp"
 #include "core/geometry/StaggeredPixelDetectorModel.hpp"
 #include "core/geometry/SupportLayer.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "tools/liang_barsky.h"
 
 using namespace allpix;
@@ -62,7 +62,7 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(std::string name, const Co
 
     // Assembly type
     if(!config.has("type")) {
-        LOG(FATAL) << "Model " << name << pathinfo << " does not provide a type parameter";
+        LOG(ERROR) << "Model " << name << pathinfo << " does not provide a type parameter";
     }
     auto type = config.get<std::string>("type");
 
@@ -72,7 +72,7 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(std::string name, const Co
     } else if(type == "monolithic") {
         assembly = std::make_shared<MonolithicAssembly>(config);
     } else {
-        LOG(FATAL) << "Model " << name << pathinfo << " type parameter is not valid";
+        LOG(ERROR) << "Model " << name << pathinfo << " type parameter is not valid";
         throw InvalidValueError(config, "type", "model type is not supported");
     }
 
@@ -87,7 +87,7 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(std::string name, const Co
     } else if(geometry == "staggered") {
         model = std::make_shared<StaggeredPixelDetectorModel>(name, assembly, stack, config);
     } else {
-        LOG(FATAL) << "Model " << name << pathinfo << " geometry parameter is not valid";
+        LOG(ERROR) << "Model " << name << pathinfo << " geometry parameter is not valid";
         // FIXME: The model can probably be silently ignored if we have more model readers later
         throw InvalidValueError(config, "geometry", "model geometry is not supported");
     }
@@ -116,14 +116,14 @@ DetectorModel::DetectorModel(std::string type,
     using namespace ROOT::Math;
 
     // Sensor thickness
-    setSensorThickness(config.get<double>("sensor_thickness"));
+    set_sensor_thickness(config.get<double>("sensor_thickness"));
 
     // Excess around the sensor from the pixel grid
     auto default_sensor_excess = config.get<double>("sensor_excess", 0);
-    setSensorExcessTop(config.get<double>("sensor_excess_top", default_sensor_excess));
-    setSensorExcessBottom(config.get<double>("sensor_excess_bottom", default_sensor_excess));
-    setSensorExcessLeft(config.get<double>("sensor_excess_left", default_sensor_excess));
-    setSensorExcessRight(config.get<double>("sensor_excess_right", default_sensor_excess));
+    set_sensor_excess_top(config.get<double>("sensor_excess_top", default_sensor_excess));
+    set_sensor_excess_bottom(config.get<double>("sensor_excess_bottom", default_sensor_excess));
+    set_sensor_excess_left(config.get<double>("sensor_excess_left", default_sensor_excess));
+    set_sensor_excess_right(config.get<double>("sensor_excess_right", default_sensor_excess));
 
     // Sensor material:
     sensor_material_ = config.get<SensorMaterial>("sensor_material", SensorMaterial::SILICON);
@@ -248,7 +248,7 @@ ROOT::Math::XYZPoint DetectorModel::getModelCenter() const {
 
     // Find first and last element of detector assembly stack:
     auto boundaries = std::minmax_element(
-        stack.begin(), stack.end(), [](std::pair<double, double> const& s1, std::pair<double, double> const& s2) {
+        stack.begin(), stack.end(), [](const std::pair<double, double>& s1, const std::pair<double, double>& s2) {
             return s1.first < s2.first;
         });
 

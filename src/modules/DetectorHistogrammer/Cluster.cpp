@@ -27,10 +27,10 @@ Cluster::Cluster(const PixelHit* seed_pixel_hit)
     : seed_pixel_hit_(seed_pixel_hit), cluster_charge_(seed_pixel_hit->getSignal()) {
     pixel_hits_.insert(seed_pixel_hit);
 
-    minX_ = seed_pixel_hit->getPixel().getIndex().x();
-    maxX_ = minX_; // NOLINT
-    minY_ = seed_pixel_hit->getPixel().getIndex().y();
-    maxY_ = minY_; // NOLINT
+    min_x_ = seed_pixel_hit->getPixel().getIndex().x();
+    max_x_ = min_x_; // NOLINT
+    min_y_ = seed_pixel_hit->getPixel().getIndex().y();
+    max_y_ = min_y_; // NOLINT
 
     for(const auto* mc_particle : seed_pixel_hit->getMCParticles()) {
         mc_particles_.insert(mc_particle);
@@ -43,10 +43,10 @@ bool Cluster::addPixelHit(const PixelHit* pixel_hit) {
         cluster_charge_ += pixel_hit->getSignal();
         auto pixX = pixel_hit->getPixel().getIndex().x();
         auto pixY = pixel_hit->getPixel().getIndex().y();
-        minX_ = std::min(pixX, minX_);
-        maxX_ = std::max(pixX, maxX_);
-        minY_ = std::min(pixY, minY_);
-        maxY_ = std::max(pixY, maxY_);
+        min_x_ = std::min(pixX, min_x_);
+        max_x_ = std::max(pixX, max_x_);
+        min_y_ = std::min(pixY, min_y_);
+        max_y_ = std::max(pixY, max_y_);
 
         // Update seed pixel if new charge is larger:
         if(std::signbit(seed_pixel_hit_->getSignal()) == std::signbit(pixel_hit->getSignal()) &&
@@ -73,7 +73,7 @@ ROOT::Math::XYZPoint Cluster::getPosition() const {
 }
 
 std::pair<unsigned int, unsigned int> Cluster::getSizeXY() const {
-    std::pair<unsigned int, unsigned int> sizes = std::make_pair(maxX_ - minX_ + 1, maxY_ - minY_ + 1);
+    std::pair<unsigned int, unsigned int> sizes = std::make_pair(max_x_ - min_x_ + 1, max_y_ - min_y_ + 1);
     return sizes;
 }
 

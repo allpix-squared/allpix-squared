@@ -25,12 +25,12 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/geometry/DetectorField.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/messenger/delegates.h"
 #include "core/module/Module.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/distributions.h"
-#include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
@@ -241,10 +241,8 @@ void ProjectionPropagationModule::run(Event* event) {
             // Add point of deposition to the output plots if requested
             if(output_linegraphs_) {
                 output_plot_points.emplace_back(
-                    std::make_tuple(deposit.getGlobalTime(), charge_per_step, deposit.getType(), CarrierState::HALTED),
-                    std::vector<ROOT::Math::XYZPoint>());
-
-                output_plot_points.back().second.push_back(initial_position);
+                    deposit.getGlobalTime(), charge_per_step, deposit.getType(), CarrierState::HALTED);
+                output_plot_points.back().addPoint(initial_position, deposit.getGlobalTime());
             }
 
             // Get the electric field at the position of the deposited charge and the top of the sensor:
@@ -261,20 +259,20 @@ void ProjectionPropagationModule::run(Event* event) {
                 if(!diffuse_deposit_) {
                     continue;
                 }
-                double const diffusion_constant = boltzmann_kT_ * (*mobility_)(type, efield_mag, doping);
-                double const diffusion_std_dev = std::sqrt(2. * diffusion_constant * integration_time_);
+                const double diffusion_constant = boltzmann_kT_ * (*mobility_)(type, efield_mag, doping);
+                const double diffusion_std_dev = std::sqrt(2. * diffusion_constant * integration_time_);
                 LOG(TRACE) << "Diffusion width of this charge carrier is " << Units::display(diffusion_std_dev, "um");
 
                 allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-                double const diffusion_x = gauss_distribution(event->getRandomEngine());
-                double const diffusion_y = gauss_distribution(event->getRandomEngine());
-                double const diffusion_z = gauss_distribution(event->getRandomEngine());
+                const double diffusion_x = gauss_distribution(event->getRandomEngine());
+                const double diffusion_y = gauss_distribution(event->getRandomEngine());
+                const double diffusion_z = gauss_distribution(event->getRandomEngine());
                 auto diffusion_vec = ROOT::Math::XYZVector(diffusion_x, diffusion_y, diffusion_z);
 
                 auto local_position_diffusion = position + diffusion_vec;
 
                 auto efield_diffusion = detector_->getElectricField(local_position_diffusion);
-                double const efield_mag_diffusion = std::sqrt(efield_diffusion.Mag2());
+                const double efield_mag_diffusion = std::sqrt(efield_diffusion.Mag2());
 
                 if(efield_mag_diffusion < std::numeric_limits<double>::epsilon() &&
                    (detector_->getModel()->isWithinSensor(position))) {
@@ -282,7 +280,8 @@ void ProjectionPropagationModule::run(Event* event) {
 
                     // Add position after diffusion to line graphs:
                     if(output_linegraphs_) {
-                        output_plot_points.back().second.push_back(local_position_diffusion);
+                        // FIXME time
+                        output_plot_points.back().addPoint(local_position_diffusion, deposit.getGlobalTime());
                     }
 
                     continue;
@@ -296,7 +295,7 @@ void ProjectionPropagationModule::run(Event* event) {
                         return stop;
                     }
                     auto efield_center = detector_->getElectricField((stop + ROOT::Math::XYZVector(start)) / 2.);
-                    double const efield_center_mag = std::sqrt(efield_center.Mag2());
+                    const double efield_center_mag = std::sqrt(efield_center.Mag2());
                     if(efield_center_mag > std::numeric_limits<double>::epsilon()) {
                         return interval(start, (stop + ROOT::Math::XYZVector(start)) / 2.);
                     }
@@ -315,7 +314,7 @@ void ProjectionPropagationModule::run(Event* event) {
                     // Add position at sensor intercept:
                     if(output_linegraphs_) {
                         auto intercept = detector_->getModel()->getSensorIntercept(initial_position, position);
-                        output_plot_points.back().second.push_back(intercept);
+                        output_plot_points.back().addPoint(intercept, deposit.getGlobalTime() + diffusion_time);
                     }
 
                     continue;
@@ -323,7 +322,7 @@ void ProjectionPropagationModule::run(Event* event) {
 
                 // Add potential position after diffusion to line graphs:
                 if(output_linegraphs_) {
-                    output_plot_points.back().second.push_back(position);
+                    output_plot_points.back().addPoint(position, deposit.getGlobalTime() + diffusion_time);
                 }
 
                 LOG(TRACE) << "Charge diffused to position: " << Units::display(position, {"mm", "um"});
@@ -342,7 +341,7 @@ void ProjectionPropagationModule::run(Event* event) {
                     return 0.;
                 }
 
-                double const Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
+                const double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
 
                 return ((log(efield_mag_top) - log(efield_mag)) / slope_efield + std::abs(top_z_ - position.z()) / Ec) /
                        (*mobility_)(type, 0, doping);
@@ -350,11 +349,11 @@ void ProjectionPropagationModule::run(Event* event) {
             LOG(TRACE) << "Electric field is " << Units::display(efield_mag, "V/cm");
 
             // Assume linear electric field over the depleted part of the sensor
-            double const diffusion_constant =
+            const double diffusion_constant =
                 boltzmann_kT_ * ((*mobility_)(type, efield_mag, doping) + (*mobility_)(type, efield_mag_top, doping)) / 2.;
 
-            double const drift_time = calc_drift_time();
-            double const propagation_time = drift_time + diffusion_time;
+            const double drift_time = calc_drift_time();
+            const double propagation_time = drift_time + diffusion_time;
             LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
 
             if(output_plots_) {
@@ -365,11 +364,11 @@ void ProjectionPropagationModule::run(Event* event) {
                 }
             }
 
-            double const diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
+            const double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
             LOG(TRACE) << "Diffusion width is " << Units::display(diffusion_std_dev, "um");
 
             // Check if charge carrier is still alive via its survival probability, evaluated once
-            allpix::uniform_real_distribution<double> const survival(0, 1);
+            const allpix::uniform_real_distribution<double> survival(0, 1);
             if(recombination_(
                    type, detector_->getDopingConcentration(position), survival(event->getRandomEngine()), drift_time)) {
                 LOG(DEBUG) << "Recombined " << charge_per_step << " charge carriers (" << type << ") at "
@@ -379,8 +378,8 @@ void ProjectionPropagationModule::run(Event* event) {
             }
 
             allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-            double const diffusion_x = gauss_distribution(event->getRandomEngine());
-            double const diffusion_y = gauss_distribution(event->getRandomEngine());
+            const double diffusion_x = gauss_distribution(event->getRandomEngine());
+            const double diffusion_y = gauss_distribution(event->getRandomEngine());
 
             // Find projected position
             auto local_position = ROOT::Math::XYZPoint(position.x() + diffusion_x, position.y() + diffusion_y, top_z_);
@@ -405,7 +404,7 @@ void ProjectionPropagationModule::run(Event* event) {
 
             // Finalize line graph by adding final position
             if(output_linegraphs_) {
-                output_plot_points.back().second.push_back(local_position);
+                output_plot_points.back().addPoint(local_position, global_time);
             }
 
             if(output_plots_) {

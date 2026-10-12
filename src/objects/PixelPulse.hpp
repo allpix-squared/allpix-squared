@@ -28,6 +28,7 @@ namespace allpix {
      * @ingroup Objects
      * @brief Pixel triggered in an event after digitization
      */
+    // NOLINTNEXTLINE(misc-multiple-inheritance): changing to composition would break the ROOT I/O schema of stored objects
     class PixelPulse : public Object, public Pulse {
     public:
         /**

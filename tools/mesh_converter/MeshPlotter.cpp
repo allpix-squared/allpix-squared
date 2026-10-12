@@ -15,7 +15,6 @@
 #include <cstring>
 #include <exception>
 #include <iostream>
-#include <signal.h>
 #include <stdexcept>
 #include <string>
 
@@ -24,23 +23,26 @@
 #include "TH2.h"
 #include "TStyle.h"
 
-#include "core/utils/log.h"
+#include "core/log/log.h"
+#include "core/utils/env.h"
 #include "core/utils/unit.h"
 #include "tools/field_parser.h"
 #include "tools/units.h"
 
 using namespace allpix;
 
-void interrupt_handler(int /*unused*/);
+namespace {
+    void interrupt_handler(int /*unused*/);
 
-/**
- * @brief Handle termination request (CTRL+C)
- */
-void interrupt_handler(int /*unused*/) {
-    LOG(STATUS) << "Interrupted! Aborting conversion...";
-    allpix::Log::finish();
-    std::exit(0);
-}
+    /**
+     * @brief Handle termination request (CTRL+C)
+     */
+    void interrupt_handler(int /*unused*/) {
+        LOG(STATUS) << "Interrupted! Aborting conversion...";
+        allpix::Log::finish();
+        std::quick_exit(0);
+    }
+} // namespace
 
 int main(int argc, char** argv) {
 
@@ -61,7 +63,9 @@ int main(int argc, char** argv) {
         }
 
         // Add stream and set default logging level
-        allpix::Log::addStream(std::cout);
+        const auto no_color = allpix::getenv("NO_COLOR");
+        allpix::LoggerManager::getInstance().addStream(
+            std::cout, no_color.has_value() ? allpix::SinkStyle::PLAIN : allpix::SinkStyle::COLOR);
 
         // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
         std::signal(SIGQUIT, interrupt_handler);
@@ -112,7 +116,7 @@ int main(int argc, char** argv) {
         }
 
         // Set log level:
-        allpix::Log::setReportingLevel(log_level);
+        allpix::LoggerManager::getInstance().setGlobalLevel(log_level);
 
         if(file_name.empty()) {
             print_help = true;
@@ -141,12 +145,12 @@ int main(int argc, char** argv) {
         LOG(STATUS) << "Welcome to the Mesh Plotter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
         LOG(STATUS) << "Reading file: " << file_name;
 
-        size_t const firstindex = file_name.find_last_of('_');
-        size_t const lastindex = file_name.find_last_of('.');
-        std::string const observable = file_name.substr(firstindex + 1, lastindex - (firstindex + 1));
+        const size_t firstindex = file_name.find_last_of('_');
+        const size_t lastindex = file_name.find_last_of('.');
+        const std::string observable = file_name.substr(firstindex + 1, lastindex - (firstindex + 1));
 
         // FIXME this should be done in a more elegant way
-        FieldQuantity const quantity = (scalar_field ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
+        const FieldQuantity quantity = (scalar_field ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
 
         FieldParser<double> field_parser(quantity);
         auto field_data = field_parser.getByFileName(file_name, units);
@@ -310,7 +314,7 @@ int main(int argc, char** argv) {
         allpix::Log::finish();
         return 0;
     } catch(std::exception& e) {
-        LOG(FATAL) << "Failed to plot mesh:\n" << e.what();
+        LOG(ERROR) << "Failed to plot mesh:\n" << e.what();
         allpix::Log::finish();
         return 1;
     }

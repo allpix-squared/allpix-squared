@@ -21,7 +21,7 @@ The executable handles the following arguments:
 
 - `-v <level>`:
   Sets the global log verbosity level, overwriting the value specified in the configuration file described in
-  [Section 3.4](./04_framework_parameters.md). Possible values are `FATAL`, `STATUS`, `ERROR`, `WARNING`, `INFO` and
+  [Section 3.4](./04_framework_parameters.md). Possible values are `ERROR`, `STATUS`, `WARNING`, `INFO` and
   `DEBUG`, `TRACE` and `PRNG` where all options are case-insensitive. The module specific logging level introduced in
   [Section 3.8](./08_logging_and_verbosity.md) is not overwritten.
 

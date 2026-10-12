@@ -24,12 +24,12 @@
 #include "core/geometry/Detector.hpp"
 #include "core/geometry/DetectorField.hpp"
 #include "core/geometry/DetectorModel.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/messenger/delegates.h"
 #include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "core/utils/text.h"
 #include "core/utils/unit.h"
 #include "objects/Pixel.hpp"
@@ -143,7 +143,7 @@ void SimpleTransferModule::run(Event* event) {
             continue;
         }
 
-        Pixel::Index const pixel_index(xpixel, ypixel);
+        const Pixel::Index pixel_index(xpixel, ypixel);
 
         // Update statistics
         transferred_charges_count += propagated_charge.getCharge();
@@ -182,7 +182,7 @@ void SimpleTransferModule::run(Event* event) {
     total_transferred_charges_ += transferred_charges_count;
 
     // Dispatch message of pixel charges
-    auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
+    auto pixel_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
     messenger_->dispatchMessage(this, pixel_message, event);
 }
 

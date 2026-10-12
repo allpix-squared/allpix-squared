@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "core/config/exceptions.h"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "core/utils/text.h"
 
 using namespace allpix;

@@ -23,7 +23,7 @@ Please refer to the corresponding reference publications for further details.
 The trapping probability is calculated as an exponential decay as a function of the simulation timestep as
 
 ```math
-p_{e, h} = \left(1 - \exp^{1 \frac{\delta t}{\tau_{e, h}}}\right)
+p_{e, h} = \left(1 - \exp^{-1 \frac{\delta t}{\tau_{e, h}}}\right)
 ```
 
 where $`\delta t`$ is the simulation timestep and $`\tau{e,h}`$ the effective lifetime of electrons and holes, respectively.

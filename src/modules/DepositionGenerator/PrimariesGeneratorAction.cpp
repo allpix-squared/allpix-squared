@@ -24,7 +24,7 @@
 #include <G4TransportationManager.hh>
 
 #include "core/config/exceptions.h"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
 #include "tools/geant4/geant4.h"
@@ -53,7 +53,7 @@ void PrimariesGeneratorAction::GeneratePrimaries(G4Event* event) {
 
     // Read next set of primary particles from the data file
     using PrimaryParticle = PrimariesReader::Particle;
-    std::vector<PrimaryParticle> const particles = reader_->getParticles();
+    const std::vector<PrimaryParticle> particles = reader_->getParticles();
 
     // Dispatch them to the Geant4 particle gun
     LOG(DEBUG) << "Primary particles generated:";

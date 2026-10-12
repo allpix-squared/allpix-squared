@@ -121,7 +121,7 @@ namespace allpix {
         double local_time_{};
         double global_time_{};
 
-        CarrierType type_{};
+        CarrierType type_{CarrierType::ELECTRON};
         unsigned int charge_{};
     };
 } // namespace allpix

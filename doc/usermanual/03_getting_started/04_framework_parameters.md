@@ -25,7 +25,7 @@ The Allpix Squared framework provides a set of global parameters which control a
   be created automatically for all module instantiations.
 
 - `log_level`:
-  Specifies the lowest log level which should be reported. Possible values are `FATAL`, `STATUS`, `ERROR`, `WARNING`,
+  Specifies the lowest log level which should be reported. Possible values are `ERROR`, `STATUS`, `WARNING`,
   `INFO`, `DEBUG`, `TRACE` and `PRNG` where all options are case-insensitive. Defaults to the `WARNING` level. More details
   and information about the log levels, including how to change them for a particular module, can be found in
   [Section 3.8](./08_logging_and_verbosity.md). Can be overwritten by the `-v` parameter on the command line (see

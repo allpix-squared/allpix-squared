@@ -39,12 +39,11 @@ MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
                  double final_tot_E,
                  ROOT::Math::XYZVector initial_mom_direction,
                  ROOT::Math::XYZVector final_mom_direction)
-    : start_point_(std::move(start_point)), end_point_(std::move(end_point)), start_g4_vol_name_(std::move(g4_volume_start)),
+    : start_point_(start_point), end_point_(end_point), start_g4_vol_name_(std::move(g4_volume_start)),
       end_g4_vol_name_(std::move(g4_volume_end)), origin_g4_process_name_(std::move(g4_prod_process_name)),
       origin_g4_process_type_(g4_prod_process_type), particle_id_(particle_id), global_start_time_(start_time),
       global_end_time_(end_time), initial_kin_E_(initial_kin_E), final_kin_E_(final_kin_E), initial_tot_E_(initial_tot_E),
-      final_tot_E_(final_tot_E), initial_mom_direction_(std::move(initial_mom_direction)),
-      final_mom_direction_(std::move(final_mom_direction)) {
+      final_tot_E_(final_tot_E), initial_mom_direction_(initial_mom_direction), final_mom_direction_(final_mom_direction) {
     setParent(nullptr);
 }
 
@@ -89,7 +88,7 @@ void MCTrack::print(std::ostream& out) const {
     static const size_t big_gap = 25;
     static const size_t med_gap = 10;
     static const size_t small_gap = 6;
-    static const size_t largest_output = 2 * big_gap + 2 * med_gap + 2 * small_gap;
+    static const size_t largest_output = (2 * big_gap) + (2 * med_gap) + (2 * small_gap);
 
     const auto* parent = getParent();
 

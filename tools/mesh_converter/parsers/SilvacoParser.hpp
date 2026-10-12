@@ -21,7 +21,7 @@ namespace mesh_converter {
 
     class SilvacoParser : public MeshParser {
 
-    private:
+    protected:
         // Read the grid
         MeshMap read_meshes(const std::string& file_name) override;
 

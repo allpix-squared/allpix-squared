@@ -34,12 +34,12 @@
 #include "core/geometry/Detector.hpp"
 #include "core/geometry/DetectorField.hpp"
 #include "core/geometry/DetectorModel.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/messenger/delegates.h"
 #include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "core/utils/text.h"
 #include "core/utils/unit.h"
 #include "objects/Pixel.hpp"
@@ -377,8 +377,8 @@ void CapacitiveTransferModule::run(Event* event) {
 
                 double ccpd_factor = 0;
                 if(config_.has("coupling_scan_file")) {
-                    double const local_x = pixel_index.x() * model_->getPixelSize().x();
-                    double const local_y = pixel_index.y() * model_->getPixelSize().y();
+                    const double local_x = pixel_index.x() * model_->getPixelSize().x();
+                    const double local_y = pixel_index.y() * model_->getPixelSize().y();
                     auto pixel_point = Eigen::Vector3d(local_x, local_y, 0);
                     auto pixel_projection = plane_.projection(pixel_point);
                     auto pixel_gap = pixel_projection[2];
@@ -420,8 +420,9 @@ void CapacitiveTransferModule::run(Event* event) {
     // Create pixel charges
     LOG(TRACE) << "Combining charges at same pixel";
     std::vector<PixelCharge> pixel_charges;
+    pixel_charges.reserve(pixel_map.size());
     for(auto& pixel_index_charge : pixel_map) {
-        double const charge = pixel_index_charge.second.first;
+        const double charge = pixel_index_charge.second.first;
 
         // Get pixel object from detector
         auto pixel = detector_->getPixel(pixel_index_charge.first.x(), pixel_index_charge.first.y());
@@ -434,7 +435,7 @@ void CapacitiveTransferModule::run(Event* event) {
     total_transferred_charges_ += transferred_charges_count;
 
     // Dispatch message of pixel charges
-    auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
+    auto pixel_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
     messenger_->dispatchMessage(this, pixel_message, event);
 }
 

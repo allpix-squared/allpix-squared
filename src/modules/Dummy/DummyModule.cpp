@@ -15,11 +15,11 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/messenger/delegates.h"
 #include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
-#include "core/utils/log.h"
 #include "objects/PixelHit.hpp"
 
 using namespace allpix;

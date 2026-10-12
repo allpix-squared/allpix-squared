@@ -31,8 +31,7 @@ namespace allpix {
     /**
      * The Magic Enum library is used for conversion between string and enum type
      */
-    template <typename T>
-    typename std::enable_if_t<std::is_enum_v<T>, T> from_string_impl(std::string str, type_tag<T> /*unused*/) {
+    template <typename T> std::enable_if_t<std::is_enum_v<T>, T> from_string_impl(std::string str, type_tag<T> /*unused*/) {
         str = from_string_impl(str, type_tag<std::string>());
 
         auto val = enum_cast<T>(str, true);
@@ -42,10 +41,10 @@ namespace allpix {
 
         // Generate list of available values for the exception:
         auto v = enum_names<T>();
-        std::string vstr = std::accumulate(v.begin(), v.end(), std::string(), [](auto a, auto s) {
+        std::string vstr = std::accumulate(v.begin(), v.end(), std::string(), [](const auto& a, const auto& s) {
             return a + (a.empty() ? "" : ", ") + std::string(s.data());
         });
-        std::transform(vstr.begin(), vstr.end(), vstr.begin(), ::tolower);
+        std::ranges::transform(vstr, vstr.begin(), ::tolower);
         throw std::invalid_argument("invalid value, possible values are: " + vstr);
     }
 
@@ -54,7 +53,7 @@ namespace allpix {
      * standard framework unit.
      */
     template <typename T>
-    typename std::enable_if_t<std::is_arithmetic_v<T>, T> from_string_impl(std::string str, type_tag<T> /*unused*/) {
+    std::enable_if_t<std::is_arithmetic_v<T>, T> from_string_impl(std::string str, type_tag<T> /*unused*/) {
         str = from_string_helper(str);
 
         // Find an optional set of units
@@ -136,5 +135,30 @@ namespace allpix {
         auto output = str;
         std::transform(output.begin(), output.end(), output.begin(), op);
         return output;
+    }
+
+    /**
+     * Defined here rather than in unit.tpp to avoid a circular include between text.h and unit.h
+     */
+    template <typename T> std::string Units::display(T inp, std::initializer_list<std::string> units) {
+        auto split = allpix::split<Units::UnitType>(allpix::to_string(std::move(inp)));
+
+        std::string ret_str;
+        if(split.size() > 1) {
+            ret_str += "(";
+        }
+
+        for(auto& element : split) {
+            ret_str += Units::display(element, units);
+            ret_str += ",";
+        }
+
+        if(split.size() > 1) {
+            ret_str[ret_str.size() - 1] = ')';
+        } else {
+            ret_str.pop_back();
+        }
+
+        return ret_str;
     }
 } // namespace allpix

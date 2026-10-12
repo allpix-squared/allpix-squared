@@ -207,7 +207,7 @@ namespace allpix {
          * @param offset The calculated global index to start from
          * @note The index sequence is expanded to the number of elements requested, depending on the template instance
          */
-        template <std::size_t... I> inline auto get_impl(size_t offset, std::index_sequence<I...>) const noexcept;
+        template <std::size_t... I> inline auto get_impl(size_t offset, std::index_sequence<I...> /*unused*/) const noexcept;
 
         /**
          * @brief Helper function to calculate the field index based on the distance from its center

@@ -114,7 +114,7 @@ void MCParticle::print(std::ostream& out) const {
     static const size_t big_gap = 25;
     static const size_t med_gap = 10;
     static const size_t small_gap = 6;
-    static const size_t largest_output = big_gap + 3 * med_gap + 3 * small_gap;
+    static const size_t largest_output = big_gap + (3 * med_gap) + (3 * small_gap);
 
     const auto* track = getTrack();
     const auto* parent = getParent();

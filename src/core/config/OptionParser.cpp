@@ -15,7 +15,7 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/config/FileParser.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "core/utils/text.h"
 
 using namespace allpix;
@@ -51,7 +51,7 @@ bool OptionParser::applyGlobalOptions(Configuration& config) {
 }
 
 bool OptionParser::applyOptions(const std::string& identifier, Configuration& config) {
-    if(identifier_options_.find(identifier) == identifier_options_.end()) {
+    if(!identifier_options_.contains(identifier)) {
         return false;
     }
 

@@ -25,8 +25,8 @@ SensorCharge::SensorCharge(ROOT::Math::XYZPoint local_position,
                            unsigned int charge,
                            double local_time,
                            double global_time)
-    : local_position_(std::move(local_position)), global_position_(std::move(global_position)), local_time_(local_time),
-      global_time_(global_time), type_(type), charge_(charge) {}
+    : local_position_(local_position), global_position_(global_position), local_time_(local_time), global_time_(global_time),
+      type_(type), charge_(charge) {}
 
 ROOT::Math::XYZPoint SensorCharge::getLocalPosition() const { return local_position_; }
 

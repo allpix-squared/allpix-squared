@@ -27,6 +27,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/histograms/HistogramManager.hpp"
+#include "core/log/Logger.hpp"
 #include "core/messenger/delegates.h"
 #include "core/module/exceptions.h"
 #include "core/utils/prng.h"
@@ -110,6 +111,12 @@ namespace allpix {
         std::string getUniqueName() const;
 
         /**
+         * @brief Get the logger instance of this module
+         * @return Reference to the module's logger, valid for the remainder of the program
+         */
+        Logger& getLogger() const { return logger_; }
+
+        /**
          * @brief Create and return an absolute path to be used for output from a relative path
          * @param pathname Relative path to add after the main output directory
          * @param extension File extension to be added to filename if it doesn't exist yet
@@ -131,7 +138,7 @@ namespace allpix {
         std::shared_ptr<ThreadedHistogram<T>> CreateHistogram(ARGS&&... args) { // NOLINT
             // Get instance of histogram registry
             return histogram_manager_->registerHistogram<T>(this->getROOTDirectory(), std::forward<ARGS>(args)...);
-        };
+        }
 
         /**
          * @brief Creates a ThreadedHistogram object through the histogram manager, as well as a subdirectory for this to be
@@ -146,7 +153,7 @@ namespace allpix {
             // Get instance of histogram registry
             auto* full_directory = allpix::HistogramManager::registerSubdirectory(this->getROOTDirectory(), subdirectory);
             return histogram_manager_->registerHistogram<T>(full_directory, std::forward<ARGS>(args)...);
-        };
+        }
 
         /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
@@ -217,6 +224,7 @@ namespace allpix {
          */
         Configuration& get_configuration() { return config_; }
         Configuration& config_;
+        Logger& logger_;
 
     private:
         /**
@@ -285,6 +293,21 @@ namespace allpix {
          * @brief Checks if object is instance of SequentialModule class
          */
         virtual bool require_sequence() const { return false; }
+
+        /**
+         * @brief Get this module identifier unique name directly from the instance configuration
+         * @note the `identifier` key is set by the \ref ConfigManager when adding the instance configuration
+         */
+        static std::string module_unique_name(const Configuration& config);
+
+        /**
+         * @brief Get or create the module logger, configuring the level via the `log_level` config key.
+         * @note This method is called by the \ref ModuleManager before constructing the module, so construction itself can
+         * be logged through the module logger) and by the \ref Module base constructor.
+         *
+         * @throws InvalidValueError If `log_level` is set to an invalid value
+         */
+        static Logger& generate_logger(const Configuration& config);
     };
 
     /**

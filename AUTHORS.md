@@ -23,6 +23,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Marco Bomben, Université de Paris, [mbomben](https://gitlab.cern.ch/mbomben)
 * Koen van den Brandt, Nikhef, [kvandenb](https://gitlab.cern.ch/kvandenb)
 * Ben Bruers, DESY, [bbrueers](https://gitlab.cern.ch/bbrueers)
+* Rickard Brunskog, KTH
 * Carsten Daniel Burgard, DESY, [cburgard](https://gitlab.cern.ch/cburgard)
 * Raul Back Campanelli, Brazilian Synchrotron Light Laboratory, [raul-campanelli](https://github.com/raul-campanelli)
 * Maximilian Felix Caspar, DESY, [mcaspar](https://gitlab.cern.ch/mcaspar)
@@ -40,6 +41,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Daniel Hynds, University of Oxford, [dhynds](https://gitlab.cern.ch/dhynds)
 * Francisco-Jose Iguaz-Gutierrez, Synchrotron SOLEIL, [iguaz-gutierrez](https://github.com/iguaz-gutierrez)
 * Maoqiang Jing, Institute of High Energy Physics Beijing, [mjing](https://gitlab.cern.ch/mjing)
+* Seth Johnson, Oak Ridge National Laboratory, [sethrj](https://github.com/sethrj/)
 * Moritz Kiehn, Université de Genève, [msmk](https://gitlab.cern.ch/msmk)
 * Rafaella Eleni Kotitsa, CERN, [rkotitsa](https://gitlab.cern.ch/rkotitsa)
 * Stephan Lachnit, DESY, [slachnit](https://gitlab.cern.ch/slachnit)
@@ -80,5 +82,6 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Andy Wharton, Lancaster University, [awharton](https://gitlab.cern.ch/awharton)
 * Morag Williams, University of Glasgow, [williamm](https://gitlab.cern.ch/williamm)
 * Koen Wolters, [kwolters](https://gitlab.cern.ch/kwolters)
+* Don C. Wong, Brown University, CERN, [dwong](https://gitlab.cern.ch/dwong)
 * Samuel Wood, University of Oxford, [sam-sw](https://github.com/sam-sw)
 * Jixing Ye, University of Trento, [jiye](https://gitlab.cern.ch/jiye)

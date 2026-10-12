@@ -24,7 +24,7 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "core/utils/text.h"
 
 using namespace allpix;
@@ -40,19 +40,19 @@ ConfigManager::ConfigManager(Configuration header,
 
     // Convert all global and ignored names to lower case and store them
     auto lowercase = [](const std::string& in) { return allpix::transform(in, ::tolower); };
-    std::transform(global.begin(), global.end(), std::inserter(global_names_, global_names_.end()), lowercase);
-    std::transform(ignore.begin(), ignore.end(), std::inserter(ignore_names_, ignore_names_.end()), lowercase);
+    std::ranges::transform(global, std::inserter(global_names_, global_names_.end()), lowercase);
+    std::ranges::transform(ignore, std::inserter(ignore_names_, ignore_names_.end()), lowercase);
 
     // Store all module configurations
     for(const auto& config : modules) {
         // Skip all ignored sections
-        std::string const config_name = allpix::transform(config.getName(), ::tolower);
-        if(ignore_names_.find(config_name) != ignore_names_.end()) {
+        const std::string config_name = allpix::transform(config.getName(), ::tolower);
+        if(ignore_names_.contains(config_name)) {
             continue;
         }
 
         // Merge all global section with the global config
-        if(global_names_.find(config_name) != global_names_.end()) {
+        if(global_names_.contains(config_name)) {
             global_config_.merge(config);
             continue;
         }
@@ -128,8 +128,8 @@ std::list<Configuration>& ConfigManager::getDetectorConfigurations() { return de
  */
 Configuration& ConfigManager::addInstanceConfiguration(const ModuleIdentifier& identifier, const Configuration& config) {
     // Check uniqueness
-    if(instance_identifier_to_config_.find(identifier) != instance_identifier_to_config_.end()) {
-        throw ModuleIdentifierAlreadyAddedError(identifier);
+    if(instance_identifier_to_config_.contains(identifier)) {
+        throw ModuleIdentifierAlreadyAddedError(identifier.getUniqueName(), identifier.getPriority());
     }
 
     // Add configuration
@@ -152,10 +152,10 @@ Configuration& ConfigManager::addInstanceConfiguration(const ModuleIdentifier& i
  */
 void ConfigManager::dropInstanceConfiguration(const ModuleIdentifier& identifier) {
     // Remove config from instance configs and from instance identifier map
-    if(instance_identifier_to_config_.find(identifier) != instance_identifier_to_config_.end()) {
+    if(instance_identifier_to_config_.contains(identifier)) {
         instance_configs_.erase(instance_identifier_to_config_[identifier]);
         instance_identifier_to_config_.erase(identifier);
     } else {
-        throw ModuleIdentifierNotFoundError(identifier);
+        throw ModuleIdentifierNotFoundError(identifier.getUniqueName(), identifier.getPriority());
     }
 }

@@ -16,11 +16,11 @@
 #include <mutex>
 #include <string>
 
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 #include "core/module/ModuleManager.hpp"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "core/utils/prng.h"
 
 using namespace allpix;

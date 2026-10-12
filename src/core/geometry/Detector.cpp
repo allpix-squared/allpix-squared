@@ -25,8 +25,8 @@
 #include "core/geometry/Detector.hpp"
 #include "core/geometry/DetectorField.hpp"
 #include "core/geometry/DetectorModel.hpp"
+#include "core/log/log.h"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/Pixel.hpp"
 
@@ -41,7 +41,7 @@ Detector::Detector(std::string name,
                    std::shared_ptr<DetectorModel> model,
                    ROOT::Math::XYZPoint position,
                    const ROOT::Math::Rotation3D& orientation)
-    : Detector(std::move(name), std::move(position), orientation) {
+    : Detector(std::move(name), position, orientation) {
     model_ = std::move(model); // NOLINT
     // Check if valid model is supplied
     if(model_ == nullptr) {
@@ -59,7 +59,7 @@ Detector::Detector(std::string name,
  * model is added.
  */
 Detector::Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::Math::Rotation3D& orientation)
-    : name_(std::move(name)), position_(std::move(position)), orientation_(orientation), magnetic_field_on_(false) {}
+    : name_(std::move(name)), position_(position), orientation_(orientation), magnetic_field_on_(false) {}
 
 void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     model_ = std::move(model);
@@ -73,15 +73,15 @@ void Detector::set_model(std::shared_ptr<DetectorModel> model) {
 }
 void Detector::build_transform() {
     // Transform from locally centered to global coordinates
-    ROOT::Math::Translation3D const translation_center(static_cast<ROOT::Math::XYZVector>(position_));
-    ROOT::Math::Rotation3D const rotation_center(orientation_);
+    const ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(position_));
+    const ROOT::Math::Rotation3D rotation_center(orientation_);
     // Transformation from locally centered into global coordinate system, consisting of
     // * The rotation into the global coordinate system
     // * The shift from the origin to the detector position
-    ROOT::Math::Transform3D const transform_center(rotation_center, translation_center);
+    const ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
     // Transform from locally centered to local coordinates
-    ROOT::Math::Translation3D const translation_local(static_cast<ROOT::Math::XYZVector>(model_->getMatrixCenter()));
-    ROOT::Math::Transform3D const transform_local(translation_local);
+    const ROOT::Math::Translation3D translation_local(static_cast<ROOT::Math::XYZVector>(model_->getMatrixCenter()));
+    const ROOT::Math::Transform3D transform_local(translation_local);
     // Compute total transform local to global by first transforming local to locally centered and then to global coordinates
     transform_ = transform_center * transform_local.Inverse();
 }
@@ -102,7 +102,7 @@ ROOT::Math::XYZPoint Detector::getGlobalPosition(const ROOT::Math::XYZPoint& loc
  * The pixel has internal information about the size and location specific for this detector
  */
 Pixel Detector::getPixel(int x, int y) const {
-    Pixel::Index const index(x, y);
+    const Pixel::Index index(x, y);
     return getPixel(index);
 }
 
@@ -116,7 +116,7 @@ Pixel Detector::getPixel(const Pixel::Index& index) const {
     auto local_center = model_->getPixelCenter(index.x(), index.y());
     auto global_center = getGlobalPosition(local_center);
 
-    return {index, type, std::move(local_center), std::move(global_center), std::move(size)};
+    return {index, type, local_center, global_center, size};
 }
 
 /**
@@ -184,7 +184,7 @@ void Detector::setWeightingPotentialFunction(FieldFunction<double> function,
 // in case a field gradient is needed inside the sensor.
 void Detector::setMagneticField(ROOT::Math::XYZVector b_field) {
     magnetic_field_on_ = true;
-    magnetic_field_ = std::move(b_field);
+    magnetic_field_ = b_field;
 }
 
 /**

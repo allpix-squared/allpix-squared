@@ -54,8 +54,9 @@ Create the header or provide the alternative class name as first argument")
     # Define the library
     ADD_LIBRARY(${${name}} SHARED "")
 
-    # Set compiler options
+    # Set compiler options and linker flags
     TARGET_COMPILE_OPTIONS(${${name}} PRIVATE ${ALLPIX_CXX_FLAGS})
+    TARGET_LINK_OPTIONS(${${name}} PRIVATE ${ALLPIX_SHARED_LINKER_FLAGS})
 
     # Add the current directory as include directory
     TARGET_INCLUDE_DIRECTORIES(${${name}} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -145,7 +146,7 @@ FUNCTION(add_default_fail_conditions name)
         TEST ${name}
         PROPERTY FAIL_REGULAR_EXPRESSION)
     IF(NOT EXPRESSIONS_FAIL)
-        # Unless they are part of the pass condition, no WARNING, ERROR or FATAL logs should appear:
+        # Unless they are part of the pass condition, no WARNING or ERROR logs should appear:
         GET_PROPERTY(
             EXPRESSIONS_PASS
             TEST ${name}
@@ -161,12 +162,6 @@ FUNCTION(add_default_fail_conditions name)
                 TEST ${name}
                 APPEND
                 PROPERTY FAIL_REGULAR_EXPRESSION "ERROR")
-        ENDIF()
-        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "FATAL")
-            SET_PROPERTY(
-                TEST ${name}
-                APPEND
-                PROPERTY FAIL_REGULAR_EXPRESSION "FATAL")
         ENDIF()
     ENDIF()
 ENDFUNCTION()
@@ -301,6 +296,9 @@ FUNCTION(add_allpix_test)
         STRING(REPLACE " " ";" TESTDATA ${TESTDATA})
         SET_PROPERTY(TEST ${TEST_NAME} PROPERTY REQUIRED_FILES "${TESTDATA}")
     ENDIF()
+
+    # Disable color for the test:
+    SET_PROPERTY(TEST ${TEST_NAME} PROPERTY ENVIRONMENT NO_COLOR=1)
 ENDFUNCTION()
 
 # Macro for adding module tests to CTest

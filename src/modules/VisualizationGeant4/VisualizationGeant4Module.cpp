@@ -40,11 +40,11 @@
 
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/geant4/G4LoggingDestination.hpp"
 
@@ -134,7 +134,7 @@ void VisualizationGeant4Module::initialize() {
     UI->ApplyCommand("/vis/scene/create");
 
     // Initialize the driver and checking it actually exists
-    int const check_driver = UI->ApplyCommand("/vis/sceneHandler/create " + config_.get<std::string>("driver"));
+    const int check_driver = UI->ApplyCommand("/vis/sceneHandler/create " + config_.get<std::string>("driver"));
     if(check_driver != 0) {
         std::set<G4String> candidates;
         for(auto* system : vis_manager_g4_->GetAvailableGraphicsSystems()) {
@@ -293,7 +293,7 @@ void VisualizationGeant4Module::set_visualization_settings() {
     auto viewpoint_angles =
         config_.getArray<double>("viewpoint_thetaphi", {Units::get<double>(-70, "deg"), Units::get<double>(20, "deg")});
     if(viewpoint_angles.size() != 2) {
-        LOG(FATAL)
+        LOG(ERROR)
             << "Parameter viewpoint_thetaphi VisualizationGeant4Module is not valid. Must be two angles (theta, phi).";
         throw InvalidValueError(config_, "viewpoint_thetaphi", "invalid number of parameters given, must be two");
     }
@@ -451,7 +451,7 @@ void VisualizationGeant4Module::add_visualization_volumes() {
             }
 
             // Place the pixels if all objects are available
-            std::shared_ptr<G4PVParameterised> const pixel_param_phys = std::make_shared<G4PVParameterised>(
+            const std::shared_ptr<G4PVParameterised> pixel_param_phys = std::make_shared<G4PVParameterised>(
                 "pixel_" + detector->getName() + "_param",
                 pixel_log.get(),
                 sensor_log.get(),

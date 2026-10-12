@@ -160,9 +160,9 @@ std::pair<int, int> HexagonalPixelDetectorModel::round_to_nearest_hex(double x, 
     auto q = static_cast<int>(std::lround(x));
     auto r = static_cast<int>(std::lround(y));
     auto s = static_cast<int>(std::lround(-x - y));
-    double const q_diff = std::abs(q - x);
-    double const r_diff = std::abs(r - y);
-    double const s_diff = std::abs(s - (-x - y));
+    const double q_diff = std::abs(q - x);
+    const double r_diff = std::abs(r - y);
+    const double s_diff = std::abs(s - (-x - y));
     if(q_diff > r_diff and q_diff > s_diff) {
         q = -r - s;
     } else if(r_diff > s_diff) {

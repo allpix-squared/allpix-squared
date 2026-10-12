@@ -48,12 +48,11 @@ InvalidCombinationError::InvalidCombinationError(const Configuration& config,
     }
 }
 
-ModuleIdentifierNotFoundError::ModuleIdentifierNotFoundError(const ModuleIdentifier& identifier) {
-    error_message_ = "Module Identifier " + identifier.getUniqueName() + ":" + std::to_string(identifier.getPriority()) +
-                     " not found in the module identifier list";
+ModuleIdentifierNotFoundError::ModuleIdentifierNotFoundError(const std::string& name, int prio) {
+    error_message_ = "Module Identifier " + name + ":" + std::to_string(prio) + " not found in the module identifier list";
 }
 
-ModuleIdentifierAlreadyAddedError::ModuleIdentifierAlreadyAddedError(const ModuleIdentifier& identifier) {
-    error_message_ = "Module Identifier " + identifier.getUniqueName() + ":" + std::to_string(identifier.getPriority()) +
-                     " already added to the module identifier list";
+ModuleIdentifierAlreadyAddedError::ModuleIdentifierAlreadyAddedError(const std::string& name, int prio) {
+    error_message_ =
+        "Module Identifier " + name + ":" + std::to_string(prio) + " already added to the module identifier list";
 }

@@ -132,9 +132,9 @@ void PixelHit::print(std::ostream& out) const {
 
 void PixelHit::loadHistory() {
     pixel_charge_.get();
-    std::for_each(mc_particles_.begin(), mc_particles_.end(), [](auto& n) { n.get(); });
+    std::ranges::for_each(mc_particles_, [](auto& n) { n.get(); });
 }
 void PixelHit::petrifyHistory() {
     pixel_charge_.store();
-    std::for_each(mc_particles_.begin(), mc_particles_.end(), [](auto& n) { n.store(); });
+    std::ranges::for_each(mc_particles_, [](auto& n) { n.store(); });
 }

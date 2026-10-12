@@ -60,11 +60,11 @@
 #include "core/config/exceptions.h"
 #include "core/geometry/DetectorModel.hpp"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/enum.h"
-#include "core/utils/log.h"
 #include "core/utils/text.h"
 #include "core/utils/unit.h"
 #include "physics/MaterialProperties.hpp"
@@ -117,7 +117,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
         std::ifstream file(config.getPath("file_name", true));
         std::string line;
         while(std::getline(file, line)) {
-            if(line.starts_with("/gps/position") || line.rfind("/gps/pos/centre") == 0) {
+            if(line.starts_with("/gps/position") || line.starts_with("/gps/pos/centre")) {
                 LOG(TRACE) << "Macro contains source position: \"" << line << "\"";
                 std::stringstream sstr(line);
                 std::string command;
@@ -126,7 +126,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
                 double pos_y = NAN;
                 double pos_z = NAN;
                 sstr >> command >> pos_x >> pos_y >> pos_z >> units;
-                ROOT::Math::XYZPoint const source_position(
+                const ROOT::Math::XYZPoint source_position(
                     Units::get(pos_x, units), Units::get(pos_y, units), Units::get(pos_z, units));
                 LOG(DEBUG) << "Found source positioned at " << Units::display(source_position, {"mm", "cm"});
                 geo_manager_->addPoint(source_position);
@@ -188,7 +188,7 @@ void DepositionGeant4Module::initialize() {
     auto physics_list_up = allpix::transform(config_.get<std::string>("physics_list"), ::toupper);
     auto physics_list = config_.get<std::string>("physics_list");
     G4PhysListFactory physListFactory;
-    G4VModularPhysicsList* physicsList{nullptr};
+    G4VUserPhysicsList* physicsList{nullptr};
 
     try {
         // Check if present in AdditionalPhysicsLists
@@ -196,21 +196,42 @@ void DepositionGeant4Module::initialize() {
 
         // Otherwise, attempt to get the physics list from the factory
         if(physicsList == nullptr) {
+            LOG(DEBUG) << "Looking out for physics list in the physics list factory.";
+            G4VModularPhysicsList* modularPhysicsList{nullptr};
+
             // Geant4 throws an exception if the list is not found
-            physicsList = physListFactory.GetReferencePhysList(physics_list);
-        }
+            modularPhysicsList = physListFactory.GetReferencePhysList(physics_list);
 
-        // Upper-case version of config
-        if(physicsList == nullptr) {
-            physicsList = physListFactory.GetReferencePhysList(physics_list_up);
-        }
+            // Upper-case version of config
+            if(modularPhysicsList == nullptr) {
+                modularPhysicsList = physListFactory.GetReferencePhysList(physics_list_up);
+            }
 
-        if(physicsList == nullptr) {
-            throw ModuleError("");
+            if(modularPhysicsList == nullptr) {
+                throw ModuleError("");
+            }
+
+            // NOLINTBEGIN(cppcoreguidelines-owning-memory)
+            // Register a step limiter (uses the user limits defined earlier)
+            LOG(DEBUG) << "Registering Geant4 step limiter physics list";
+            modularPhysicsList->RegisterPhysics(new G4StepLimiterPhysics());
+
+            // Register radioactive decay physics lists unless the list already has it registered:
+            if(physics_list_up.find("HP") == std::string::npos && physics_list.find("Shielding") == std::string::npos) {
+                LOG(DEBUG) << "Registering Geant4 radioactive decay physics list";
+                modularPhysicsList->RegisterPhysics(new G4RadioactiveDecayPhysics());
+            }
+            // NOLINTEND(cppcoreguidelines-owning-memory)
+
+            physicsList = dynamic_cast<G4VUserPhysicsList*>(modularPhysicsList);
+
+            if(physicsList == nullptr) {
+                throw ModuleError("");
+            }
         }
     } catch(ModuleError&) {
         std::string message = "specified physics list does not exists";
-        std::vector<G4String> const base_lists = physListFactory.AvailablePhysLists();
+        const std::vector<G4String> base_lists = physListFactory.AvailablePhysLists();
         message += "\nAvailable base lists are: ";
         for(auto& base_list : base_lists) {
             message += base_list;
@@ -218,7 +239,7 @@ void DepositionGeant4Module::initialize() {
         }
         message = message.substr(0, message.size() - 2);
         message += "\nwith optional suffixes for electromagnetic lists: ";
-        std::vector<G4String> const em_lists = physListFactory.AvailablePhysListsEM();
+        const std::vector<G4String> em_lists = physListFactory.AvailablePhysListsEM();
         for(auto& em_list : em_lists) {
             if(em_list.empty()) {
                 continue;
@@ -232,19 +253,17 @@ void DepositionGeant4Module::initialize() {
 
     LOG(INFO) << "Using G4 physics list \"" << physics_list << "\"";
 
-    // Register a step limiter (uses the user limits defined earlier)
-    LOG(DEBUG) << "Registering Geant4 step limiter physics list";
-    physicsList->RegisterPhysics(new G4StepLimiterPhysics());
-
-    // Register radioactive decay physics lists unless the list already has it registered:
-    if(physics_list_up.find("HP") == std::string::npos && physics_list.find("Shielding") == std::string::npos) {
-        LOG(DEBUG) << "Registering Geant4 radioactive decay physics list";
-        physicsList->RegisterPhysics(new G4RadioactiveDecayPhysics());
-    }
-
     // If the specified physics list is one of the microelec variations, apply a target region to the volumes with silicon
     // materials
     if(physics_list == "MICROELEC" || physics_list == "MICROELEC-SIONLY") {
+        auto particle_type = allpix::transform(config_.get<std::string>("particle_type", ""), ::tolower);
+        if(!(particle_type == "e-" || particle_type == "proton")) {
+            throw InvalidCombinationError(
+                config_,
+                {"physics_list", "particle_type"},
+                "The physics list \"MICROELEC-SIONLY\" supports only electrons and protons as particle type.");
+        }
+
         // Create target region
         auto* region = new G4Region("Target");
 
@@ -295,7 +314,7 @@ void DepositionGeant4Module::initialize() {
         std::string min_detector;
         for(auto& detector : geo_manager_->getDetectors()) {
             auto model = detector->getModel();
-            double const prev_min_size = min_size;
+            const double prev_min_size = min_size;
             min_size =
                 std::min({min_size, model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z()});
             if(min_size != prev_min_size) {
@@ -318,7 +337,7 @@ void DepositionGeant4Module::initialize() {
         min_charge_creation_energy = std::numeric_limits<double>::max();
         std::string min_detector;
         for(auto& detector : geo_manager_->getDetectors()) {
-            double const this_min_charge_creation_energy =
+            const double this_min_charge_creation_energy =
                 allpix::ionization_energies[detector->getModel()->getSensorMaterial()];
             if(this_min_charge_creation_energy < min_charge_creation_energy) {
                 min_charge_creation_energy = this_min_charge_creation_energy;
@@ -373,6 +392,46 @@ void DepositionGeant4Module::initialize() {
 
     // Flush the Geant4 stream buffer because some elements in the initialization never do:
     G4cout << G4endl;
+
+    // If requested, prepare output plots
+    if(output_plots_) {
+        for(auto& detector : geo_manager_->getDetectors()) {
+            LOG(TRACE) << "Creating output plots for detector " << detector->getName();
+
+            // Plot axis are in kilo electrons - convert from framework units!
+            const int maximum_charge = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+            const double maximum_energy =
+                std::ceil(static_cast<double>(maximum_charge / 2. * Units::convert(min_charge_creation_energy, "eV")) / 10) *
+                10;
+            const int nbins = 5 * maximum_charge;
+
+            // Get detector model size
+            auto sensor_size = detector->getModel()->getSensorSize();
+            auto pixel_size = detector->getModel()->getPixelSize();
+
+            // Create histograms if needed
+            std::string plot_name = "deposited_charge_" + detector->getName();
+
+            charge_per_event_[detector->getName()] = CreateHistogram<TH1D>(
+                plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum_charge);
+
+            plot_name = "deposited_energy_" + detector->getName();
+
+            energy_per_event_[detector->getName()] = CreateHistogram<TH1D>(
+                plot_name.c_str(), "deposited energy per event;deposited energy [keV];events", nbins, 0, maximum_energy);
+
+            plot_name = "incident_track_position_" + detector->getName();
+
+            incident_track_position_[detector->getName()] = CreateHistogram<TH2D>(plot_name.c_str(),
+                                                                                  "incident track position;X [mm];Y [mm];Z",
+                                                                                  500,
+                                                                                  -pixel_size.X() / 2,
+                                                                                  sensor_size.X() - (pixel_size.X() / 2),
+                                                                                  500,
+                                                                                  -pixel_size.Y() / 2,
+                                                                                  sensor_size.Y() - (pixel_size.Y() / 2));
+        }
+    }
 }
 
 void DepositionGeant4Module::initialize_g4_action() {
@@ -430,10 +489,10 @@ void DepositionGeant4Module::run(Event* event) {
 
             // Fill output plots if requested:
             if(output_plots_) {
-                double const charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
+                const double charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
                 charge_per_event_[sensor->getName()]->Fill(charge);
 
-                double const deposited_energy = static_cast<double>(Units::convert(sensor->getDepositedEnergy(), "keV"));
+                const double deposited_energy = static_cast<double>(Units::convert(sensor->getDepositedEnergy(), "keV"));
                 energy_per_event_[sensor->getName()]->Fill(deposited_energy);
 
                 for(const auto& track_position : sensor->getTrackIncidentPositions()) {
@@ -457,7 +516,7 @@ void DepositionGeant4Module::run(Event* event) {
 void DepositionGeant4Module::finalize() {
     // Print summary or warns if module did not output any charges
     if(number_of_sensors_ > 0 && total_charges_ > 0 && last_event_num_ > 0) {
-        size_t const average_charge = total_charges_ / number_of_sensors_ / last_event_num_;
+        const size_t average_charge = total_charges_ / number_of_sensors_ / last_event_num_;
         LOG(INFO) << "Deposited total of " << total_charges_ << " charges in " << number_of_sensors_
                   << " sensor(s) (average of " << average_charge << " per sensor for every event)";
     } else {
@@ -525,61 +584,6 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
         }
 
         sensors_.push_back(sensitive_detector_action);
-
-        // If requested, prepare output plots
-        if(output_plots_) {
-            LOG(TRACE) << "Creating output plots for detector " << sensitive_detector_action->getName();
-
-            // Plot axis are in kilo electrons - convert from framework units!
-            int const maximum_charge = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
-            double const maximum_energy =
-                (static_cast<int>(maximum_charge / 2. * Units::convert(charge_creation_energy, "eV")) / 10) * 10 + 10;
-            int const nbins = 5 * maximum_charge;
-
-            // Get detector model size
-            auto sensor_size = detector->getModel()->getSensorSize();
-            auto pixel_size = detector->getModel()->getPixelSize();
-
-            // Create histograms if needed
-            {
-                std::lock_guard<std::mutex> const lock(histogram_mutex_);
-                std::string plot_name = "deposited_charge_" + sensitive_detector_action->getName();
-
-                if(charge_per_event_.find(sensitive_detector_action->getName()) == charge_per_event_.end()) {
-                    charge_per_event_[sensitive_detector_action->getName()] =
-                        CreateHistogram<TH1D>(plot_name.c_str(),
-                                              "deposited charge per event;deposited charge [ke];events",
-                                              nbins,
-                                              0,
-                                              maximum_charge);
-                }
-
-                plot_name = "deposited_energy_" + sensitive_detector_action->getName();
-
-                if(energy_per_event_.find(sensitive_detector_action->getName()) == energy_per_event_.end()) {
-                    energy_per_event_[sensitive_detector_action->getName()] =
-                        CreateHistogram<TH1D>(plot_name.c_str(),
-                                              "deposited energy per event;deposited energy [keV];events",
-                                              nbins,
-                                              0,
-                                              maximum_energy);
-                }
-
-                plot_name = "incident_track_position_" + sensitive_detector_action->getName();
-
-                if(incident_track_position_.find(sensitive_detector_action->getName()) == incident_track_position_.end()) {
-                    incident_track_position_[sensitive_detector_action->getName()] =
-                        CreateHistogram<TH2D>(plot_name.c_str(),
-                                              "incident track position;X [mm];Y [mm];Z",
-                                              5000,
-                                              -pixel_size.X() / 2,
-                                              sensor_size.X() - pixel_size.X() / 2,
-                                              5000,
-                                              -pixel_size.Y() / 2,
-                                              sensor_size.Y() - pixel_size.Y() / 2);
-                }
-            }
-        }
     }
 }
 
@@ -600,7 +604,7 @@ MagneticField::MagneticField(GeometryManager* geometry_manager) : geometry_manag
 
 void MagneticField::GetFieldValue(const double Point[4], double* Bfield) const { // NOLINT
     const auto point = ROOT::Math::XYZPoint(Point[0], Point[1], Point[2]);
-    ROOT::Math::XYZVector const bfield_vector = geometry_manager_->getMagneticField(point);
+    const ROOT::Math::XYZVector bfield_vector = geometry_manager_->getMagneticField(point);
     Bfield[0] = bfield_vector.x();
     Bfield[1] = bfield_vector.y();
     Bfield[2] = bfield_vector.z();

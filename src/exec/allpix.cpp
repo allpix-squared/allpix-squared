@@ -26,7 +26,7 @@
 #include <thread>
 #include <vector>
 
-#if defined(__linux__) || (defined(__APPLE__) && !defined(__arm64__))
+#ifndef __arm64__
 #include <cpuid.h>
 #endif
 
@@ -39,8 +39,10 @@
 
 #include "core/Allpix.hpp"
 #include "core/config/exceptions.h"
+#include "core/log/LoggerManager.hpp"
+#include "core/log/log.h"
+#include "core/utils/env.h"
 #include "core/utils/exceptions.h"
-#include "core/utils/log.h"
 
 using namespace allpix;
 using namespace std::chrono_literals;
@@ -61,8 +63,10 @@ extern "C" void signal_handler(int signal) { signal_v = signal; }
  * @brief Main function running the application
  */
 int main(int argc, const char* argv[]) {
-    // Add cout as the default logging stream
-    Log::addStream(std::cout);
+
+    // Add cout as the default logging stream, use plain style if NO_COLOR is set:
+    const auto no_color = allpix::getenv("NO_COLOR");
+    LoggerManager::getInstance().addStream(std::cout, no_color.has_value() ? SinkStyle::PLAIN : SinkStyle::COLOR);
 
     std::signal(SIGTERM, &signal_handler); // NOLINT(cert-err33-c)
     std::signal(SIGINT, &signal_handler);  // NOLINT(cert-err33-c)
@@ -84,7 +88,7 @@ int main(int argc, const char* argv[]) {
     std::vector<std::string> detector_options;
 
     for(int i = 1; i < argc; i++) {
-        std::string const arg = argv[i];
+        const std::string arg = argv[i];
 
         if(arg == "-h") {
             print_help = true;
@@ -105,12 +109,12 @@ int main(int argc, const char* argv[]) {
                       << G4VERSION_NUMBER % 10 << '\n';
 #endif
 
-            // The new apple m silicon does not include cpuid
-#if defined(__linux__) || (defined(__APPLE__) && !defined(__arm64__))
+            // ARM64 builds such as the new apple m silicon does not include cpuid
+#ifndef __arm64__
             std::array<char, 0x40> cpu_string{};
             std::array<unsigned int, 4> cpu_info = {0, 0, 0, 0};
             __cpuid(0x80000000, cpu_info[0], cpu_info[1], cpu_info[2], cpu_info[3]);
-            unsigned int const n_ex_ids = cpu_info[0];
+            const unsigned int n_ex_ids = cpu_info[0];
             memset(cpu_string.data(), 0, sizeof(cpu_string));
             for(unsigned int j = 0x80000000; j <= n_ex_ids; ++j) {
                 __cpuid(j, cpu_info[0], cpu_info[1], cpu_info[2], cpu_info[3]);
@@ -138,8 +142,8 @@ int main(int argc, const char* argv[]) {
             return 0;
         } else if(arg == "-v" && (i + 1 < argc)) {
             try {
-                LogLevel const log_level = Log::getLevelFromString(std::string(argv[++i]));
-                Log::setReportingLevel(log_level);
+                const auto log_level = Log::getLevelFromString(std::string(argv[++i]));
+                LoggerManager::getInstance().setGlobalLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
             }
@@ -189,7 +193,7 @@ int main(int argc, const char* argv[]) {
 
     // Check if we have a configuration file
     if(config_file_name.empty()) {
-        LOG(FATAL) << "No configuration file provided! See usage info with \"allpix -h\"";
+        LOG(ERROR) << "No configuration file provided! See usage info with \"allpix -h\"";
         Log::finish();
         return 1;
     }
@@ -200,12 +204,12 @@ int main(int argc, const char* argv[]) {
     if(!log_file_name.empty()) {
         log_file.open(log_file_name, std::ios_base::out | std::ios_base::trunc);
         if(!log_file.good()) {
-            LOG(FATAL) << "Cannot write to provided log file! Check if permissions are sufficient.";
+            LOG(ERROR) << "Cannot write to provided log file! Check if permissions are sufficient.";
             Log::finish();
             return 1;
         }
 
-        Log::addStream(log_file);
+        LoggerManager::getInstance().addStream(log_file, SinkStyle::PLAIN);
     }
 
     try {
@@ -218,7 +222,7 @@ int main(int argc, const char* argv[]) {
             }
 
             if(signal_v == SIGABRT || signal_v == SIGQUIT) {
-                LOG(FATAL) << "Aborting!";
+                LOG(ERROR) << "Aborting!";
                 Log::finish();
                 std::quick_exit(134);
             } else if(signal_v != 0) {
@@ -249,22 +253,22 @@ int main(int argc, const char* argv[]) {
         }
 
     } catch(ConfigurationError& e) {
-        LOG(FATAL) << "Error in the configuration:" << '\n'
+        LOG(ERROR) << "Error in the configuration:" << '\n'
                    << e.what() << '\n'
                    << "The configuration needs to be updated. Cannot continue.";
         return_code = 1;
     } catch(RuntimeError& e) {
-        LOG(FATAL) << "Error during execution of run:" << '\n'
+        LOG(ERROR) << "Error during execution of run:" << '\n'
                    << e.what() << '\n'
                    << "Please check your configuration and modules. Cannot continue.";
         return_code = 1;
     } catch(LogicError& e) {
-        LOG(FATAL) << "Error in the logic of module:" << '\n'
+        LOG(ERROR) << "Error in the logic of module:" << '\n'
                    << e.what() << '\n'
                    << "Module has to be properly defined. Cannot continue.";
         return_code = 1;
     } catch(std::exception& e) {
-        LOG(FATAL) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
+        LOG(ERROR) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
         return_code = 127;
     }
 

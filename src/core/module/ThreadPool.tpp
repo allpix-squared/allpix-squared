@@ -136,22 +136,22 @@ namespace allpix {
     }
 
     template <typename T> uint64_t ThreadPool::SafeQueue<T>::currentId() const {
-        const std::lock_guard<std::mutex> lock{mutex_};
+        const std::scoped_lock lock{mutex_};
         return current_id_;
     }
 
     template <typename T> bool ThreadPool::SafeQueue<T>::valid() const {
-        const std::lock_guard<std::mutex> lock{mutex_};
+        const std::scoped_lock lock{mutex_};
         return valid_;
     }
 
     template <typename T> bool ThreadPool::SafeQueue<T>::empty() const {
-        const std::lock_guard<std::mutex> lock{mutex_};
+        const std::scoped_lock lock{mutex_};
         return !valid_ || (queue_.empty() && priority_queue_.empty());
     }
 
     template <typename T> size_t ThreadPool::SafeQueue<T>::size() const {
-        const std::lock_guard<std::mutex> lock{mutex_};
+        const std::scoped_lock lock{mutex_};
         return queue_.size() + priority_queue_.size();
     }
 
@@ -200,8 +200,11 @@ namespace allpix {
             } else {
                 success = queue_.push(n, std::make_unique<std::packaged_task<void()>>(std::move(task_function)), false);
             }
-            // Increment run count:
-            ++run_cnt_;
+
+            if(success) {
+                // Increment run count:
+                ++run_cnt_;
+            }
         }
         if(success) {
             return future;

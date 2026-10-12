@@ -35,11 +35,11 @@
 #include "TrackInfoG4.hpp"
 #include "TrackInfoManager.hpp"
 #include "core/geometry/Detector.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/distributions.h"
-#include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/DepositedCharge.hpp"
 #include "objects/MCParticle.hpp"
@@ -69,14 +69,14 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory* 
     LOG(TRACE) << "Distance of this step: " << (postStep->GetPosition() - preStep->GetPosition()).mag();
 
     // Get Transportaion Matrix
-    G4TouchableHandle const theTouchable = step->GetPreStepPoint()->GetTouchableHandle();
+    const G4TouchableHandle theTouchable = step->GetPreStepPoint()->GetTouchableHandle();
     auto* track = step->GetTrack();
 
     // Put the charge deposit in the middle of the step unless it is a photon:
     auto is_photon = (track->GetDynamicParticle()->GetPDGcode() == 22);
     LOG(TRACE) << "Placing energy deposit "
                << (is_photon ? "at the end of step, photon detected" : "in the middle of the step");
-    G4ThreeVector const step_pos =
+    const G4ThreeVector step_pos =
         is_photon ? postStep->GetPosition() : (preStep->GetPosition() + postStep->GetPosition()) / 2;
     double step_time = is_photon ? postStep->GetGlobalTime() : (preStep->GetGlobalTime() + postStep->GetGlobalTime()) / 2;
 
@@ -193,7 +193,6 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
         auto track_id = track_id_point.first;
         auto local_begin = track_id_point.second;
 
-        ROOT::Math::XYZPoint const end_point;
         auto local_end = track_end_.at(track_id);
         auto pdg_code = track_pdg_.at(track_id);
         auto charge = track_charge_.at(track_id);

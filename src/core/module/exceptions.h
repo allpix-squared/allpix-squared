@@ -67,7 +67,6 @@ namespace allpix {
          * @brief Constructs error with a description
          * @param message Text explaining the problem
          */
-        // TODO [doc] the module itself is missing
         explicit InvalidModuleStateException(std::string message) { error_message_ = std::move(message); }
     };
 
@@ -83,7 +82,6 @@ namespace allpix {
          * @brief Constructs error with a description
          * @param message Text explaining the problem
          */
-        // TODO [doc] the event itself is missing
         explicit InvalidEventStateException(std::string message) { error_message_ = std::move(message); }
     };
 
@@ -100,7 +98,6 @@ namespace allpix {
          * @brief Constructs error with a description
          * @param message Text explaining the problem
          */
-        // TODO [doc] the module itself is missing
         explicit InvalidModuleActionException(std::string message) { error_message_ = std::move(message); }
     };
 
@@ -117,7 +114,6 @@ namespace allpix {
          * @brief Constructs error with a description
          * @param reason Text explaining the reason of the error
          */
-        // TODO [doc] the module itself is missing
         explicit ModuleError(std::string reason) { error_message_ = std::move(reason); }
     };
 
@@ -135,7 +131,6 @@ namespace allpix {
          * @brief Constructs request to end event processing with a description
          * @param reason Text explaining the reason of the requested end of event processing
          */
-        // TODO [doc] the module itself is missing
         explicit EndOfRunException(std::string reason) { error_message_ = std::move(reason); }
     };
 
@@ -153,7 +148,6 @@ namespace allpix {
          * @brief Constructs request to abort the current event processing with a description
          * @param reason Text explaining the reason of the requested abortion of the event
          */
-        // TODO [doc] the module itself is missing
         explicit AbortEventException(std::string reason) : EndOfRunException(reason) { error_message_ = std::move(reason); }
     };
 

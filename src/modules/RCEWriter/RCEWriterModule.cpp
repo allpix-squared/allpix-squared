@@ -36,11 +36,11 @@
 #include "core/geometry/DetectorAssembly.hpp"
 #include "core/geometry/DetectorModel.hpp"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/messenger/delegates.h"
 #include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
-#include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/PixelHit.hpp"
 #include "objects/objects.h"
@@ -54,7 +54,7 @@ static double compute_model_relative_radlength(const DetectorModel& model) {
     double total = 0;
     // helper functions to add component to total length w/ logging
     auto add = [&](const char* what, double X0, double x) {
-        double const xX0 = x / X0;
+        const double xX0 = x / X0;
         LOG(DEBUG) << "  " << what << " x/X0 = " << Units::display(x, {"um", "mm", "cm"}) << "/"
                    << Units::display(X0, {"um", "mm", "cm", "m"}) << " = " << xX0;
         total += xX0;
@@ -336,7 +336,7 @@ void RCEWriterModule::initialize() {
     std::sort(detector_names.begin(), detector_names.end());
 
     // Open output data file
-    std::string const path_data = createOutputFile(config_.get<std::string>("file_name"), "root");
+    const std::string path_data = createOutputFile(config_.get<std::string>("file_name"), "root");
     output_file_ = std::make_unique<TFile>(path_data.c_str(), "RECREATE");
     output_file_->cd();
 
@@ -357,7 +357,7 @@ void RCEWriterModule::initialize() {
         LOG(TRACE) << "Sensor " << det_index << ", detector " << detector_name;
 
         // Create sensor directory
-        std::string const det_dir_name = "Plane" + std::to_string(det_index);
+        const std::string det_dir_name = "Plane" + std::to_string(det_index);
         TDirectory* detector = output_file_->mkdir(det_dir_name.c_str());
         detector->cd();
 

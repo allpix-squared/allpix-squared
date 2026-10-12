@@ -37,9 +37,10 @@
 #include "core/config/FileParser.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/log/LoggerManager.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/ModuleManager.hpp"
-#include "core/utils/log.h"
 #include "tools/units.h"
 
 using namespace allpix;
@@ -63,30 +64,27 @@ Allpix::Allpix(std::filesystem::path config_file_name,
     const auto& global_config = conf_mgr_->getGlobalConfiguration();
 
     // Set the log level from config if not specified earlier
-    std::string log_level_string;
-    if(Log::getReportingLevel() == LogLevel::NONE) {
-        log_level_string = global_config.get<std::string>("log_level", "WARNING");
-        std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
+    auto log_level_string = global_config.get<std::string>("log_level", "WARNING");
+    if(!LoggerManager::getInstance().hasExplicitGlobalLevel()) {
+        LogLevel log_level = LogLevel::WARNING;
         try {
-            log_level_ = Log::getLevelFromString(log_level_string);
+            log_level = Log::getLevelFromString(log_level_string);
         } catch(std::invalid_argument& e) {
             LOG(ERROR) << "Log level \"" << log_level_string
                        << "\" specified in the configuration is invalid, defaulting to WARNING instead";
-            log_level_ = LogLevel::WARNING;
         }
+        LoggerManager::getInstance().setGlobalLevel(log_level);
     }
-    Log::setReportingLevel(log_level_);
 
     // Set the log format from config
     auto log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
-    std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
     try {
-        LogFormat const log_format = Log::getFormatFromString(log_format_string);
-        Log::setFormat(log_format);
+        const auto log_format = Log::getFormatFromString(log_format_string);
+        LoggerManager::getInstance().setGlobalFormat(log_format);
     } catch(std::invalid_argument& e) {
         LOG(ERROR) << "Log format \"" << log_format_string
                    << "\" specified in the configuration is invalid, using DEFAULT instead";
-        Log::setFormat(LogFormat::DEFAULT);
+        LoggerManager::getInstance().setGlobalFormat(LogFormat::DEFAULT);
     }
 
     // Open log file to write output to
@@ -94,11 +92,12 @@ Allpix::Allpix(std::filesystem::path config_file_name,
         // NOTE: this stream should be available for the duration of the logging
         log_file_.open(global_config.getPath("log_file"), std::ios_base::out | std::ios_base::trunc);
         LOG(TRACE) << "Added log stream to file " << global_config.getPath("log_file");
-        Log::addStream(log_file_);
+        LoggerManager::getInstance().addStream(log_file_, SinkStyle::PLAIN);
     }
 
     // Wait for the first detailed messages until level and format are properly set
-    LOG(TRACE) << "Global log level is set to " << Log::getStringFromLevel(Log::getReportingLevel());
+    LOG(TRACE) << "Global log level is set to "
+               << Log::getStringFromLevel(LoggerManager::getInstance().getDefault().getLevel());
     LOG(TRACE) << "Global log format is set to " << log_format_string;
 }
 
@@ -145,7 +144,6 @@ void Allpix::load_configuration(std::filesystem::path config_file_name,
  * - Load the modules from the configuration
  */
 void Allpix::load() {
-    Log::setReportingLevel(log_level_);
     if(stop_source_.get_token().stop_requested()) {
         LOG(INFO) << "Skip loading modules because termination is requested";
         return;
@@ -172,8 +170,8 @@ void Allpix::load() {
         auto clock_seed = static_cast<uint64_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
         // Use memory location local variable
         auto mem_seed = reinterpret_cast<uint64_t>(&seed); // NOLINT
-        // Use thread id
-        std::hash<std::thread::id> const thrd_hasher;
+                                                           // Use thread id
+        const std::hash<std::thread::id> thrd_hasher;
         auto thread_seed = thrd_hasher(std::this_thread::get_id());
         seed = (clock_seed ^ mem_seed ^ thread_seed);
         seeder_modules_.seed(seed);
@@ -270,7 +268,7 @@ void Allpix::load_geometry() {
 
                 // Accept only with correct model suffix
                 auto sub_path = std::filesystem::canonical(entry);
-                std::string const suffix(ALLPIX_MODEL_SUFFIX);
+                const std::string suffix(ALLPIX_MODEL_SUFFIX);
                 if(sub_path.extension() != suffix) {
                     continue;
                 }
@@ -356,7 +354,6 @@ void Allpix::read_model_file(const std::filesystem::path& path) {
  * Runs the Module::initialize() method linearly for every module
  */
 void Allpix::initialize() {
-    Log::setReportingLevel(log_level_);
     if(stop_source_.get_token().stop_requested()) {
         LOG(INFO) << "Skip initializing modules because termination is requested";
         return;
@@ -389,7 +386,6 @@ void Allpix::checkException() {
 void Allpix::run(const std::stop_token& /*unused*/) {
 
     try {
-        Log::setReportingLevel(log_level_);
         const auto& stop_token = stop_source_.get_token();
         if(stop_token.stop_requested()) {
             LOG(INFO) << "Skip running modules because termination is requested";
@@ -419,7 +415,6 @@ void Allpix::wait() {
  * Runs all modules Module::finalize() method linearly for every module
  */
 void Allpix::finalize() {
-    Log::setReportingLevel(log_level_);
     LOG(TRACE) << "Finalizing Allpix";
 
     if(has_run_) {
@@ -474,7 +469,7 @@ void Allpix::set_style() {
     style->SetTitleOffset(1.4F, "x");
 
     // Set font settings
-    short const font = 42; // Use a clear font
+    const short font = 42; // Use a clear font
     style->SetTitleFont(font);
     style->SetTitleFontSize(0.06F);
     style->SetStatFont(font);

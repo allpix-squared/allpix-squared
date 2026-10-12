@@ -15,11 +15,12 @@
 #include "Pixel.hpp"
 #include "PixelCharge.hpp"
 #include "PixelHit.hpp"
+#include "PixelPulse.hpp"
 #include "PropagatedCharge.hpp"
 
 namespace allpix {
     /**
      * @brief Tuple containing all objects
      */
-    using OBJECTS = std::tuple<MCTrack, MCParticle, DepositedCharge, PropagatedCharge, PixelCharge, PixelHit>;
+    using OBJECTS = std::tuple<MCTrack, MCParticle, DepositedCharge, PropagatedCharge, PixelCharge, PixelHit, PixelPulse>;
 } // namespace allpix

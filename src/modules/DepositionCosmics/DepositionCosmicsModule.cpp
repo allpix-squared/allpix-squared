@@ -30,9 +30,9 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "core/utils/text.h"
 #include "core/utils/unit.h"
 #include "tools/geant4/MTRunManager.hpp"
@@ -191,7 +191,7 @@ void DepositionCosmicsModule::finalizeThread() {
 
     LOG(DEBUG) << "CRY instance reports simulation time of "
                << Units::display(cry_instance_time_simulated_, {"us", "ms", "s"});
-    std::lock_guard<std::mutex> const lock{stats_mutex_};
+    const std::scoped_lock lock{stats_mutex_};
     total_time_simulated_ += cry_instance_time_simulated_;
 }
 

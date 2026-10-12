@@ -28,6 +28,7 @@ IncludeIsMainRegex: '([-_](test|unittest))?$'
 IndentCaseLabels: false
 NamespaceIndentation: All
 PointerAlignment: Left
+QualifierAlignment: Left
 SpaceBeforeParens: Never
 Cpp11BracedListStyle: true
 IndentWidth: 4

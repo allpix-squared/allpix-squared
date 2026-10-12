@@ -9,6 +9,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "core/utils/unit.h"
+
 namespace allpix {
     /**
      * @throws MissingKeyError If the requested key is not defined

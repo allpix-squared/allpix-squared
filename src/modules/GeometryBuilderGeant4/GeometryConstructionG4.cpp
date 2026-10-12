@@ -38,8 +38,8 @@
 #include "PassiveMaterialConstructionG4.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/log/log.h"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
 #include "tools/geant4/G4LoggingDestination.hpp"
@@ -77,8 +77,8 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 
     // Calculate world size
     ROOT::Math::XYZVector half_world_size;
-    ROOT::Math::XYZPoint const min_coord = geo_manager_->getMinimumCoordinate();
-    ROOT::Math::XYZPoint const max_coord = geo_manager_->getMaximumCoordinate();
+    const ROOT::Math::XYZPoint min_coord = geo_manager_->getMinimumCoordinate();
+    const ROOT::Math::XYZPoint max_coord = geo_manager_->getMaximumCoordinate();
     half_world_size.SetX(std::max(std::abs(min_coord.x()), std::abs(max_coord.x())));
     half_world_size.SetY(std::max(std::abs(min_coord.y()), std::abs(max_coord.y())));
     half_world_size.SetZ(std::max(std::abs(min_coord.z()), std::abs(max_coord.z())));
@@ -136,12 +136,12 @@ void GeometryConstructionG4::check_overlaps() {
     LOG(TRACE) << "Checking overlaps";
     bool overlapFlag = false;
 
-    auto current_level = G4LoggingDestination::getG4coutReportingLevel();
-    G4LoggingDestination::setG4coutReportingLevel(LogLevel::ERROR);
+    auto current_level = G4LoggingDestination::getG4ReportingLevel();
+    G4LoggingDestination::setG4ReportingLevel(LogLevel::ERROR);
     for(auto* volume : (*phys_volume_store)) {
         overlapFlag = volume->CheckOverlaps(1000, 0., false) || overlapFlag;
     }
-    G4LoggingDestination::setG4coutReportingLevel(current_level);
+    G4LoggingDestination::setG4ReportingLevel(current_level);
 
     if(overlapFlag) {
         LOG(ERROR) << "Overlapping volumes detected.";
@@ -197,8 +197,8 @@ void GeometryConstructionG4::verify_transforms() const {
         auto local_g4 = static_cast<ROOT::Math::XYZVector>(coord_g4) + detector->getModel()->getSensorCenter();
 
         if((local_g4 - local).mag2() > 0.001) {
-            LOG(FATAL) << "Model \"" << detector->getModel()->getType() << "\" has invalid coordinate transformation";
-            LOG(FATAL) << "Coordinate transformation test for detector " << detector->getName() << '\n'
+            LOG(ERROR) << "Model \"" << detector->getModel()->getType() << "\" has invalid coordinate transformation";
+            LOG(ERROR) << "Coordinate transformation test for detector " << detector->getName() << '\n'
                        << "Global test vector:      " << Units::display(global, {"mm", "um"}) << '\n'
                        << "In local coordinates:    " << Units::display(local, {"mm", "um"}) << '\n'
                        << "In G4 local coordinates: " << Units::display(local_g4, {"mm", "um"});

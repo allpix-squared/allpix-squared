@@ -10,7 +10,7 @@
  */
 
 #ifndef CORRYVRECKAN_MCPARTICLE_H
-#define CORRYVRECKAN_MCPARTICLE_H 1
+#define CORRYVRECKAN_MCPARTICLE_H
 
 #include <Math/Point3D.h>
 #include "Object.hpp"
@@ -30,8 +30,8 @@ namespace corryvreckan {
                    ROOT::Math::XYZPoint local_start_point,
                    ROOT::Math::XYZPoint local_end_point,
                    double timestamp)
-            : Object(std::move(detectorID), timestamp), m_particle_id(particle_id),
-              m_local_start_point(std::move(local_start_point)), m_local_end_point(std::move(local_end_point)) {}
+            : Object(std::move(detectorID), timestamp), particle_id_(particle_id), local_start_point_(local_start_point),
+              local_end_point_(local_end_point) {}
 
         /**
          * @brief Static member function to obtain base class for storage on the clipboard.
@@ -44,14 +44,14 @@ namespace corryvreckan {
         static std::type_index getBaseType() { return typeid(MCParticle); }
 
         // Member functions
-        int getID() const { return m_particle_id; }
-        const ROOT::Math::XYZPoint& getLocalStart() const { return m_local_start_point; }
-        const ROOT::Math::XYZPoint& getLocalEnd() const { return m_local_end_point; }
+        int getID() const { return particle_id_; }
+        const ROOT::Math::XYZPoint& getLocalStart() const { return local_start_point_; }
+        const ROOT::Math::XYZPoint& getLocalEnd() const { return local_end_point_; }
 
     private:
-        int m_particle_id{};
-        ROOT::Math::XYZPoint m_local_start_point;
-        ROOT::Math::XYZPoint m_local_end_point;
+        int particle_id_{};
+        ROOT::Math::XYZPoint local_start_point_;
+        ROOT::Math::XYZPoint local_end_point_;
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDef(MCParticle, 3); // NOLINT

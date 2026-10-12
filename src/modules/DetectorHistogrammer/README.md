@@ -45,6 +45,7 @@ For technical reasons, this offset is drawn randomly from a Gaussian distributio
 * `max_cluster_charge`: Upper limit for the cluster charge histogram, defaults to `50ke`.
 * `track_resolution`: Assumed track resolution the Monte Carlo truth is smeared with. Expects two values for the resolution in local-x and local-y directions and defaults to `0um 0um`, i.e. no smearing.
 * `matching_cut`: Required maximum matching distance between cluster position and particle position for the efficiency measurement. Expected two values and defaults to three times the pixel pitch in each dimension.
+* `output_maps` : Enable two-dimensional histograms, which can have an impact on the memory footprint. If disabled, only the local hitmap remains. Enabled by default.
 
 ## Usage
 

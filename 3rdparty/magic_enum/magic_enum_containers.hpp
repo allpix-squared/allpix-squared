@@ -5,7 +5,7 @@
 // | |  | | (_| | (_| | | (__  | |____| | | | |_| | | | | | | | |____|_|   |_|
 // |_|  |_|\__,_|\__, |_|\___| |______|_| |_|\__,_|_| |_| |_|  \_____|
 //                __/ | https://github.com/Neargye/magic_enum
-//               |___/  version 0.9.6
+//               |___/  version 0.9.8
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -52,10 +52,10 @@ namespace magic_enum::containers {
 namespace detail {
 
 template <typename T, typename = void>
-static constexpr bool is_transparent_v{};
+inline constexpr bool is_transparent_v{};
 
 template <typename T>
-static constexpr bool is_transparent_v<T, std::void_t<typename T::is_transparent>>{true};
+inline constexpr bool is_transparent_v<T, std::void_t<typename T::is_transparent>>{true};
 
 template <typename Eq = std::equal_to<>, typename T1, typename T2>
 constexpr bool equal(T1&& t1, T2&& t2, Eq&& eq = {}) {
@@ -621,14 +621,14 @@ class bitset {
   constexpr explicit bitset(string_view sv, Cmp&& cmp = {}, char_type sep = static_cast<char_type>('|')) {
     for (std::size_t to = 0; (to = magic_enum::detail::find(sv, sep)) != string_view::npos; sv.remove_prefix(to + 1)) {
       if (auto v = enum_cast<E>(sv.substr(0, to), cmp)) {
-        set(v);
+        set(*v);
       } else {
         MAGIC_ENUM_THROW(std::invalid_argument("magic_enum::containers::bitset::constructor: Unrecognized enum value in string"));
       }
     }
     if (!sv.empty()) {
       if (auto v = enum_cast<E>(sv, cmp)) {
-        set(v);
+        set(*v);
       } else {
         MAGIC_ENUM_THROW(std::invalid_argument("magic_enum::containers::bitset::constructor: Unrecognized enum value in string"));
       }

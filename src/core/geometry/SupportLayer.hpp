@@ -12,6 +12,8 @@
 #ifndef ALLPIX_SUPPORT_LAYER_H
 #define ALLPIX_SUPPORT_LAYER_H
 
+#include <cstdint>
+
 #include <Math/Point2D.h>
 #include <Math/Point3D.h>
 #include <Math/Vector2D.h>
@@ -25,7 +27,7 @@ namespace allpix {
         friend class DetectorModel;
 
     public:
-        enum class Location {
+        enum class Location : std::uint8_t {
             SENSOR,  ///< Support layer is located on the sensor side of the assembly
             CHIP,    ///< Support layer is located on the chip side of the assembly
             ABSOLUTE ///< Support layer location provided as absolute position
@@ -93,9 +95,8 @@ namespace allpix {
                      const Location location,
                      ROOT::Math::XYZVector hole_size,
                      ROOT::Math::XYVector hole_offset)
-            : size_(std::move(size)), material_(std::move(material)), type_(std::move(type)),
-              hole_size_(std::move(hole_size)), offset_(std::move(offset)), hole_offset_(std::move(hole_offset)),
-              location_(location) {}
+            : size_(size), material_(std::move(material)), type_(std::move(type)), hole_size_(hole_size), offset_(offset),
+              hole_offset_(hole_offset), location_(location) {}
 
         // Actual parameters returned
         ROOT::Math::XYZPoint center_;

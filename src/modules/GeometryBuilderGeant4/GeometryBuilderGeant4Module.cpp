@@ -21,6 +21,9 @@
 
 #include <G4EnvironmentUtils.hh>
 #include <G4GlobalConfig.hh>
+#include <G4LogicalVolumeStore.hh>
+#include <G4PhysicalVolumeStore.hh>
+#include <G4SolidStore.hh>
 #include <G4StateManager.hh>
 #include <G4UImanager.hh>
 #include <G4Version.hh>
@@ -28,10 +31,10 @@
 #include "GeometryConstructionG4.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 #include "core/module/exceptions.h"
-#include "core/utils/log.h"
 #include "tools/geant4/G4ExceptionHandler.hpp"
 #include "tools/geant4/G4LoggingDestination.hpp"
 #include "tools/geant4/MTRunManager.hpp"
@@ -56,26 +59,16 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config,
                << "To allow multithreading, rebuild Geant4 with the GEANT4_BUILD_MULTITHREADED option enabled.";
 #endif
 
-    // Read Geant4 verbosity configuration
-    auto g4cerr_log_level = config_.get<std::string>("log_level_g4cerr", "WARNING");
-    std::transform(g4cerr_log_level.begin(), g4cerr_log_level.end(), g4cerr_log_level.begin(), ::toupper);
-    auto g4cout_log_level = config_.get<std::string>("log_level_g4cout", "TRACE");
-    std::transform(g4cout_log_level.begin(), g4cout_log_level.end(), g4cout_log_level.begin(), ::toupper);
+    // Read Geant4 verbosity configuration, fallback to old value but warn
+    config_.setAlias("log_level_geant4", "log_level_g4cout", true);
+    auto g4_log_level = config_.get<std::string>("log_level_geant4", "WARNING");
 
-    // Set Geant4 G4cerr log level
+    // Set Geant4 log level
     try {
-        LogLevel const log_level = Log::getLevelFromString(g4cerr_log_level);
-        G4LoggingDestination::setG4cerrReportingLevel(log_level);
+        const auto log_level = Log::getLevelFromString(g4_log_level);
+        G4LoggingDestination::setG4ReportingLevel(log_level);
     } catch(std::invalid_argument& e) {
-        throw InvalidValueError(config_, "log_level_g4cerr", "invalid log level provided");
-    }
-
-    // Set Geant G4cout log level
-    try {
-        LogLevel const log_level = Log::getLevelFromString(g4cout_log_level);
-        G4LoggingDestination::setG4coutReportingLevel(log_level);
-    } catch(std::invalid_argument& e) {
-        throw InvalidValueError(config_, "log_level_g4cout", "invalid log level provided");
+        throw InvalidValueError(config_, "log_level_geant4", "invalid log level provided");
     }
 
     // Set up UI manager with logging destination
@@ -100,7 +93,7 @@ static void check_dataset_g4(const std::string& env_name) {
                           " is not set, make sure to source a Geant4 "
                           "environment with all datasets");
     }
-    std::ifstream const file(file_name);
+    const std::ifstream file(file_name);
     if(!file.good()) {
         throw ModuleError("Geant4 environment variable " + env_name +
                           " does not point to existing dataset, the Geant4 "
@@ -137,4 +130,12 @@ void GeometryBuilderGeant4Module::initialize() {
     // Run the geometry construct function in GeometryConstructionG4
     LOG(TRACE) << "Building Geant4 geometry";
     run_manager_g4_->InitializeGeometry();
+}
+
+GeometryBuilderGeant4Module::~GeometryBuilderGeant4Module() {
+    run_manager_g4_.reset();
+
+    G4PhysicalVolumeStore::GetInstance()->clear();
+    G4LogicalVolumeStore::GetInstance()->clear();
+    G4SolidStore::GetInstance()->clear();
 }

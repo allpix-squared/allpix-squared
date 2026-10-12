@@ -17,14 +17,14 @@
 #include "exceptions.h"
 
 #include "core/config/Configuration.hpp"
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
 
 namespace allpix {
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Charge carrier recombination models
      */
     class RecombinationModel {
@@ -52,7 +52,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief No recombination
      *
      */
@@ -62,7 +62,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Shockley-Read-Hall recombination of charge carriers in silicon
      *
      * Reference lifetime and doping concentrations, taken from:
@@ -103,7 +103,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Auger recombination of charge carriers in silicon
      *
      * Auger coefficient from https://aip.scitation.org/doi/10.1063/1.89694
@@ -132,7 +132,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Auger recombination of charge carriers in silicon
      *
      */
@@ -155,7 +155,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Simple recombination of charge carriers through constant lifetimes of holes and electrons
      */
     class ConstantLifetime : virtual public RecombinationModel {
@@ -174,7 +174,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Custom recombination model for charge carriers
      */
     class CustomRecombination : virtual public RecombinationModel {

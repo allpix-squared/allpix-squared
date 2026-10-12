@@ -18,15 +18,15 @@
 #include <cstdint>
 #include <exception>
 #include <functional>
-#include <map>
 #include <mutex>
 #include <thread>
 
-#include "core/utils/log.h"
+#include "core/log/LogContext.hpp"
+#include "core/log/log.h"
 
 using namespace allpix;
 
-std::map<std::thread::id, unsigned int> ThreadPool::thread_nums_;
+thread_local unsigned int ThreadPool::thread_num_{0U};
 std::atomic_uint ThreadPool::thread_cnt_{1U};
 std::atomic_uint ThreadPool::thread_total_{1U};
 
@@ -82,7 +82,7 @@ void ThreadPool::checkException() {
     // If exception has been thrown, destroy pool and propagate it
     if(exception_ptr_) {
         destroy();
-        Log::setSection("");
+        log_context::reset();
         std::rethrow_exception(exception_ptr_);
     }
 }
@@ -106,9 +106,8 @@ void ThreadPool::worker(size_t min_thread_buffer,
                         const std::function<void()>& finalize_function) {
     try {
         // Register the thread
-        unsigned int const thread_num = thread_cnt_++;
-        assert(thread_num < thread_total_);
-        thread_nums_[std::this_thread::get_id()] = thread_num;
+        thread_num_ = thread_cnt_++;
+        assert(thread_num_ < thread_total_);
 
         // Initialize the worker
         if(initialize_function) {
@@ -135,7 +134,7 @@ void ThreadPool::worker(size_t min_thread_buffer,
                 // Fetch the future to propagate exceptions
                 task->get_future().get();
                 // Update the run count and propagate update
-                std::unique_lock<std::mutex> const lock{run_mutex_};
+                const std::unique_lock<std::mutex> lock{run_mutex_};
                 if(--run_cnt_ == 0) {
                     run_condition_.notify_all();
                 }
@@ -148,7 +147,7 @@ void ThreadPool::worker(size_t min_thread_buffer,
         }
     } catch(...) {
         // Check if the first exception thrown
-        std::unique_lock<std::mutex> const lock{run_mutex_};
+        const std::unique_lock<std::mutex> lock{run_mutex_};
         if(!has_exception_.test_and_set()) {
             // Save the first exception
             exception_ptr_ = std::current_exception();
@@ -182,13 +181,7 @@ void ThreadPool::destroy() {
 
 bool ThreadPool::valid() { return queue_.valid() && !done_; }
 
-unsigned int ThreadPool::threadNum() {
-    auto iter = thread_nums_.find(std::this_thread::get_id());
-    if(iter != thread_nums_.end()) {
-        return iter->second;
-    }
-    return 0;
-}
+unsigned int ThreadPool::threadNum() { return thread_num_; }
 
 unsigned int ThreadPool::threadCount() { return thread_total_; }
 

@@ -19,7 +19,7 @@
 #include <TBranchElement.h>
 #include <TClass.h>
 
-#include "core/utils/log.h"
+#include "core/log/log.h"
 #include "core/utils/type.h"
 
 #include "objects/Object.hpp"

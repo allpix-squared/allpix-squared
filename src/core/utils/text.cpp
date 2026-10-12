@@ -27,8 +27,8 @@
 using namespace allpix;
 
 std::string allpix::trim(const std::string& str, const std::string& delims) {
-    size_t const b = str.find_first_not_of(delims);
-    size_t const e = str.find_last_not_of(delims);
+    const size_t b = str.find_first_not_of(delims);
+    const size_t e = str.find_last_not_of(delims);
     if(b == std::string::npos || e == std::string::npos) {
         return "";
     }
@@ -43,7 +43,7 @@ std::string allpix::from_string_helper(std::string str) {
     }
 
     // Check if there is whitespace in the string
-    size_t const white_space = str.find_first_of(" \t\n\r\v");
+    const size_t white_space = str.find_first_of(" \t\n\r\v");
     if(white_space != std::string::npos) {
         throw std::invalid_argument("remaining data at end");
     }

@@ -12,6 +12,7 @@
 #ifndef ALLPIX_SIMPLE_DEPOSITION_MODULE_GENERATOR_ACTION_H
 #define ALLPIX_SIMPLE_DEPOSITION_MODULE_GENERATOR_ACTION_H
 
+#include <cstdint>
 #include <memory>
 
 #include <G4GeneralParticleSource.hh>
@@ -32,7 +33,7 @@ namespace allpix {
         /**
          * @brief Different types of particle sources
          */
-        enum class SourceType {
+        enum class SourceType : std::uint8_t {
             MACRO,  ///< Source defined by a macro file
             BEAM,   ///< Beam particle source
             SPHERE, ///< Spherical particle source
@@ -43,7 +44,7 @@ namespace allpix {
         /**
          * @brief Different shapes of particle beams
          */
-        enum class BeamShape {
+        enum class BeamShape : std::uint8_t {
             CIRCLE,    ///< Circular beam
             ELLIPSE,   ///< Elliptical beam
             RECTANGLE, ///< Rectangular beam
@@ -58,14 +59,14 @@ namespace allpix {
         /**
          * @brief Generate the particle for every event
          */
-        void GeneratePrimaries(G4Event*) override;
+        void GeneratePrimaries(G4Event* /*event*/) override;
 
     private:
         std::unique_ptr<G4GeneralParticleSource> particle_source_;
 
         static std::map<std::string, std::tuple<int, int, int, double>> isotopes_;
 
-        const Configuration& config_;
+        const Configuration& config_; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
         std::string particle_type_;
 

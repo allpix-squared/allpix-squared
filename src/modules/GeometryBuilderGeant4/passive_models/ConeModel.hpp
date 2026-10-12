@@ -20,6 +20,11 @@
 #include "tools/geant4/geant4.h"
 
 namespace allpix {
+
+    /**
+     * @ingroup PassiveMaterialModels
+     * @brief Model of a cone
+     */
     class ConeModel : public PassiveMaterialModel {
     public:
         /**

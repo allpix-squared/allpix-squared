@@ -18,8 +18,6 @@
 #include <string>
 #include <utility>
 
-// TODO [doc] Check if this class can be constexpressed?
-
 namespace allpix {
 
     /**
@@ -132,6 +130,6 @@ namespace allpix {
 } // namespace allpix
 
 // Include template definitions
-#include "unit.tpp"
+#include "unit.tpp" // IWYU pragma: keep
 
 #endif /* ALLPIX_UNIT_H */

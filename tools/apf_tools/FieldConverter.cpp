@@ -18,7 +18,8 @@
 #include <stdexcept>
 #include <string>
 
-#include "core/utils/log.h"
+#include "core/log/log.h"
+#include "core/utils/env.h"
 #include "tools/field_parser.h"
 #include "tools/units.h"
 
@@ -36,7 +37,9 @@ int main(int argc, const char* argv[]) {
         register_units();
 
         // Add cout as the default logging stream
-        Log::addStream(std::cout);
+        const auto no_color = allpix::getenv("NO_COLOR");
+        allpix::LoggerManager::getInstance().addStream(
+            std::cout, no_color.has_value() ? allpix::SinkStyle::PLAIN : allpix::SinkStyle::COLOR);
 
         // If no arguments are provided, print the help:
         bool print_help = false;
@@ -56,15 +59,21 @@ int main(int argc, const char* argv[]) {
                 print_help = true;
             } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
                 try {
-                    LogLevel const log_level = Log::getLevelFromString(std::string(argv[++i]));
-                    Log::setReportingLevel(log_level);
+                    const auto log_level = Log::getLevelFromString(std::string(argv[++i]));
+                    LoggerManager::getInstance().setGlobalLevel(log_level);
                 } catch(std::invalid_argument& e) {
                     LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
                 }
             } else if(strcmp(argv[i], "--to") == 0 && (i + 1 < argc)) {
                 std::string format = std::string(argv[++i]);
-                std::transform(format.begin(), format.end(), format.begin(), ::tolower);
-                format_to = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
+                std::ranges::transform(format, format.begin(), ::tolower);
+                if(format == "init") {
+                    format_to = FileType::INIT;
+                } else if(format == "apf") {
+                    format_to = FileType::APF;
+                } else {
+                    format_to = FileType::UNKNOWN;
+                }
             } else if(strcmp(argv[i], "--input") == 0 && (i + 1 < argc)) {
                 file_input = std::string(argv[++i]);
             } else if(strcmp(argv[i], "--output") == 0 && (i + 1 < argc)) {
@@ -98,7 +107,7 @@ int main(int argc, const char* argv[]) {
             return return_code;
         }
 
-        FieldQuantity const quantity = (scalar ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
+        const FieldQuantity quantity = (scalar ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
 
         FieldParser<double> field_parser(quantity);
         LOG(STATUS) << "Reading input file from " << file_input;
@@ -107,7 +116,7 @@ int main(int argc, const char* argv[]) {
         LOG(STATUS) << "Writing output file to " << file_output;
         field_writer.writeFile(field_data, file_output, format_to, (format_to == FileType::INIT ? units : ""));
     } catch(std::exception& e) {
-        LOG(FATAL) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
+        LOG(ERROR) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
         return_code = 127;
     }
 

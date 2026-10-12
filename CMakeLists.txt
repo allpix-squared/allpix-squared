@@ -5,13 +5,14 @@
 # CMake File for the Allpix Squared Framework #
 ###############################################
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.9.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.22.1 FATAL_ERROR)
 IF(COMMAND CMAKE_POLICY)
     CMAKE_POLICY(SET CMP0003 NEW) # change linker path search behaviour
     CMAKE_POLICY(SET CMP0048 NEW) # set project version
-    IF(${CMAKE_VERSION} VERSION_GREATER "3.13")
-        CMAKE_POLICY(SET CMP0077 NEW) # allow overwriting options with normal variables
-        CMAKE_POLICY(SET CMP0079 NEW) # Allow lookup of linking libraries in other directories
+    CMAKE_POLICY(SET CMP0077 NEW) # allow overwriting options with normal variables
+    CMAKE_POLICY(SET CMP0079 NEW) # Allow lookup of linking libraries in other directories
+    IF(${CMAKE_VERSION} VERSION_GREATER "3.30")
+        CMAKE_POLICY(SET CMP0167 NEW) # use upstream Boost cmake config instead of CMake's FindBoost
     ENDIF()
 ENDIF(COMMAND CMAKE_POLICY)
 
@@ -33,7 +34,9 @@ GET_VERSION(ALLPIX_VERSION)
 MESSAGE(STATUS "Building Allpix^2 version ${ALLPIX_VERSION}.")
 MESSAGE(STATUS "Building \"${CMAKE_BUILD_TYPE}\"")
 
-# Gather information about build time:
+# Gather information about build time
+# (NOTE: the SOURCE_DATE_EPOCH environment variable will override the current time as of CMake 3.8.
+# See https://reproducible-builds.org/specs/source-date-epoch )
 STRING(TIMESTAMP BUILD_TIME "%Y-%m-%d, %H:%M:%S UTC" UTC)
 STRING(SUBSTRING "${BUILD_TIME}" 0 10 BUILD_DATE)
 
@@ -45,13 +48,11 @@ PROJECT(
     VERSION ${SIMPLE_VERSION}
     LANGUAGES NONE)
 # Access the project name (for install locations) in the source
-ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DALLPIX_PROJECT_VERSION="${ALLPIX_VERSION}"
-                -DALLPIX_BUILD_TIME="${BUILD_TIME}")
+ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DALLPIX_PROJECT_VERSION="${ALLPIX_VERSION}")
 
 # Read possible build environment
 IF(DEFINED ENV{ALLPIX_BUILD_ENV})
     MESSAGE(STATUS "Building in environment \"$ENV{ALLPIX_BUILD_ENV}\"")
-    ADD_DEFINITIONS(-DALLPIX_BUILD_ENV=\"$ENV{ALLPIX_BUILD_ENV}\")
 ENDIF()
 
 # Include a generated configuration file
@@ -220,8 +221,9 @@ ENDIF()
 # Define build flags for allpix   #
 ###################################
 
-# Set standard build flags
-SET(COMPILER_FLAGS
+# Set ALLPIX_CXX_FLAGS by default to the subset of these that are valid
+# (Users can override ALLPIX_CXX_FLAGS directly in their CMakeCache)
+SET(DEFAULT_ALLPIX_CXX_FLAGS
     -pedantic
     -Wall
     -Wextra
@@ -253,6 +255,10 @@ SET(COMPILER_FLAGS
     -Wheader-hygiene
     -Wno-overloaded-virtual)
 
+INCLUDE(CheckCXXCompilerFlag)
+
+# Set ALLPIX_CXX_FLAGS to DEFAULT_ALLPIX_CXX_FLAGS unless already defined
+# Set ALLPIX_SHARED_LINKER_FLAGS if not defined
 INCLUDE("cmake/compiler-flag-checks.cmake")
 
 # Use CCache if available
@@ -315,6 +321,9 @@ ENDIF()
 
 # Include Threads
 FIND_PACKAGE(Threads REQUIRED)
+
+# Logging backend
+FIND_PACKAGE(spdlog 1.9.2 REQUIRED)
 
 # Include Boost.Random
 FIND_PACKAGE(Boost 1.64.0 REQUIRED COMPONENTS random)

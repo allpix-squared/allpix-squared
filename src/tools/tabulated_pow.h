@@ -51,7 +51,7 @@ namespace allpix {
 
             // Generate lookup table:
             for(size_t idx = 0; idx < S; ++idx) {
-                double x = (dx_ * static_cast<double>(idx)) + x_min_;
+                const auto x = (dx_ * static_cast<double>(idx)) + x_min_;
                 table_[idx] = std::pow(x, y);
             }
         }
@@ -67,13 +67,13 @@ namespace allpix {
          */
         double operator()(double x) const noexcept {
             // Calculate position on pre-calculate table
-            double pos = (x - x_min_) / dx_;
+            const auto pos = (x - x_min_) / dx_;
 
             // Calculate left index by truncation to integer, clamping to pre-calculated range
-            size_t idx = std::clamp(static_cast<size_t>(pos), 0ul, S - 2);
+            const auto idx = std::clamp(static_cast<size_t>(pos), 0UL, S - 2);
 
             // Linear interpolation between left and right bin
-            double tmp = pos - static_cast<double>(idx);
+            const auto tmp = pos - static_cast<double>(idx);
             return table_[idx] * (1 - tmp) + tmp * table_[idx + 1];
         };
     };

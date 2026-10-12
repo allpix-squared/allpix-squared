@@ -29,7 +29,7 @@
 namespace allpix {
 
     /**
-     * @ingroup PassiveMaterialModel
+     * @ingroup PassiveMaterialModels
      * @brief Model for passive material loaded from GDML files
      */
     class GDMLModel : public PassiveMaterialModel {

@@ -30,11 +30,11 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/geometry/DetectorField.hpp"
+#include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/messenger/delegates.h"
 #include "core/module/Module.hpp"
 #include "core/utils/distributions.h"
-#include "core/utils/log.h"
 #include "core/utils/text.h"
 #include "core/utils/unit.h"
 #include "objects/DepositedCharge.hpp"
@@ -443,7 +443,7 @@ void GenericPropagationModule::run(Event* event) {
     }
 
     // Write summary and update statistics
-    long double const average_time = total_time / std::max(1U, propagated_charges_count);
+    const long double average_time = total_time / std::max(1U, propagated_charges_count);
     LOG(INFO) << "Propagated " << propagated_charges_count << " charges in " << step_count << " steps in average time of "
               << Units::display(average_time, "ns") << '\n'
               << "Recombined " << recombined_charges_count << " charges during transport" << '\n'
@@ -499,8 +499,7 @@ GenericPropagationModule::propagate(Event* event,
 
     // Add point of deposition to the output plots if requested
     if(output_linegraphs_) {
-        output_plot_points.emplace_back(std::make_tuple(deposit.getGlobalTime(), charge, type, CarrierState::MOTION),
-                                        std::vector<ROOT::Math::XYZPoint>());
+        output_plot_points.emplace_back(deposit.getGlobalTime(), charge, deposit.getType(), CarrierState::MOTION);
     }
     auto output_plot_index = output_plot_points.size() - 1;
 
@@ -509,8 +508,8 @@ GenericPropagationModule::propagate(Event* event,
 
     // Define a function to compute the diffusion
     auto carrier_diffusion = [&](double efield_mag, double doping_concentration, double timestep) -> Eigen::Vector3d {
-        double const diffusion_constant = boltzmann_kT_ * mobility_(type, efield_mag, doping_concentration);
-        double const diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
+        const double diffusion_constant = boltzmann_kT_ * mobility_(type, efield_mag, doping_concentration);
+        const double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
 
         // Compute the independent diffusion in three
         allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
@@ -521,25 +520,25 @@ GenericPropagationModule::propagate(Event* event,
     };
 
     // Survival or detrap probability of this charge carrier package, evaluated at every step
-    allpix::uniform_real_distribution<double> const uniform_distribution(0, 1);
+    const allpix::uniform_real_distribution<double> uniform_distribution(0, 1);
 
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
-    std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> const carrier_velocity_noB =
+    const std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
         [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
-        Eigen::Vector3d const efield(raw_field.x(), raw_field.y(), raw_field.z());
+        const Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
         auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
 
         return static_cast<int>(type) * mobility_(type, efield.norm(), doping) * efield;
     };
 
-    std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> const carrier_velocity_withB =
+    const std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_withB =
         [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
-        Eigen::Vector3d const efield(raw_field.x(), raw_field.y(), raw_field.z());
+        const Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
         auto magnetic_field = detector_->getMagneticField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
-        Eigen::Vector3d const bfield(magnetic_field.x(), magnetic_field.y(), magnetic_field.z());
+        const Eigen::Vector3d bfield(magnetic_field.x(), magnetic_field.y(), magnetic_field.z());
 
         auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
 
@@ -547,10 +546,10 @@ GenericPropagationModule::propagate(Event* event,
         auto exb = efield.cross(bfield);
 
         Eigen::Vector3d term1;
-        double const hallFactor = (type == CarrierType::ELECTRON ? electron_Hall_ : hole_Hall_);
+        const double hallFactor = (type == CarrierType::ELECTRON ? electron_Hall_ : hole_Hall_);
         term1 = static_cast<int>(type) * mob * hallFactor * exb;
 
-        Eigen::Vector3d const term2 = mob * mob * hallFactor * hallFactor * efield.dot(bfield) * bfield;
+        const Eigen::Vector3d term2 = mob * mob * hallFactor * hallFactor * efield.dot(bfield) * bfield;
 
         auto rnorm = 1 + mob * mob * hallFactor * hallFactor * bfield.dot(bfield);
         return static_cast<int>(type) * mob * (efield + term1 + term2) / rnorm;
@@ -575,8 +574,9 @@ GenericPropagationModule::propagate(Event* event,
         if(output_linegraphs_) {
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
             while(next_idx <= time_idx) {
-                output_plot_points.at(output_plot_index).second.push_back(static_cast<ROOT::Math::XYZPoint>(position));
-                next_idx = output_plot_points.at(output_plot_index).second.size();
+                output_plot_points.at(output_plot_index)
+                    .addPoint(static_cast<ROOT::Math::XYZPoint>(position), initial_time_local + runge_kutta.getTime());
+                next_idx = output_plot_points.at(output_plot_index).getNPoints();
             }
         }
 
@@ -664,7 +664,7 @@ GenericPropagationModule::propagate(Event* event,
 
             // For each charge carrier draw a number to determine the number of
             // secondaries generated in this step
-            double const log_prob = 1. / std::log1p(-1. / local_gain);
+            const double log_prob = 1. / std::log1p(-1. / local_gain);
             for(unsigned int i_carrier = 0; i_carrier < charge; ++i_carrier) {
                 n_secondaries +=
                     static_cast<unsigned int>(std::log(uniform_distribution(event->getRandomEngine())) * log_prob);
@@ -725,7 +725,7 @@ GenericPropagationModule::propagate(Event* event,
         }
 
         // Adapt step size to match target precision
-        double const uncertainty = step.error.norm();
+        const double uncertainty = step.error.norm();
 
         // Lower timestep when reaching the sensor edge
         if(std::fabs(model_->getSensorSize().z() / 2.0 - position.z()) < 2 * step.value.z()) {
@@ -764,9 +764,9 @@ GenericPropagationModule::propagate(Event* event,
         // If drift time is larger than integration time or the charge carriers have been collected at the backside, reset:
         if(!model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position)) &&
            (time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45)) {
-            std::get<3>(output_plot_points.at(output_plot_index).first) = CarrierState::UNKNOWN;
+            output_plot_points.at(output_plot_index).updateState(CarrierState::UNKNOWN);
         } else {
-            std::get<3>(output_plot_points.at(output_plot_index).first) = state;
+            output_plot_points.at(output_plot_index).updateState(state);
         }
     }
 
@@ -849,7 +849,7 @@ void GenericPropagationModule::finalize() {
         group_size_histo_->Get()->GetXaxis()->SetRange(1, group_size_histo_->Get()->GetNbinsX() + 1);
     }
 
-    long double const average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /
+    const long double average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /
                                      std::max(1U, static_cast<unsigned int>(total_propagated_charges_));
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
