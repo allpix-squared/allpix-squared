@@ -587,7 +587,7 @@ namespace allpix {
     };
 
     /**
-     * @ingroup Models
+     * @ingroup PhysicsModels
      * @brief Mobility model for intrinsic diamond sensors
      *
      * Implements a piecewise (PW) mobility model for electrons and a Caughey-Thomas (CT) mobility
