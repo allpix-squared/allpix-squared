@@ -175,7 +175,7 @@ The polycrystalline diamond trapping model \[[@is-haqzai]\] describes trapping i
 
 where $`Q_0`$ is the charge expected without trapping and $`Q`$ is the collected charge in the presence of trapping.
 
-The model maps the provided $`\text{CCD}`$ value to effective electron and hole trapping lengths using the Hecht relation for charge generation distributed throughout the detector thickness,
+The model maps the provided $`\text{CCD}`$ value to effective electron and hole trapping lengths, $`\lambda_e`$ and $`\lambda_h`$, using the Hecht relation for charge generation distributed throughout the detector thickness,
 
 ```math
 \frac{Q}{Q_0}
@@ -192,10 +192,10 @@ The model maps the provided $`\text{CCD}`$ value to effective electron and hole 
 \left[
 1-\frac{\lambda_h}{d}
 \left(1-e^{-d/\lambda_h}\right)
-\right]
+\right] .
 ```
 
-where $`\lambda_e`$ and $`\lambda_h`$ are the electron and hole trapping lengths, respectively. The ratio between both trapping lengths is configured as
+The ratio between both trapping lengths is configured as
 
 ```math
 r = \frac{\lambda_h}{\lambda_e}

@@ -186,7 +186,7 @@ namespace allpix {
             }
             if(ccd >= thickness_) {
                 // Ideal full collection limit
-                no_trapping_ =  true;
+                no_trapping_ = true;
                 return;
             }
             if(ratio_ <= 0) {
@@ -203,9 +203,9 @@ namespace allpix {
                         double /*timestep*/,
                         double /*efield_mag*/,
                         double dx_drift) const override {
-                            if(no_trapping_) {
-                                return false; // carrier is not trapped
-                            }
+            if(no_trapping_) {
+                return false; // carrier is not trapped
+            }
 
             const double lambda = (type == CarrierType::ELECTRON ? lambda_electron_ : lambda_hole_);
             if(lambda <= 0) {
@@ -215,7 +215,6 @@ namespace allpix {
         }
 
     private:
-
         bool no_trapping_{false};
 
         double thickness_{};
@@ -272,7 +271,7 @@ namespace allpix {
                     low = mid;
                 }
             }
-            // Setting the final electron and hole trapping lengths (mean drift pahths)
+            // Setting the final electron and hole trapping lengths (mean drift paths)
             lambda_electron_ = 0.5 * (low + high);
             lambda_hole_ = ratio_ * lambda_electron_;
         }
