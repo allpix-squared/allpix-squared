@@ -60,8 +60,9 @@ namespace allpix {
 
         /**
          * @brief Transfer the propagated charges to the pixels and its neighbors
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Display statistical summary

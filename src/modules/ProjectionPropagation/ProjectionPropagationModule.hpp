@@ -58,8 +58,9 @@ namespace allpix {
 
         /**
          * @brief Projection of the electrons to the surface
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Write plots if needed

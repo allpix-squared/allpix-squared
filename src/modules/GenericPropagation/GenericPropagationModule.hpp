@@ -66,8 +66,9 @@ namespace allpix {
 
         /**
          * @brief Propagate all deposited charges through the sensor
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Write statistical summary
@@ -100,9 +101,9 @@ namespace allpix {
                   const ROOT::Math::XYZPoint& pos,
                   const CarrierType& type,
                   unsigned int charge,
-                  const double initial_time_local,
-                  const double initial_time_global,
-                  const unsigned int level,
+                  double initial_time_local,
+                  double initial_time_global,
+                  unsigned int level,
                   std::vector<PropagatedCharge>& propagated_charges,
                   LineGraph::OutputPlotPoints& output_plot_points) const;
 

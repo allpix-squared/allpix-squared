@@ -39,6 +39,11 @@ namespace allpix {
         explicit ImpactIonizationModel(double threshold) : threshold_(threshold) {};
 
         /**
+         * Default virtual destructor
+         */
+        virtual ~ImpactIonizationModel() = default;
+
+        /**
          * Function call operator to obtain gain value for the given carrier type and electric field magnitude
          * @param type Type of charge carrier (electron or hole)
          * @param efield_mag Magnitude of the electric field

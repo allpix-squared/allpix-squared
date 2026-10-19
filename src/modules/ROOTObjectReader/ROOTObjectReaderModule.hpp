@@ -68,8 +68,9 @@ namespace allpix {
 
         /**
          * @brief Convert the objects stored for the current event to messages
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Output summary and close the ROOT file

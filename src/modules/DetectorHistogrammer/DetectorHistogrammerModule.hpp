@@ -56,8 +56,9 @@ namespace allpix {
 
         /**
          * @brief Fill the histograms
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Write the histograms to the modules file

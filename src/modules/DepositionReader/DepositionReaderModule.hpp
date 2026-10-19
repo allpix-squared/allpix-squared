@@ -64,8 +64,9 @@ namespace allpix {
 
         /**
          * @brief Read the deposited energy for a given event and create a corresponding DepositedCharge message
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
     private:
         // General module members

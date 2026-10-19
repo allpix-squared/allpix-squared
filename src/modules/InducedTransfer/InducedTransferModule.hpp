@@ -48,8 +48,9 @@ namespace allpix {
 
         /**
          * @brief Calculation of the individual total induced charge and combination for all pixels
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
     private:
         Messenger* messenger_;

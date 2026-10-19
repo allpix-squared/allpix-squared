@@ -62,8 +62,9 @@ namespace allpix {
 
         /**
          * @brief Propagate all deposited charges through the sensor
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Write statistical summary and histograms

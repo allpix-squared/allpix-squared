@@ -35,6 +35,11 @@ namespace allpix {
         DetrappingModel() = default;
 
         /**
+         * Default virtual destructor
+         */
+        virtual ~DetrappingModel() = default;
+
+        /**
          * Function call operator to obtain detrapping time for the given carrier
          * @param type Type of charge carrier (electron or hole)
          * @param probability Current detrapping probability for this charge carrier

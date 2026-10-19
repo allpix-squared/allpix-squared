@@ -69,6 +69,7 @@ namespace allpix {
 
         /**
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.
+         * @param event Pointer to the event the module is running
          */
         void run(Event* event) override;
 

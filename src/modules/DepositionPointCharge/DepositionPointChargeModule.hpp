@@ -56,8 +56,9 @@ namespace allpix {
 
         /**
          * @brief Deposit charge carriers for every simulated event
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
     private:
         /**
