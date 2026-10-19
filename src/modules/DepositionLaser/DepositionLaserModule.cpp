@@ -45,6 +45,7 @@
 #include "core/module/Module.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/distributions.h"
+#include "core/utils/env.h"
 #include "core/utils/text.h"
 #include "core/utils/unit.h"
 #include "objects/DepositedCharge.hpp"
@@ -153,11 +154,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
                 config_.set<std::string>("data_path", ALLPIX_LASER_DATA_DIRECTORY);
                 LOG(TRACE) << "Registered absorption data path from system: " << ALLPIX_LASER_DATA_DIRECTORY;
             } else {
-                const char* data_dirs_env = std::getenv("XDG_DATA_DIRS");
-                if(data_dirs_env == nullptr || strlen(data_dirs_env) == 0) {
-                    data_dirs_env = "/usr/local/share/:/usr/share/:";
-                }
-
+                const auto data_dirs_env = getenv("XDG_DATA_DIRS").value_or("/usr/local/share/:/usr/share/:");
                 auto data_dirs = split<std::filesystem::path>(data_dirs_env, ":");
                 for(auto& data_dir : data_dirs) {
                     data_dir /= std::filesystem::path(ALLPIX_PROJECT_NAME) / "data";
@@ -222,7 +219,7 @@ void DepositionLaserModule::initialize() {
     // Check for unsupported detector materials, warn user if present
 
     const std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
-    for(auto& detector : detectors) {
+    for(const auto& detector : detectors) {
         auto material = detector->getModel()->getSensorMaterial();
         if(material != SensorMaterial::SILICON && !is_user_optics_) {
             LOG(WARNING) << "Detector " << detector->getName() << " has unsupported material and will be ignored";
@@ -314,14 +311,14 @@ void DepositionLaserModule::run(Event* event) {
 
     // Containers for timestamps
     std::vector<double> starting_times(number_of_photons_);
-    std::for_each(begin(starting_times), end(starting_times), [&](auto& item) {
+    std::ranges::for_each(starting_times, [&](auto& item) {
         item = yield_starting_time();
         if(output_plots_) {
             h_pulse_shape_->Fill(item);
         }
     });
 
-    std::sort(begin(starting_times), end(starting_times));
+    std::ranges::sort(starting_times);
 
     // To correctly offset local time for each detector
     std::map<std::shared_ptr<Detector>, double> local_time_offsets;
@@ -353,7 +350,7 @@ void DepositionLaserModule::run(Event* event) {
             continue;
         }
 
-        const PhotonHit hit = hit_opt.value();
+        const PhotonHit& hit = hit_opt.value();
 
         // If this was the first hit in this detector in this event,
         // remember entry timestamp as local t=0 for this detector.
@@ -561,7 +558,7 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(con
     const std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
     std::vector<std::pair<std::shared_ptr<Detector>, std::pair<double, double>>> intersection_segments;
 
-    for(auto& detector : detectors) {
+    for(const auto& detector : detectors) {
         if(detector->getModel()->getSensorMaterial() != SensorMaterial::SILICON && !is_user_optics_) {
             continue;
         }
@@ -576,9 +573,8 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(con
         return std::nullopt;
     }
 
-    auto it_first_detector = std::min_element(begin(intersection_segments),
-                                              end(intersection_segments),
-                                              [](const auto& p1, const auto& p2) { return p1.second < p2.second; });
+    auto it_first_detector = std::ranges::min_element(intersection_segments,
+                                                      [](const auto& p1, const auto& p2) { return p1.second < p2.second; });
 
     auto detector = it_first_detector->first;
     const double t0 = it_first_detector->second.first;
@@ -729,7 +725,7 @@ ROOT::Math::XYZVector DepositionLaserModule::intersection_normal_vector(const st
         {0, 0, -1},
     };
 
-    auto iter_min = std::min_element(begin(distances_to_faces), end(distances_to_faces));
+    auto iter_min = std::ranges::min_element(distances_to_faces);
     const size_t index_min =
         static_cast<size_t>(std::abs(iter_min - begin(distances_to_faces))); // avoid implicit conversion
 
