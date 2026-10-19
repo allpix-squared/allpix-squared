@@ -14,7 +14,7 @@ Checks: [
   'google-*','-google-build-using-namespace','-google-explicit-constructor','-google-runtime-int',
   'hicpp-*',
   'llvm-*','-llvm-header-guard','-llvm-include-order','-llvm-prefer-static-over-anonymous-namespace',
-  'misc-*','-misc-include-cleaner','-misc-non-private-member-variables-in-classes',
+  'misc-*','-misc-include-cleaner','-misc-non-private-member-variables-in-classes','-misc-use-anonymous-namespace',
   'modernize-*','-modernize-use-designated-initializers','-modernize-use-nodiscard','-modernize-use-trailing-return-type',
   'performance-*',
   'portability-*','-portability-template-virtual-member-function',
