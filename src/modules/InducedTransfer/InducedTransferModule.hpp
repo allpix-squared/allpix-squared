@@ -55,7 +55,7 @@ namespace allpix {
         Messenger* messenger_;
 
         std::shared_ptr<Detector> detector_;
-        std::shared_ptr<DetectorModel> model_;
+        std::shared_ptr<const DetectorModel> model_;
 
         // Distance of pixels taken into account for induction
         unsigned int distance_;

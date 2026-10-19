@@ -471,7 +471,7 @@ void DetectorHistogrammerModule::initialize() {
         "charge", "total_charge", total_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge * 4));
 
     // Create residual plots in polar coordinates for radial_strip detectors
-    auto radial_model = std::dynamic_pointer_cast<RadialStripDetectorModel>(model);
+    auto radial_model = std::dynamic_pointer_cast<const RadialStripDetectorModel>(model);
     if(radial_model != nullptr) {
         auto max_angle = radial_model->getRowAngleMax();
         auto max_pitch = static_cast<double>(Units::convert(radial_model->getAngularPitchMax(), "mrad"));
@@ -524,7 +524,7 @@ void DetectorHistogrammerModule::run(Event* event) {
     // Fetch detector model
     auto model = detector_->getModel();
 
-    auto radial_model = std::dynamic_pointer_cast<RadialStripDetectorModel>(model);
+    auto radial_model = std::dynamic_pointer_cast<const RadialStripDetectorModel>(model);
 
     // Check that we actually received pixel hits - we might have none and just received MCParticles!
     try {

@@ -77,7 +77,7 @@ namespace allpix {
     private:
         Messenger* messenger_;
         std::shared_ptr<const Detector> detector_;
-        std::shared_ptr<DetectorModel> model_;
+        std::shared_ptr<const DetectorModel> model_;
 
         /**
          * @brief Propagate a single set of charges through the sensor

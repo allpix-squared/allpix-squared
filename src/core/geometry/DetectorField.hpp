@@ -183,7 +183,7 @@ namespace allpix {
          * @brief Set the detector model this field is used for
          * @param model The detector model
          */
-        void setModel(const std::shared_ptr<DetectorModel>& model) { model_ = model; }
+        void setModel(const std::shared_ptr<const DetectorModel>& model) { model_ = model; }
 
     protected:
         /**
@@ -272,7 +272,7 @@ namespace allpix {
         /*
          * Relevant parameters from the detector model for this field
          */
-        std::shared_ptr<DetectorModel> model_;
+        std::shared_ptr<const DetectorModel> model_;
     };
 } // namespace allpix
 

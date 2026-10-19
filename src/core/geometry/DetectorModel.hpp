@@ -86,7 +86,7 @@ namespace allpix {
          *     if(model->is<PixelDetectorModel>()) { }
          * @return Boolean indication whether this model is of the given type or not
          */
-        template <class T> bool is() { return dynamic_cast<T*>(this) != nullptr; }
+        template <class T> bool is() const { return dynamic_cast<const T*>(this) != nullptr; }
 
         /**
          * @brief Helper class to hold implant definitions for a detector model
@@ -206,7 +206,7 @@ namespace allpix {
          */
         const std::string& getType() const { return type_; }
 
-        const std::shared_ptr<DetectorAssembly> getAssembly() const { return assembly_; }
+        std::shared_ptr<DetectorAssembly> getAssembly() const { return assembly_; }
 
         /**
          * @brief Get local coordinate of the position and rotation center in global frame

@@ -48,7 +48,7 @@ namespace allpix {
     template <typename T>
     void GeometryManager::setExternalObject(const std::string& associated_name,
                                             const std::string& id,
-                                            std::shared_ptr<T> external_object) {
+                                            const std::shared_ptr<T>& external_object) {
         external_objects_[typeid(T)][std::make_pair(associated_name, id)] = std::static_pointer_cast<void>(external_object);
 
         external_object_names_.insert(associated_name);

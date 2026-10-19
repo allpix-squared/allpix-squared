@@ -87,7 +87,7 @@ namespace allpix {
         Messenger* messenger_;
 
         std::shared_ptr<Detector> detector_;
-        std::shared_ptr<allpix::DetectorModel> detector_model_;
+        std::shared_ptr<const DetectorModel> detector_model_;
 
         DepositionModel model_;
         SourceType type_;

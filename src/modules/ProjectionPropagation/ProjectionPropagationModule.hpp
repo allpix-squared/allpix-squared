@@ -69,7 +69,7 @@ namespace allpix {
     private:
         Messenger* messenger_;
         std::shared_ptr<const Detector> detector_;
-        std::shared_ptr<DetectorModel> model_;
+        std::shared_ptr<const DetectorModel> model_;
 
         // Config parameters
         bool output_plots_{}, output_linegraphs_{};

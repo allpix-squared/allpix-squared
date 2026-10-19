@@ -233,8 +233,9 @@ namespace allpix {
          * @param external_object External object of arbitrary type
          */
         template <typename T>
-        void
-        setExternalObject(const std::string& associated_name, const std::string& id, std::shared_ptr<T> external_object);
+        void setExternalObject(const std::string& associated_name,
+                               const std::string& id,
+                               const std::shared_ptr<T>& external_object);
 
         /**
          * @brief Get all names of external objects registered via setExternalObject

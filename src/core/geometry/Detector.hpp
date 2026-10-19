@@ -258,7 +258,7 @@ namespace allpix {
          * @brief Get the model of this detector
          * @return Pointer to the constant detector model
          */
-        const std::shared_ptr<DetectorModel> getModel() const { return model_; }
+        std::shared_ptr<const DetectorModel> getModel() const { return model_; }
 
     private:
         /**
