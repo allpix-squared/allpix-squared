@@ -31,7 +31,9 @@ namespace allpix {
     public:
         using Clock = std::chrono::steady_clock;
 
+        /* Default constructor and destructor */
         ProgressTracker() = default;
+        ~ProgressTracker() = default;
 
         /// @{
         /* @brief Disable copying and moving */
@@ -141,7 +143,7 @@ namespace allpix {
         }
 
     private:
-        struct Sample {
+        struct sample {
             Clock::time_point time;
             uint64_t done;
         };
@@ -189,7 +191,7 @@ namespace allpix {
 
         // Mutex only ever locked by reading methods
         mutable std::mutex sample_mutex_;
-        mutable std::deque<Sample> samples_;
+        mutable std::deque<sample> samples_;
     };
 } // namespace allpix
 

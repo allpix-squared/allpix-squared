@@ -118,7 +118,7 @@ void RunStatistics::addModuleTime(const Module* module, std::chrono::nanoseconds
     auto it = module_time_.find(module);
     if(it == module_time_.end()) {
         // Adding entries is not thread-safe, only possible while no worker threads are running
-        if(isRunning()) {
+        if(run_timer_.isActive()) {
             return;
         }
         it = module_time_.try_emplace(module, 0).first;

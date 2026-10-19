@@ -40,8 +40,9 @@ namespace allpix {
         class StageTimer;
 
     public:
-        /* Default constructor */
+        /* Default constructor and destructor */
         RunStatistics() = default;
+        ~RunStatistics() = default;
 
         /// @{
         /* @brief Disable copying and moving */
@@ -293,8 +294,6 @@ namespace allpix {
             std::atomic<std::chrono::steady_clock::rep> end_{0};
             std::atomic<std::chrono::system_clock::rep> wall_start_{0};
         };
-
-        bool isRunning() const { return run_timer_.isActive(); }
 
         std::shared_ptr<ProgressTracker> progress_{std::make_shared<ProgressTracker>()};
         std::atomic<uint64_t> buffered_{0};
