@@ -39,11 +39,6 @@ namespace allpix {
         explicit ImpactIonizationModel(double threshold) : threshold_(threshold) {};
 
         /**
-         * Default virtual destructor
-         */
-        virtual ~ImpactIonizationModel() = default;
-
-        /**
          * Function call operator to obtain gain value for the given carrier type and electric field magnitude
          * @param type Type of charge carrier (electron or hole)
          * @param efield_mag Magnitude of the electric field
@@ -70,10 +65,10 @@ namespace allpix {
     class NoImpactIonization : virtual public ImpactIonizationModel {
     public:
         NoImpactIonization() : ImpactIonizationModel(std::numeric_limits<double>::max()) {};
-        double operator()(const CarrierType&, double, double) const override { return 1.; };
+        double operator()(const CarrierType&, double /*efield_mag*/, double /*step*/) const override { return 1.; };
 
     private:
-        double gain_factor(const CarrierType&, double) const override { return 1.; };
+        double gain_factor(const CarrierType&, double /*efield_mag*/) const override { return 1.; };
     };
 
     /**
@@ -97,9 +92,9 @@ namespace allpix {
         double gain_factor(const CarrierType& type, double efield_mag) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_a_ * std::exp(-1. * electron_b_ / efield_mag);
-            } else {
-                return hole_a_ * std::exp(-1. * hole_b_ / efield_mag);
             }
+
+            return hole_a_ * std::exp(-1. * hole_b_ / efield_mag);
         };
 
     protected:
@@ -154,11 +149,11 @@ namespace allpix {
         double gain_factor(const CarrierType& type, double efield_mag) const override {
             if(type == CarrierType::ELECTRON) {
                 return gamma_ * electron_a_ * std::exp(-(gamma_ * electron_b_ / efield_mag));
-            } else {
-                auto a = (std::abs(efield_mag) > e_zero_ ? hole_a_high_ : hole_a_low_);
-                auto b = (std::abs(efield_mag) > e_zero_ ? hole_b_high_ : hole_b_low_);
-                return gamma_ * a * std::exp(-(gamma_ * b / efield_mag));
             }
+
+            auto a = (std::abs(efield_mag) > e_zero_ ? hole_a_high_ : hole_a_low_);
+            auto b = (std::abs(efield_mag) > e_zero_ ? hole_b_high_ : hole_b_low_);
+            return gamma_ * a * std::exp(-(gamma_ * b / efield_mag));
         };
 
     protected:
@@ -220,9 +215,9 @@ namespace allpix {
         double gain_factor(const CarrierType& type, double efield_mag) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_ac_ * efield_mag * std::exp(-1 * electron_bd_ * electron_bd_ / efield_mag / efield_mag);
-            } else {
-                return hole_ac_ * efield_mag * std::exp(-1 * hole_bd_ * hole_bd_ / efield_mag / efield_mag);
             }
+
+            return hole_ac_ * efield_mag * std::exp(-1 * hole_bd_ * hole_bd_ / efield_mag / efield_mag);
         };
 
     protected:
@@ -277,9 +272,9 @@ namespace allpix {
         double gain_factor(const CarrierType& type, double efield_mag) const override {
             if(type == CarrierType::ELECTRON) {
                 return efield_mag / (electron_a_ + electron_b_ * std::exp(electron_d_ / (efield_mag + electron_c_)));
-            } else {
-                return efield_mag / (hole_a_ + hole_b_ * std::exp(hole_d_ / (efield_mag + hole_c_)));
             }
+
+            return efield_mag / (hole_a_ + hole_b_ * std::exp(hole_d_ / (efield_mag + hole_c_)));
         };
 
         double electron_a_;
@@ -306,9 +301,9 @@ namespace allpix {
         double gain_factor(const CarrierType& type, double efield_mag) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_gain_->Eval(efield_mag);
-            } else {
-                return hole_gain_->Eval(efield_mag);
             }
+
+            return hole_gain_->Eval(efield_mag);
         };
 
     private:
@@ -316,7 +311,7 @@ namespace allpix {
         std::unique_ptr<TFormula> hole_gain_;
 
         std::unique_ptr<TFormula> configure_gain(const Configuration& config, const CarrierType type) {
-            std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
+            const std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
             auto function = config.get<std::string>("multiplication_function_" + name);
             auto parameters = config.getArray<double>("multiplication_parameters_" + name, {});
 
@@ -365,7 +360,7 @@ namespace allpix {
         explicit ImpactIonization(const Configuration& config) {
             try {
                 auto model = config.get<std::string>("multiplication_model", "none");
-                std::transform(model.begin(), model.end(), model.begin(), ::tolower);
+                std::ranges::transform(model, model.begin(), ::tolower);
                 auto temperature = config.get<double>("temperature");
                 auto threshold = config.get<double>("multiplication_threshold");
 

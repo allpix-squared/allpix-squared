@@ -37,11 +37,6 @@ namespace allpix {
         MobilityModel() = default;
 
         /**
-         * Default virtual destructor
-         */
-        virtual ~MobilityModel() = default;
-
-        /**
          * Function call operator to obtain mobility value for the given carrier type and electric field magnitude
          * @param type Type of charge carrier (electron or hole)
          * @param efield_mag Magnitude of the electric field
@@ -72,14 +67,14 @@ namespace allpix {
             }
         }
 
-        double operator()(const CarrierType& type, double efield_mag, double) const override {
+        double operator()(const CarrierType& type, double efield_mag, double /*doping*/) const override {
             // Compute carrier mobility from constants and electric field magnitude
             if(type == CarrierType::ELECTRON) {
                 return electron_Vm_ / electron_Ec_ /
                        std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
-            } else {
-                return hole_Vm_ / hole_Ec_ / std::pow(1. + std::pow(efield_mag / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
             }
+
+            return hole_Vm_ / hole_Ec_ / std::pow(1. + std::pow(efield_mag / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
         };
 
     protected:
@@ -135,13 +130,13 @@ namespace allpix {
             // The pow-inverse-beta upper boundary is set to the pow function argument: 1 plus pow from max / critical field
         }
 
-        double operator()(const CarrierType& type, double efield_mag, double) const override {
+        double operator()(const CarrierType& type, double efield_mag, double /*doping*/) const override {
             // Compute carrier mobility from constants and electric field magnitude
             if(type == CarrierType::ELECTRON) {
                 return electron_Vm_ / electron_Ec_ / pow_e_inv_beta(1. + pow_e_beta(efield_mag / electron_Ec_));
-            } else {
-                return hole_Vm_ / hole_Ec_ / pow_h_inv_beta(1. + pow_h_beta(efield_mag / hole_Ec_));
             }
+
+            return hole_Vm_ / hole_Ec_ / pow_h_inv_beta(1. + pow_h_beta(efield_mag / hole_Ec_));
         };
 
     private:
@@ -174,19 +169,19 @@ namespace allpix {
             }
         }
 
-        double operator()(const CarrierType& type, double efield_mag, double) const override {
+        double operator()(const CarrierType& type, double efield_mag, double /*doping*/) const override {
             if(type == CarrierType::ELECTRON) {
                 // Equation (3) of the reference, setting E0 = 0 as suggested
                 return 1. / (1. / electron_mu0_ + 1. / electron_vsat_ * efield_mag);
-            } else {
-                // Equation (5) of the reference
-                if(efield_mag < hole_E0_) {
-                    return hole_mu0_;
-                } else {
-                    return 1. / (1. / hole_mu0_ + hole_param_b_ * (efield_mag - hole_E0_) +
-                                 hole_param_c_ * (efield_mag - hole_E0_) * (efield_mag - hole_E0_));
-                }
             }
+
+            // Equation (5) of the reference
+            if(efield_mag < hole_E0_) {
+                return hole_mu0_;
+            }
+
+            return 1. / (1. / hole_mu0_ + hole_param_b_ * (efield_mag - hole_E0_) +
+                         hole_param_c_ * (efield_mag - hole_E0_) * (efield_mag - hole_E0_));
         };
 
     protected:
@@ -261,11 +256,11 @@ namespace allpix {
                        ((electron_mumax_ - electron_mu0_) /
                         (1. + std::pow(std::fabs(doping) / electron_cr_, electron_alpha_))) -
                        electron_mu1_ / (1. + (std::pow(electron_cs_ / std::fabs(doping), electron_beta_)));
-            } else {
-                return (hole_mu0_ * std::exp(-hole_pc_ / std::fabs(doping))) +
-                       hole_mumax_ / (1. + (std::pow(std::fabs(doping) / hole_cr_, hole_alpha_))) -
-                       hole_mu1_ / (1. + (std::pow(hole_cs_ / std::fabs(doping), hole_beta_)));
             }
+
+            return (hole_mu0_ * std::exp(-hole_pc_ / std::fabs(doping))) +
+                   hole_mumax_ / (1. + (std::pow(std::fabs(doping) / hole_cr_, hole_alpha_))) -
+                   hole_mu1_ / (1. + (std::pow(hole_cs_ / std::fabs(doping), hole_beta_)));
         };
 
     private:
@@ -304,9 +299,9 @@ namespace allpix {
             if(type == CarrierType::ELECTRON) {
                 return masetti /
                        std::pow(1. + std::pow(masetti * efield_mag / electron_Vm_, electron_Beta_), 1. / electron_Beta_);
-            } else {
-                return masetti / std::pow(1. + std::pow(masetti * efield_mag / hole_Vm_, hole_Beta_), 1. / hole_Beta_);
             }
+
+            return masetti / std::pow(1. + std::pow(masetti * efield_mag / hole_Vm_, hole_Beta_), 1. / hole_Beta_);
         };
     };
 
@@ -335,12 +330,12 @@ namespace allpix {
             }
         }
 
-        double operator()(const CarrierType& type, double, double doping) const override {
+        double operator()(const CarrierType& type, double /*efield_mag*/, double doping) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_mumin_ + (electron_mu0_ / (1 + std::pow(std::fabs(doping) / electron_nref_, alpha_)));
-            } else {
-                return hole_mumin_ + (hole_mu0_ / (1 + std::pow(std::fabs(doping) / hole_nref_, alpha_)));
             }
+
+            return hole_mumin_ + (hole_mu0_ / (1 + std::pow(std::fabs(doping) / hole_nref_, alpha_)));
         };
 
     private:
@@ -370,17 +365,17 @@ namespace allpix {
             }
         }
 
-        double operator()(const CarrierType& type, double efield_mag, double) const override {
+        double operator()(const CarrierType& type, double efield_mag, double /*doping*/) const override {
             // Compute carrier mobility from constants and electric field magnitude
             if(type == CarrierType::ELECTRON) {
                 if(efield_mag < E0_gaas_) {
                     return mu_e_gaas_;
-                } else {
-                    return mu_e_gaas_ / sqrt(1 + (std::pow((efield_mag - E0_gaas_), 2) / std::pow(Ec_gaas_, 2)));
                 }
-            } else {
-                return mu_h_gaas_;
+
+                return mu_e_gaas_ / sqrt(1 + (std::pow((efield_mag - E0_gaas_), 2) / std::pow(Ec_gaas_, 2)));
             }
+
+            return mu_h_gaas_;
         };
 
     private:
@@ -439,18 +434,18 @@ namespace allpix {
 
                 electron_Ec_ = electron_Vsat_ / (Units::get(2.5e6, "cm*cm*K/V/s") / std::pow(temperature, 1.));
                 hole_Ec_ = hole_Vsat_ / (Units::get(6.3e7, "cm*cm*K/V/s") / std::pow(temperature, 2.1));
-            } else {
-                throw ModelUnsuitable("Sensor material " + allpix::to_string(material) + " not valid for this model.");
             }
+
+            throw ModelUnsuitable("Sensor material " + allpix::to_string(material) + " not valid for this model.");
         };
 
-        double operator()(const CarrierType& type, double efield_mag, double) const override {
+        double operator()(const CarrierType& type, double efield_mag, double /*doping*/) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_Vsat_ / electron_Ec_ /
                        std::sqrt(1. + (efield_mag * efield_mag / electron_Ec_ / electron_Ec_));
-            } else {
-                return hole_Vsat_ / hole_Ec_ / std::sqrt(1. + (efield_mag * efield_mag / hole_Ec_ / hole_Ec_));
             }
+
+            return hole_Vsat_ / hole_Ec_ / std::sqrt(1. + (efield_mag * efield_mag / hole_Ec_ / hole_Ec_));
         };
 
     private:
@@ -492,11 +487,11 @@ namespace allpix {
                     (electron_mumin_ + electron_mumax_ * std::pow(electron_nref_ / std::fabs(doping), electron_gamma_)) /
                     (electron_mumax_ - electron_mumin_);
                 return electron_mumax_ / (1 / (B * electron_t_beta_) + electron_t_alpha_);
-            } else {
-                double B = (hole_mumin_ + hole_mumax_ * std::pow(hole_nref_ / std::fabs(doping), hole_gamma_)) /
-                           (hole_mumax_ - hole_mumin_);
-                return hole_mumax_ / (1 / B + std::pow(temperature / 300, hole_t_alpha_));
             }
+
+            double B = (hole_mumin_ + hole_mumax_ * std::pow(hole_nref_ / std::fabs(doping), hole_gamma_)) /
+                       (hole_mumax_ - hole_mumin_);
+            return hole_mumax_ / (1 / B + std::pow(temperature / 300, hole_t_alpha_));
         };
 
     private:
@@ -522,7 +517,7 @@ namespace allpix {
         ConstantMobility(double electron_mobility, double hole_mobility)
             : electron_mobility_(electron_mobility), hole_mobility_(hole_mobility) {}
 
-        double operator()(const CarrierType& type, double, double) const override {
+        double operator()(const CarrierType& type, double /*efield_mag*/, double /*doping*/) const override {
             return (type == CarrierType::ELECTRON ? electron_mobility_ : hole_mobility_);
         };
 
@@ -545,9 +540,9 @@ namespace allpix {
         double operator()(const CarrierType& type, double efield_mag, double doping) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_mobility_->Eval(efield_mag, doping);
-            } else {
-                return hole_mobility_->Eval(efield_mag, doping);
             }
+
+            return hole_mobility_->Eval(efield_mag, doping);
         };
 
     private:

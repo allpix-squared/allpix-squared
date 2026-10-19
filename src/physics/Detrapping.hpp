@@ -35,11 +35,6 @@ namespace allpix {
         DetrappingModel() = default;
 
         /**
-         * Default virtual destructor
-         */
-        virtual ~DetrappingModel() = default;
-
-        /**
          * Function call operator to obtain detrapping time for the given carrier
          * @param type Type of charge carrier (electron or hole)
          * @param probability Current detrapping probability for this charge carrier
@@ -55,7 +50,9 @@ namespace allpix {
      */
     class NoDetrapping : virtual public DetrappingModel {
     public:
-        double operator()(const CarrierType&, double, double) const override { return std::numeric_limits<double>::max(); };
+        double operator()(const CarrierType& /*type*/, double /*probability*/, double /*efield_mag*/) const override {
+            return std::numeric_limits<double>::max();
+        };
     };
 
     /**
@@ -67,7 +64,7 @@ namespace allpix {
         ConstantDetrapping(double electron_lifetime, double hole_lifetime)
             : tau_eff_electron_(electron_lifetime), tau_eff_hole_(hole_lifetime) {};
 
-        double operator()(const CarrierType& type, double probability, double) const override {
+        double operator()(const CarrierType& type, double probability, double /*efield_mag*/) const override {
             return -1 * log(1 - probability) * (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_);
         }
 
