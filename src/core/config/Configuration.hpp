@@ -16,6 +16,7 @@
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
@@ -61,17 +62,23 @@ namespace allpix {
              */
             AccessMarker& operator=(const AccessMarker& rhs);
 
-            /* Default destructor, move constructor and operator */
+            /* Default destructor */
             ~AccessMarker() = default;
-            AccessMarker(AccessMarker&&) = default;
-            AccessMarker& operator=(AccessMarker&&) = default;
+            /* move constructor and operator */
+            AccessMarker(AccessMarker&&) noexcept;
+            AccessMarker& operator=(AccessMarker&&) noexcept;
 
             /**
              * @brief Method to register a key for a new access marker
              * @param key Key of the marker
-             * @warning This operation is not thread-safe
              */
             void registerMarker(const std::string& key);
+
+            /**
+             * @brief Method to unregister a key from the access marker
+             * @param key Key of the marker
+             */
+            void removeMarker(const std::string& key);
 
             /**
              * @brief Method to mark existing marker as accessed/used.
@@ -90,6 +97,7 @@ namespace allpix {
             bool isUsed(const std::string& key) { return markers_.at(key).load(); }
 
         private:
+            std::mutex markers_mutex_;
             std::map<std::string, std::atomic<bool>> markers_;
         };
 
@@ -108,16 +116,16 @@ namespace allpix {
         /**
          * @brief Allow copying the configuration
          */
-        Configuration(const Configuration&) = default;
-        Configuration& operator=(const Configuration&) = default;
+        Configuration(const Configuration& other) noexcept;
+        Configuration& operator=(const Configuration& other);
         /// @}
 
         /// @{
         /**
          * @brief Allow moving the configuration
          */
-        Configuration(Configuration&&) noexcept = default; // NOLINT
-        Configuration& operator=(Configuration&&) = default;
+        Configuration(Configuration&& other) noexcept;
+        Configuration& operator=(Configuration&&) noexcept;
         /// @}
 
         /**
@@ -309,6 +317,18 @@ namespace allpix {
         void merge(const Configuration& other);
 
         /**
+         * @brief Remove a key-value pair if it exists
+         * @param key Key to remove
+         */
+        void remove(const std::string& key);
+
+        /**
+         * @brief Remove several key-value pairs if they exists
+         * @param keys Keys to remove
+         */
+        void remove(std::initializer_list<std::string> keys);
+
+        /**
          * @brief Get all key value pairs
          * @return List of all key value pairs
          */
@@ -351,6 +371,7 @@ namespace allpix {
 
         using ConfigMap = std::map<std::string, std::string>;
         ConfigMap config_;
+        mutable std::mutex config_mutex_;
         mutable AccessMarker used_keys_;
     };
 } // namespace allpix
