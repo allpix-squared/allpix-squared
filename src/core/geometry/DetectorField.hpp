@@ -233,10 +233,11 @@ namespace allpix {
 
         /**
          * @brief Fast floor-to-int implementation without overflow protection as std::floor
+         * @note Implicitly inlined since defined in the class definition
          * @param x Double-precision floating point value
          * @return Integer floored towards negative infinity
          * */
-        static inline int int_floor(double x) noexcept {
+        static int int_floor(double x) noexcept {
             auto i = static_cast<int>(x);
             return i - static_cast<int>(static_cast<double>(i) > x);
         };

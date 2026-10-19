@@ -13,7 +13,6 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdlib>
-#include <math.h>
 #include <memory>
 #include <set>
 #include <string>
@@ -94,13 +93,12 @@ std::pair<int, int> HexagonalPixelDetectorModel::getPixelIndex(const ROOT::Math:
 bool HexagonalPixelDetectorModel::isWithinMatrix(const int x, const int y) const {
     // Check the valid pixel indices - this depends on the orientation of the axial index coordinate system with respect to
     // the cartesian local coordinate system, so we need to allow different indices depending on the hexagon orientation:
-    if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
-        return y >= 0 && y < static_cast<int>(number_of_pixels_.y()) && x >= 0 - y / 2 &&
-               x < static_cast<int>(number_of_pixels_.x()) - y / 2;
-    }
+    const auto in_range = [](const int index, const auto size) { return index >= 0 && std::cmp_less(index, size); };
 
-    return !(x < 0 || x >= static_cast<int>(number_of_pixels_.x()) || y < 0 - x / 2 ||
-             y >= static_cast<int>(number_of_pixels_.y()) - x / 2);
+    if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
+        return in_range(y, number_of_pixels_.y()) && in_range(x + (y / 2), number_of_pixels_.x());
+    }
+    return in_range(x, number_of_pixels_.x()) && in_range(y + (x / 2), number_of_pixels_.y());
 }
 
 bool HexagonalPixelDetectorModel::isWithinMatrix(const Pixel::Index& pixel_index) const {

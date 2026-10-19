@@ -261,9 +261,10 @@ namespace allpix {
 
         /**
          * @brief Return all implants
+         * @note Implicitly inlined since defined in the class definition
          * @return List of all the implants
          */
-        inline const std::vector<Implant>& getImplants() const { return implants_; };
+        const std::vector<Implant>& getImplants() const { return implants_; };
 
         /**
          * @brief Get total size of the pixel grid
