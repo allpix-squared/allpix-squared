@@ -87,7 +87,7 @@ namespace allpix {
          * @param y Y- (or row-) coordinate to be checked
          * @return True if pixel coordinates are within the pixel grid, false otherwise
          */
-        bool isWithinMatrix(const int x, const int y) const override;
+        bool isWithinMatrix(int x, int y) const override;
 
         /**
          * @brief Returns if a position is within the grid of pixels defined for the device
@@ -102,7 +102,7 @@ namespace allpix {
          * @param y Y- (or row-) coordinate of the pixel
          * @return Coordinates of the pixel center
          */
-        ROOT::Math::XYZPoint getPixelCenter(const int x, const int y) const override;
+        ROOT::Math::XYZPoint getPixelCenter(int x, int y) const override;
 
         /**
          * @brief Return X,Y indices of a pixel corresponding to a local position in a sensor.
@@ -127,7 +127,7 @@ namespace allpix {
          *
          * @note The returned set should always also include the initial pixel indices the neighbors are calculated for
          */
-        std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, const size_t distance) const override;
+        std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, size_t distance) const override;
 
         /**
          * @brief Check if two pixel indices are neighbors to each other
@@ -136,7 +136,7 @@ namespace allpix {
          * @param distance  Distance for pixels to be considered neighbors
          * @return         Boolean whether pixels are neighbors or not
          */
-        bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const override;
+        bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, size_t distance) const override;
 
     protected:
         void validate() override;

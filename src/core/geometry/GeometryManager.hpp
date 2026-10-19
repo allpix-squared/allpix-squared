@@ -12,6 +12,7 @@
 #ifndef ALLPIX_GEOMETRY_MANAGER_H
 #define ALLPIX_GEOMETRY_MANAGER_H
 
+#include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <regex>
@@ -31,7 +32,7 @@ namespace allpix {
     /**
      * @brief Type of the magnetic field
      */
-    enum class MagneticFieldType {
+    enum class MagneticFieldType : std::uint8_t {
         NONE = 0, ///< No magnetic field is simulated
         CONSTANT, ///< Constant magnetic field (mostly for testing)
         CUSTOM,   ///< Custom magnetic field function
@@ -108,7 +109,6 @@ namespace allpix {
          * @param point Point that should be included in the geometry
          * @warning Can only be used as long as the geometry is still open
          */
-        // TODO: Add more details to the point and interaction with external geometry
         void addPoint(ROOT::Math::XYZPoint point);
 
         /**
@@ -233,8 +233,9 @@ namespace allpix {
          * @param external_object External object of arbitrary type
          */
         template <typename T>
-        void
-        setExternalObject(const std::string& associated_name, const std::string& id, std::shared_ptr<T> external_object);
+        void setExternalObject(const std::string& associated_name,
+                               const std::string& id,
+                               const std::shared_ptr<T>& external_object);
 
         /**
          * @brief Get all names of external objects registered via setExternalObject

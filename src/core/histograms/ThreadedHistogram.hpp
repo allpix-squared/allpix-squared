@@ -36,6 +36,8 @@ namespace allpix {
      * No inherent functionality.
      */
     class BaseHistogram {
+        friend class HistogramManager;
+
     public:
         BaseHistogram() = default;
         virtual ~BaseHistogram() = default;
@@ -45,7 +47,6 @@ namespace allpix {
         BaseHistogram& operator=(BaseHistogram&&) noexcept = default;
 
         virtual std::string GetName() = 0;
-        virtual void write() = 0;
         virtual void SetOption(std::string) = 0;
         virtual void setAdjustAxisRanges() = 0;
         virtual void setAdjustAxisDivisions() = 0;
@@ -53,6 +54,9 @@ namespace allpix {
         virtual double GetMinimum() const = 0;
         virtual void SetMaximum(double) = 0;
         virtual double GetMaximum() const = 0;
+
+    protected:
+        virtual void write() = 0;
     };
 
     /**
@@ -133,6 +137,12 @@ namespace allpix {
          */
         std::shared_ptr<T> Get();
 
+    protected:
+        /**
+         * @brief An easy way to write a histogram. Applies draw & modification options before.
+         */
+        void write() override;
+
     private:
         /**
          * @brief Initialize the threaded histogram
@@ -141,11 +151,6 @@ namespace allpix {
          * initialize based on number of preregistered threads.
          */
         template <class... ARGS> void init(ARGS&&... args);
-
-        /**
-         * @brief An easy way to write a histogram. Applies draw & modification options before.
-         */
-        void write() override;
 
         // NOLINTEND(readability-identifier-naming)
 

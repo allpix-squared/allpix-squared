@@ -404,7 +404,7 @@ namespace allpix {
 
     private:
         static std::tuple<double, double, double, double, double, double, double, double, unsigned long, double>
-        get_plot_settings(const std::shared_ptr<DetectorModel>& model,
+        get_plot_settings(const std::shared_ptr<const DetectorModel>& model,
                           const Configuration& config,
                           const OutputPlotPoints& output_plot_points) {
 

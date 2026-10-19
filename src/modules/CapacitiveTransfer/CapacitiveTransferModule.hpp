@@ -60,8 +60,9 @@ namespace allpix {
 
         /**
          * @brief Transfer the propagated charges to the pixels and its neighbors
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Display statistical summary
@@ -72,7 +73,7 @@ namespace allpix {
         // Configuration config_;
         Messenger* messenger_;
         std::shared_ptr<Detector> detector_;
-        std::shared_ptr<DetectorModel> model_;
+        std::shared_ptr<const DetectorModel> model_;
 
         // Statistical information
         std::atomic<unsigned int> total_transferred_charges_;

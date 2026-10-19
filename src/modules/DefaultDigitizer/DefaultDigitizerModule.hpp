@@ -55,8 +55,9 @@ namespace allpix {
 
         /**
          * @brief Simulate digitization process
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Finalize and write optional histograms

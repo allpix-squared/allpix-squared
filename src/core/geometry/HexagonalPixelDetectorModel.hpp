@@ -40,11 +40,6 @@ namespace allpix {
                                              const Configuration& config);
 
         /**
-         * @brief Essential virtual destructor
-         */
-        ~HexagonalPixelDetectorModel() override = default;
-
-        /**
          * @brief Get local coordinate of the position and rotation center in global frame
          * @note It can be a bit counter intuitive that this is not usually the origin, neither the geometric center of the
          * model, but the geometric center of the sensitive part. This way, the position of the sensing element is invariant
@@ -60,7 +55,7 @@ namespace allpix {
          * @param y Y- (or row-) coordinate of the pixel
          * @return Coordinates of the pixel center
          */
-        ROOT::Math::XYZPoint getPixelCenter(const int x, const int y) const override;
+        ROOT::Math::XYZPoint getPixelCenter(int x, int y) const override;
 
         /**
          * @brief Return X,Y indices of a pixel corresponding to a local position in a sensor.
@@ -77,7 +72,7 @@ namespace allpix {
          * @param y Y- (or row-) coordinate to be checked
          * @return True if pixel coordinates are within the pixel grid, false otherwise
          */
-        bool isWithinMatrix(const int x, const int y) const override;
+        bool isWithinMatrix(int x, int y) const override;
 
         /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device
@@ -106,7 +101,7 @@ namespace allpix {
          *
          * @note The returned set should always also include the initial pixel indices the neighbors are calculated for
          */
-        std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, const size_t distance) const override;
+        std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, size_t distance) const override;
 
         /**
          * @brief Check if two pixel indices are neighbors to each other
@@ -115,16 +110,16 @@ namespace allpix {
          * @param distance  Distance for pixels to be considered neighbors
          * @return         Boolean whether pixels are neighbors or not
          */
-        bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const override;
+        bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, size_t distance) const override;
 
     private:
         // Transformations from axial coordinates to cartesian coordinates
-        const std::array<double, 4> transform_pointy_{std::sqrt(3.0), std::sqrt(3.0) / 2.0, 0.0, 3.0 / 2.0};
-        const std::array<double, 4> transform_flat_{3.0 / 2.0, 0.0, std::sqrt(3.0) / 2.0, std::sqrt(3.0)};
+        const std::array<double, 4> transform_pointy_{std::numbers::sqrt3, std::numbers::sqrt3 / 2.0, 0.0, 3.0 / 2.0};
+        const std::array<double, 4> transform_flat_{3.0 / 2.0, 0.0, std::numbers::sqrt3 / 2.0, std::numbers::sqrt3};
 
         // Inverse transformations, going from cartesian coordinates to axial coordinates
-        const std::array<double, 4> inv_transform_pointy_{std::sqrt(3.0) / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0};
-        const std::array<double, 4> inv_transform_flat_{2.0 / 3.0, 0.0, -1.0 / 3.0, std::sqrt(3.0) / 3.0};
+        const std::array<double, 4> inv_transform_pointy_{std::numbers::sqrt3 / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0};
+        const std::array<double, 4> inv_transform_flat_{2.0 / 3.0, 0.0, -1.0 / 3.0, std::numbers::sqrt3 / 3.0};
 
         /**
          * @brief Helper to calculate the center along x of a hexagon in cartesian coordinates
@@ -132,7 +127,7 @@ namespace allpix {
          * @param  y Axial row index
          * @return Position of the pixel center along x in cartesian coordinates
          */
-        double get_pixel_center_x(const int x, const int y) const;
+        double get_pixel_center_x(int x, int y) const;
 
         /**
          * @brief Helper to calculate the center along y of a hexagon in cartesian coordinates
@@ -140,7 +135,7 @@ namespace allpix {
          * @param  y Axial row index
          * @return Position of the pixel center along y in cartesian coordinates
          */
-        double get_pixel_center_y(const int x, const int y) const;
+        double get_pixel_center_y(int x, int y) const;
 
         /**
          * @brief Helper to determine the starting angle for the position of the first corner
