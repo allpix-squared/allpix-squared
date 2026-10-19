@@ -340,7 +340,7 @@ void GenericPropagationModule::initialize() {
     }
 
     // Prepare trapping model
-    trapping_ = Trapping(config_);
+    trapping_ = Trapping(config_, model_->getSensorSize().z());
 
     // Prepare trapping model
     detrapping_ = Detrapping(config_);
@@ -618,8 +618,9 @@ GenericPropagationModule::propagate(Event* event,
         }
 
         // Check if the charge carrier has been trapped:
+        const double dpos_drift = step.value.norm(); // RK drift step length (diffusion is applied later)
         if(state == CarrierState::MOTION &&
-           trapping_(type, uniform_distribution(event->getRandomEngine()), timestep, std::sqrt(efield.Mag2()))) {
+           trapping_(type, uniform_distribution(event->getRandomEngine()), timestep, std::sqrt(efield.Mag2()), dpos_drift)) {
             LOG(TRACE) << "Trapping charge " << charge << " at " << position.x() << "," << position.y() << ","
                        << position.z() << " and time " << runge_kutta.getTime();
             if(output_plots_) {
@@ -628,15 +629,14 @@ GenericPropagationModule::propagate(Event* event,
 
             auto detrap_time = detrapping_(type, uniform_distribution(event->getRandomEngine()), std::sqrt(efield.Mag2()));
             if((initial_time_local + runge_kutta.getTime() + detrap_time) < integration_time_) {
-                LOG(DEBUG) << "De-trapping charge carrier after " << Units::display(detrap_time, {"ns", "us"});
                 // De-trap and advance in time if still below integration time
+                LOG(DEBUG) << "De-trapping charge carrier after " << Units::display(detrap_time, {"ns", "us"});
                 runge_kutta.advanceTime(detrap_time);
 
                 if(output_plots_) {
                     detrapping_time_histo_->Fill(static_cast<double>(Units::convert(detrap_time, "ns")), charge);
                 }
             } else {
-                // Mark as trapped otherwise
                 state = CarrierState::TRAPPED;
             }
         }

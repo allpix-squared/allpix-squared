@@ -421,6 +421,79 @@ mobility_electron = 1000cm*cm/V/s
 mobility_hole = 50cm*cm/V/s
 ```
 
+## Diamond Mobility Model
+
+The diamond mobility model \[[@is-haqzai]\] parametrizes charge-carrier transport in intrinsic diamond as a function of the
+electric field strength $`E`$. It uses a piecewise (PW) model for electrons and the Caughey-Thomas (CT) model for holes.
+
+In the reference publication, the electron drift velocity is parametrized as
+
+```math
+v_{d,e}(E) =
+\begin{cases}
+\mu_{0,1,e} E, & E < E_{t,e}\\
+\frac{v_{s,e} E / E_{c,e}}{\left(1 + \left(E / E_{c,e}\right)^{\beta_e}\right)^{1 / \beta_e}},
+& E \geq E_{t,e}
+\end{cases}
+```
+
+where $`\mu_{0,1,e}`$ is the low-field mobility, $`E_{t,e}`$ is the transition field, $`v_{s,e}`$ is the saturation
+velocity, $`E_{c,e}`$ is the critical field, and $`\beta_e`$ is a shaping parameter.
+
+For holes, the drift velocity is parametrized using the Caughey-Thomas model as
+
+```math
+v_{d,h}(E) =
+\frac{v_{s,h} E / E_{c,h}}{\left(1 + \left(E / E_{c,h}\right)^{\beta_h}\right)^{1 / \beta_h}} .
+```
+
+Since Allpix Squared uses the mobility in the propagation modules, the drift-velocity parametrization is implemented in terms
+of the effective mobility
+
+```math
+\mu(E) = \frac{v_d(E)}{E}.
+```
+
+The implemented electron mobility is therefore
+
+```math
+\mu_e(E) =
+\begin{cases}
+\mu_{0,1,e}, & E < E_{t,e} \\
+\\
+\frac{v_{s,e} / E_{c,e}}{\left(1 + \left(E / E_{c,e}\right)^{\beta_e}\right)^{1 / \beta_e}},
+& E \geq E_{t,e}
+\end{cases}
+```
+
+and the implemented hole mobility is
+
+```math
+\mu_h(E) =
+\frac{v_{s,h} / E_{c,h}}{\left(1 + \left(E / E_{c,h}\right)^{\beta_h}\right)^{1 / \beta_h}} .
+```
+
+The parameter values implemented in Allpix Squared are taken from the recommended full electric-field range fit of
+\[[@is-haqzai]\] as
+
+```math
+\begin{aligned}
+\mu_{0,1,e} &= 1879.59 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \\
+E_{t,e}     &= 0.08 \,\text{V}\,\mu\text{m}^{-1} \\
+v_{s,e}     &= 26.59\times 10^6 \,\text{cm}\,\text{s}^{-1} \\
+E_{c,e}     &= 0.56 \,\text{V}\,\mu\text{m}^{-1} \\
+\beta_e     &= 0.41 \\
+\\
+v_{s,h}     &= 15.09\times 10^6 \,\text{cm}\,\text{s}^{-1} \\
+E_{c,h}     &= 0.55 \,\text{V}\,\mu\text{m}^{-1} \\
+\beta_h     &= 0.88
+\end{aligned}
+```
+
+for electrons and holes, respectively.
+
+This model can be selected in the configuration file via the parameter `mobility_model = "diamond"`.
+
 ## Custom Mobility Models
 
 Allpix Squared provides the possibility to use fully custom mobility models. In order to use a custom model, the parameter
@@ -483,3 +556,4 @@ all corresponding features, mathematical expressions and constants.
 [@LandoltBornstein]: https://doi.org/10.1007/b80447
 [@Levinshtein]: https://doi.org/10.1016/S0038-1101(02)00256-3
 [@rootformula]: https://root.cern.ch/doc/master/classTFormula.html
+[@is-haqzai]: https://doi.org/10.1016/j.diamond.2026.113558

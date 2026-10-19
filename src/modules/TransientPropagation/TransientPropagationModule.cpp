@@ -11,6 +11,11 @@
 
 #include "TransientPropagationModule.hpp"
 
+#include <Eigen/Core>
+#include <Math/Point3Dfwd.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TProfile.h>
 #include <cmath>
 #include <cstddef>
 #include <functional>
@@ -22,12 +27,6 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-
-#include <Eigen/Core>
-#include <Math/Point3Dfwd.h>
-#include <TH1.h>
-#include <TH2.h>
-#include <TProfile.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
@@ -164,7 +163,7 @@ void TransientPropagationModule::initialize() {
     recombination_ = Recombination(config_, detector_->hasDopingProfile());
 
     // Prepare trapping model
-    trapping_ = Trapping(config_);
+    trapping_ = Trapping(config_, model_->getSensorSize().z());
 
     // Prepare detrapping model
     detrapping_ = Detrapping(config_);
@@ -462,7 +461,8 @@ void TransientPropagationModule::run(Event* event) {
 
         auto charge_per_step = charge_per_step_;
         if(max_charge_groups_ > 0 && deposit.getCharge() / charge_per_step > max_charge_groups_) {
-            charge_per_step = static_cast<unsigned int>(ceil(static_cast<double>(deposit.getCharge()) / max_charge_groups_));
+            charge_per_step =
+                static_cast<unsigned int>(std::ceil(static_cast<double>(deposit.getCharge()) / max_charge_groups_));
             deposits_exceeding_max_groups_++;
             LOG(INFO) << "Deposited charge: " << deposit.getCharge()
                       << ", which exceeds the maximum number of charge groups allowed. Increasing charge_per_step to "
@@ -536,6 +536,7 @@ void TransientPropagationModule::run(Event* event) {
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
 std::tuple<unsigned int, unsigned int, unsigned int>
+// NOLINTNEXTLINE(misc-no-recursion)
 TransientPropagationModule::propagate(Event* event,
                                       const DepositedCharge& deposit,
                                       const ROOT::Math::XYZPoint& pos,
@@ -718,8 +719,10 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         // Check if the charge carrier has been trapped:
+        const double dpos_drift = step.value.norm(); // drift-only distance in this RK step
         if(state == CarrierState::MOTION &&
-           trapping_(type, uniform_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()))) {
+           trapping_(
+               type, uniform_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()), dpos_drift)) {
             LOG(TRACE) << "Trapping charge " << charge << " at " << position.x() << "," << position.y() << ","
                        << position.z() << " and time " << runge_kutta.getTime();
             if(output_plots_) {
@@ -810,9 +813,10 @@ TransientPropagationModule::propagate(Event* event,
         auto idx = Pixel::Index(xpixel, ypixel);
         auto neighbors = model_->getNeighbors(idx, distance_);
 
-        // If the charge carrier crossed pixel boundaries, ensure that we always calculate the induced current for both of
-        // them by extending the induction matrix temporarily. Otherwise we end up doing "double-counting" because we would
-        // only jump "into" a pixel but never "out". At the border of the induction matrix, this would create an imbalance.
+        // If the charge carrier crossed pixel boundaries, ensure that we always calculate the induced current for both
+        // of them by extending the induction matrix temporarily. Otherwise we end up doing "double-counting" because we
+        // would only jump "into" a pixel but never "out". At the border of the induction matrix, this would create an
+        // imbalance.
         if(last_xpixel != xpixel || last_ypixel != ypixel) {
             auto last_idx = Pixel::Index(last_xpixel, last_ypixel);
             neighbors.merge(model_->getNeighbors(last_idx, distance_));
@@ -891,7 +895,7 @@ TransientPropagationModule::propagate(Event* event,
     }
 
     if(output_plots_ && !multiplication_.is<NoImpactIonization>()) {
-        auto gain = charge / initial_charge;
+        const auto gain = static_cast<double>(charge) / static_cast<double>(initial_charge);
         if(level == 0) {
             gain_primary_histo_->Fill(gain, initial_charge);
             if(type == CarrierType::ELECTRON) {

@@ -26,7 +26,11 @@ namespace allpix {
      * @ingroup Exceptions
      * @brief Base class for all model exceptions in the framework.
      */
-    class ModelError : public RuntimeError {};
+    class ModelError : public RuntimeError {
+    public:
+        using RuntimeError::RuntimeError; // inherit RuntimeError(...) constructors
+        ModelError() = default;
+    };
 
     /**
      * @ingroup Exceptions

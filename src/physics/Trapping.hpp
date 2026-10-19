@@ -16,6 +16,12 @@
 
 #include "exceptions.h"
 
+#include <algorithm>
+#include <cctype>
+#include <cmath>
+#include <limits>
+#include <memory>
+#include <string>
 #include "core/config/Configuration.hpp"
 #include "core/log/log.h"
 #include "core/utils/unit.h"
@@ -50,7 +56,14 @@ namespace allpix {
         virtual bool operator()(const CarrierType& type, double probability, double timestep, double) const {
             return probability <
                    (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_)));
-        };
+        }
+
+        // new interface for time + step length - d
+        virtual bool operator()(
+            const CarrierType& type, double probability, double timestep, double efield_mag, double /* dx_drift */) const {
+            // default: ignore dx_drift and fall back to old behavior
+            return (*this)(type, probability, timestep, efield_mag);
+        }
 
     protected:
         double tau_eff_electron_{std::numeric_limits<double>::max()};
@@ -143,6 +156,129 @@ namespace allpix {
 
     /**
      * @ingroup PhysicsModels
+     * @brief Polycrystalline diamond trapping model based on charge collection distance (CCD)
+     *  https://doi.org/10.48550/arXiv.2603.13146
+     * This model derives effective electron and hole trapping lengths from the
+     * sensor thickness and the input charge collection distance (CCD), assuming
+     * a fixed ratio (configurable) between hole and electron trapping lengths (mean drift path).
+     *
+     * The CCD is described using the Hecht relation, and the resulting trapping
+     * lengths are used to calculate the carrier trapping probability during drift.
+     *
+     * Hole trapping lengths are related to electron trapping lengths via
+     * lambda_h / lambda_e = r.
+     */
+
+    class PCDiamond : virtual public TrappingModel {
+    public:
+        // ccd and thickness must be in the SAME length units as dx_drift (Allpix internal length units)
+        PCDiamond(double ccd, double thickness, double lambda_ratio_h_over_e = 1.3)
+            : thickness_(thickness), ratio_(lambda_ratio_h_over_e) {
+
+            if(thickness_ <= 0) {
+                throw ModelError("pcdiamond trapping: sensor thickness must be > 0");
+            }
+            if(ccd <= 0) {
+                // CCD<=0 means essentially fully trapped immediately
+                lambda_electron_ = 0;
+                lambda_hole_ = 0;
+                return;
+            }
+            if(ccd >= thickness_) {
+                // Ideal full collection limit
+                no_trapping_ = true;
+                return;
+            }
+            if(ratio_ <= 0) {
+                throw ModelError("pcdiamond trapping: lambda_ratio_h_over_e must be > 0");
+            }
+
+            solve_lambdas_from_ccd(ccd);
+        }
+
+        using TrappingModel::operator();
+
+        bool operator()(const CarrierType& type,
+                        double probability,
+                        double /*timestep*/,
+                        double /*efield_mag*/,
+                        double dx_drift) const override {
+            if(no_trapping_) {
+                return false; // carrier is not trapped
+            }
+
+            const double lambda = (type == CarrierType::ELECTRON ? lambda_electron_ : lambda_hole_);
+            if(lambda <= 0) {
+                return true; // immediate trapping
+            }
+            return probability < (1.0 - std::exp(-dx_drift / lambda));
+        }
+
+    private:
+        bool no_trapping_{false};
+
+        double thickness_{};
+        double ratio_{1.3};
+
+        double lambda_electron_{};
+        double lambda_hole_{};
+
+        // Hecht contribution for one carrier (matches pcdiamond equation).
+        // contribution = λ * [ 1 - (λ/t) * (1 - exp(-t/λ)) ]
+        static double hecht_contrib(double lambda, double t) {
+            if(lambda <= 0) {
+                return 0.0;
+            }
+            // 1 - exp(-t/lambda) computation
+            const double one_minus_exp = -std::expm1(-t / lambda);
+            return lambda * (1.0 - (lambda / t) * one_minus_exp);
+        }
+
+        void solve_lambdas_from_ccd(double ccd) {
+            auto f = [&](double lambda_e) {
+                const double lambda_h = ratio_ * lambda_e;
+                return hecht_contrib(lambda_e, thickness_) + hecht_contrib(lambda_h, thickness_) - ccd;
+            };
+
+            // Choosing initial bounds such that the solution lies between,
+            // f(low) < 0 and f(high) > 0
+            double low = 1e-15 * thickness_;
+            double high = 1e6 * thickness_;
+
+            // If even a very small lambda already overshoots the target CCD,
+            // treat this as the extremely small-CCD limit.
+            if(f(low) > 0) {
+
+                lambda_electron_ = low;
+                lambda_hole_ = ratio_ * lambda_electron_;
+                return;
+            }
+            // Increase the upper bound until it lies above the solution.
+            while(f(high) < 0) {
+                high *= 2.0;
+                if(high > 1e18 * thickness_) {
+                    // No valid solution found within a reasonable range.
+                    throw ModelError("pcdiamond trapping: could not solve lambdas from CCD (check units/values)");
+                }
+            }
+
+            // Repeatedly halving the interval to locate the solution.
+            for(int i = 0; i < 200; ++i) {
+                const double mid = 0.5 * (low + high);
+                if(f(mid) > 0) {
+                    high = mid;
+                } else {
+                    low = mid;
+                }
+            }
+            // Setting the final electron and hole trapping lengths (mean drift paths)
+            lambda_electron_ = 0.5 * (low + high);
+            lambda_hole_ = ratio_ * lambda_electron_;
+        }
+    };
+
+    /**
+     * @ingroup PhysicsModels
      * @brief Custom trapping model for charge carriers
      */
     class CustomTrapping : virtual public TrappingModel {
@@ -207,11 +343,13 @@ namespace allpix {
         /**
          * Trapping model constructor
          * @param config Configuration of the calling module
+         * @param sensor_thickness Thickness of the sensor, used by the pcdiamond trapping model
          */
-        explicit Trapping(const Configuration& config) {
+        explicit Trapping(const Configuration& config, double sensor_thickness) {
             try {
                 auto model = config.get<std::string>("trapping_model", "none");
-                std::transform(model.begin(), model.end(), model.begin(), ::tolower);
+                std::ranges::transform(
+                    model, model.begin(), [](unsigned char c) noexcept { return static_cast<char>(std::tolower(c)); });
                 auto temperature = config.get<double>("temperature");
                 auto fluence = config.get<double>("fluence", 0);
 
@@ -229,6 +367,13 @@ namespace allpix {
                     model_ = std::make_unique<CMSTracker>(fluence);
                 } else if(model == "mandic" || model == "ljubljana_highfluence") {
                     model_ = std::make_unique<Mandic>(fluence);
+                } else if(model == "pcdiamond") {
+                    model_ = std::make_unique<PCDiamond>(
+                        config.get<double>("pcdiamond_ccd"),
+                        sensor_thickness,
+                        config.get<double>("pcdiamond_lambda_ratio",
+                                           1.3) //  the assumed ratio of h-drift distance to e-drift distance
+                    );
                 } else if(model == "constant") {
                     model_ = std::make_unique<ConstantTrapping>(config.get<double>("trapping_time_electron"),
                                                                 config.get<double>("trapping_time_hole"));
