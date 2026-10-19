@@ -70,10 +70,10 @@ namespace allpix {
     class NoImpactIonization : virtual public ImpactIonizationModel {
     public:
         NoImpactIonization() : ImpactIonizationModel(std::numeric_limits<double>::max()) {};
-        double operator()(const CarrierType&, double /*efield_mag*/, double /*step*/) const override { return 1.; };
+        double operator()(const CarrierType& /*type*/, double /*efield_mag*/, double /*step*/) const override { return 1.; };
 
-    private:
-        double gain_factor(const CarrierType&, double /*efield_mag*/) const override { return 1.; };
+    protected:
+        double gain_factor(const CarrierType& /*type*/, double /*efield_mag*/) const override { return 1.; };
     };
 
     /**
@@ -93,7 +93,7 @@ namespace allpix {
               hole_a_(Units::get(1.13e6, "/cm")),
               hole_b_(Units::get(1.71e6, "V/cm") + (Units::get(1.09e3, "V/cm/K") * temperature)) {}
 
-    private:
+    protected:
         double gain_factor(const CarrierType& type, double efield_mag) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_a_ * std::exp(-1. * electron_b_ / efield_mag);
@@ -150,7 +150,7 @@ namespace allpix {
               hole_a_high_(Units::get(6.71e5, "/cm")), hole_b_low_(Units::get(2.036e6, "V/cm")),
               hole_b_high_(Units::get(1.693e6, "V/cm")) {}
 
-    private:
+    protected:
         double gain_factor(const CarrierType& type, double efield_mag) const override {
             if(type == CarrierType::ELECTRON) {
                 return gamma_ * electron_a_ * std::exp(-(gamma_ * electron_b_ / efield_mag));
@@ -216,7 +216,7 @@ namespace allpix {
               hole_ac_(Units::get(0.243, "/V") * (1. + 5.35e-4 * (temperature - 300))),
               hole_bd_(Units::get(6.53e5, "V/cm") * (1. + 5.67e-4 * (temperature - 300))) {}
 
-    private:
+    protected:
         double gain_factor(const CarrierType& type, double efield_mag) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_ac_ * efield_mag * std::exp(-1 * electron_bd_ * electron_bd_ / efield_mag / efield_mag);
@@ -273,7 +273,7 @@ namespace allpix {
               hole_d_(Units::get(1.4043e6, "V/cm") + (Units::get(2.9744e3, "V/cm") * temperature) +
                       (Units::get(1.4829, "V/cm") * std::pow(temperature, 2))) {}
 
-    private:
+    protected:
         double gain_factor(const CarrierType& type, double efield_mag) const override {
             if(type == CarrierType::ELECTRON) {
                 return efield_mag / (electron_a_ + electron_b_ * std::exp(electron_d_ / (efield_mag + electron_c_)));
@@ -303,6 +303,7 @@ namespace allpix {
             hole_gain_ = configure_gain(config, CarrierType::HOLE);
         };
 
+    protected:
         double gain_factor(const CarrierType& type, double efield_mag) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_gain_->Eval(efield_mag);

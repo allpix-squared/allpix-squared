@@ -488,15 +488,15 @@ namespace allpix {
 
         double operator()(const CarrierType& type, double temperature, double doping) const override {
             if(type == CarrierType::ELECTRON) {
-                double B =
+                const double electron_B =
                     (electron_mumin_ + electron_mumax_ * std::pow(electron_nref_ / std::fabs(doping), electron_gamma_)) /
                     (electron_mumax_ - electron_mumin_);
-                return electron_mumax_ / (1 / (B * electron_t_beta_) + electron_t_alpha_);
+                return electron_mumax_ / (1 / (electron_B * electron_t_beta_) + electron_t_alpha_);
             }
 
-            double B = (hole_mumin_ + hole_mumax_ * std::pow(hole_nref_ / std::fabs(doping), hole_gamma_)) /
-                       (hole_mumax_ - hole_mumin_);
-            return hole_mumax_ / (1 / B + std::pow(temperature / 300, hole_t_alpha_));
+            const double hole_B = (hole_mumin_ + hole_mumax_ * std::pow(hole_nref_ / std::fabs(doping), hole_gamma_)) /
+                                  (hole_mumax_ - hole_mumin_);
+            return hole_mumax_ / (1 / hole_B + std::pow(temperature / 300, hole_t_alpha_));
         };
 
     private:

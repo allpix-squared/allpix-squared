@@ -90,7 +90,7 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
         }
         vis_manager_g4_->GetCurrentViewer()->ShowView();
         if(str.has_value()) {
-            setenv("G4VRMLFILE_VIEWER", str.value().c_str(), 1); // NOLINT(concurrency-mt-unsafe)
+            setenv("G4VRMLFILE_VIEWER", str.value_or("").c_str(), 1); // NOLINT(concurrency-mt-unsafe)
         }
     }
 }
