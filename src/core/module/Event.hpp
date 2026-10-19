@@ -18,6 +18,8 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
+#include <random>
 #include <vector>
 
 #include "core/utils/prng.h"
@@ -111,8 +113,8 @@ namespace allpix {
         // Seed for random number generator
         uint64_t seed_;
 
-        // State of the random number generator
-        std::stringstream state_;
+        // Stored state of the random number generator, copied as binary engine state
+        std::optional<std::mt19937_64> state_;
 
         /**
          * @brief Returns a pointer to the event local messenger
@@ -121,9 +123,6 @@ namespace allpix {
 
         // Local messenger used to dispatch messages in this event
         std::unique_ptr<LocalMessenger> local_messenger_;
-
-        // Mutex for execution time
-        static std::mutex stats_mutex_;
     };
 
 } // namespace allpix
