@@ -56,8 +56,9 @@ namespace allpix {
 
         /**
          * @brief Deposit charge carriers for every simulated event
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
     private:
         /**
@@ -87,7 +88,7 @@ namespace allpix {
         Messenger* messenger_;
 
         std::shared_ptr<Detector> detector_;
-        std::shared_ptr<allpix::DetectorModel> detector_model_;
+        std::shared_ptr<const DetectorModel> detector_model_;
 
         DepositionModel model_;
         SourceType type_;

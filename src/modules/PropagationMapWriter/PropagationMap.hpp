@@ -36,7 +36,7 @@ namespace allpix {
         /**
          * @brief Constructs a propagation map
          */
-        PropagationMap(const std::shared_ptr<DetectorModel>& model,
+        PropagationMap(const std::shared_ptr<const DetectorModel>& model,
                        std::array<size_t, 3> bins,
                        std::array<double, 3> size,
                        FieldMapping mapping,

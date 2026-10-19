@@ -736,10 +736,11 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
                 this->module_execution_time_[module.get()] += duration;
 
                 if(plot) {
-                    const std::scoped_lock stat_lock{Event::stats_mutex_};
+                    // No lock required: the map is not altered after initialization and the histograms are threaded, i.e.
+                    // each worker fills its own thread-local instance.
                     event_time += duration;
-                    this->module_event_time_[module.get()]->Fill(
-                        std::chrono::duration<double>(std::chrono::nanoseconds(duration)).count());
+                    this->module_event_time_.at(module.get())
+                        ->Fill(std::chrono::duration<double>(std::chrono::nanoseconds(duration)).count());
                 }
 
                 if(abort) {

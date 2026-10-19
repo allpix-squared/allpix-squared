@@ -63,8 +63,9 @@ namespace allpix {
 
         /**
          * @brief Propagate all deposited charges through the sensor
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Write statistical summary and histograms
@@ -76,7 +77,7 @@ namespace allpix {
 
         // General module members
         std::shared_ptr<const Detector> detector_;
-        std::shared_ptr<DetectorModel> model_;
+        std::shared_ptr<const DetectorModel> model_;
 
         /**
          * @brief Propagate a single set of charges through the sensor

@@ -25,8 +25,6 @@
 
 using namespace allpix;
 
-std::mutex Event::stats_mutex_;
-
 Event::Event(Messenger& messenger, uint64_t event_num, uint64_t seed) : number(event_num), seed_(seed) {
     local_messenger_ = std::make_unique<LocalMessenger>(messenger);
 }
@@ -44,17 +42,18 @@ RandomNumberGenerator& Event::getRandomEngine() {
 }
 
 void Event::store_random_engine_state() {
-    if(random_engine_ != nullptr && state_.rdbuf()->in_avail() == 0) {
+    if(random_engine_ != nullptr && !state_.has_value()) {
         LOG(PRNG) << "Storing PRNG state in event";
-        state_ << *random_engine_;
+        // Copy the engine state directly instead of serializing it to text
+        state_.emplace(static_cast<const std::mt19937_64&>(*random_engine_));
     }
 }
 
 void Event::restore_random_engine_state() {
-    if(random_engine_ != nullptr && state_.rdbuf()->in_avail() != 0) {
+    if(random_engine_ != nullptr && state_.has_value()) {
         LOG(PRNG) << "Restoring PRNG state from event";
-        state_ >> *random_engine_;
-        state_.clear();
+        static_cast<std::mt19937_64&>(*random_engine_) = state_.value();
+        state_.reset();
     }
 }
 

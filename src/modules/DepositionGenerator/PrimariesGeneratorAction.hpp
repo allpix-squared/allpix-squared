@@ -36,7 +36,7 @@ namespace allpix {
         /**
          * @brief Generate the particle for every event
          */
-        void GeneratePrimaries(G4Event*) override;
+        void GeneratePrimaries(G4Event* event) override;
 
     private:
         /**

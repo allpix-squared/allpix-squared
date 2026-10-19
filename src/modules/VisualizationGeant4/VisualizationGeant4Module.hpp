@@ -72,7 +72,7 @@ namespace allpix {
         /**
          * @brief Show visualization updates if not accumulating data
          */
-        void run(Event*) override;
+        void run(Event* /*event*/) override;
 
         /**
          * @brief Possibly start GUI or terminal and display the visualization

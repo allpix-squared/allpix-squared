@@ -50,7 +50,7 @@ namespace allpix {
         }
 #endif
 
-        TDirectory::TContext ctxt(directories_[0]);
+        const auto ctxt = TDirectory::TContext(directories_[0]);
         model_.reset(ROOT::Internal::TThreadedObjectUtils::Detacher<T>::Detach(new T(std::forward<ARGS>(args)...)));
 
         // initialize at least the base object
@@ -118,7 +118,7 @@ namespace allpix {
     }
 
     template <typename T> requires std::derived_from<T, TH1> void ThreadedHistogram<T>::merge() {
-        ROOT::TThreadedObjectUtils::MergeFunctionType<T> mergeFunction = ROOT::TThreadedObjectUtils::MergeTObjects<T>;
+        const ROOT::TThreadedObjectUtils::MergeFunctionType<T> mergeFunction = ROOT::TThreadedObjectUtils::MergeTObjects<T>;
         if(is_merged_) {
             return;
         }

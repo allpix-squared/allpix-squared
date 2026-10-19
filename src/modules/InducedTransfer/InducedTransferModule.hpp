@@ -48,14 +48,15 @@ namespace allpix {
 
         /**
          * @brief Calculation of the individual total induced charge and combination for all pixels
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
     private:
         Messenger* messenger_;
 
         std::shared_ptr<Detector> detector_;
-        std::shared_ptr<DetectorModel> model_;
+        std::shared_ptr<const DetectorModel> model_;
 
         // Distance of pixels taken into account for induction
         unsigned int distance_;

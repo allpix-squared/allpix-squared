@@ -71,8 +71,9 @@ namespace allpix {
 
         /**
          * @brief Deposit charges for a single event
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Cleanup \ref MTRunManager for each thread

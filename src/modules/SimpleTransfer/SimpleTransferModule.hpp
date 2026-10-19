@@ -55,8 +55,9 @@ namespace allpix {
 
         /**
          * @brief Transfer the propagated charges to the pixels
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Display statistical summary
@@ -67,7 +68,7 @@ namespace allpix {
         Messenger* messenger_;
 
         std::shared_ptr<Detector> detector_;
-        std::shared_ptr<DetectorModel> model_;
+        std::shared_ptr<const DetectorModel> model_;
 
         Histogram<TH1D> drift_time_histo;
 

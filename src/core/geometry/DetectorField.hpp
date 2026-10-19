@@ -183,7 +183,7 @@ namespace allpix {
          * @brief Set the detector model this field is used for
          * @param model The detector model
          */
-        void setModel(const std::shared_ptr<DetectorModel>& model) { model_ = model; }
+        void setModel(const std::shared_ptr<const DetectorModel>& model) { model_ = model; }
 
     protected:
         /**
@@ -233,10 +233,11 @@ namespace allpix {
 
         /**
          * @brief Fast floor-to-int implementation without overflow protection as std::floor
+         * @note Implicitly inlined since defined in the class definition
          * @param x Double-precision floating point value
          * @return Integer floored towards negative infinity
          * */
-        static inline int int_floor(double x) noexcept {
+        static int int_floor(double x) noexcept {
             auto i = static_cast<int>(x);
             return i - static_cast<int>(static_cast<double>(i) > x);
         };
@@ -272,7 +273,7 @@ namespace allpix {
         /*
          * Relevant parameters from the detector model for this field
          */
-        std::shared_ptr<DetectorModel> model_;
+        std::shared_ptr<const DetectorModel> model_;
     };
 } // namespace allpix
 

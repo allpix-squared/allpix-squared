@@ -81,7 +81,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         LOG(DEBUG) << " Global position and orientation of the detector:";
 
         // Build a radial wrapper if radial_strip model is used, otherwise build a box wrapper
-        auto radial_model = std::dynamic_pointer_cast<RadialStripDetectorModel>(model);
+        auto radial_model = std::dynamic_pointer_cast<const RadialStripDetectorModel>(model);
         if(radial_model != nullptr) {
             // Create the base cylindrical section; wider than the requested dimensions to account for the stereo angle
             auto* wrapper_base_tub = new G4Tubs("wrapper_base" + name,

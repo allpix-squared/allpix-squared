@@ -49,8 +49,9 @@ namespace allpix {
 
         /**
          * @brief Combine pulses from propagated charges and transfer them to the pixels
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
     private:
         bool output_plots_{}, output_pulsegraphs_{};

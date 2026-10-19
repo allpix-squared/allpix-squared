@@ -58,8 +58,9 @@ namespace allpix {
 
         /**
          * @brief Projection of the electrons to the surface
+         * @param event Pointer to the event the module is running
          */
-        void run(Event*) override;
+        void run(Event* event) override;
 
         /**
          * @brief Write plots if needed
@@ -69,7 +70,7 @@ namespace allpix {
     private:
         Messenger* messenger_;
         std::shared_ptr<const Detector> detector_;
-        std::shared_ptr<DetectorModel> model_;
+        std::shared_ptr<const DetectorModel> model_;
 
         // Config parameters
         bool output_plots_{}, output_linegraphs_{};
