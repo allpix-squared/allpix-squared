@@ -397,9 +397,7 @@ void GenericPropagationModule::run(Event* event) {
         }
         while(charges_remaining > 0) {
             // Define number of charges to be propagated and remove charges of this step from the total
-            if(charge_per_step > charges_remaining) {
-                charge_per_step = charges_remaining;
-            }
+            charge_per_step = std::min(charges_remaining, charge_per_step);
             charges_remaining -= charge_per_step;
 
             // Propagate a single charge deposit

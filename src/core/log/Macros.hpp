@@ -78,7 +78,7 @@
  */
 #define LOG_N(level, max_log_count)                                                                                         \
     GENERATE_LOG_VAR(max_log_count);                                                                                        \
-    if(!(GET_LOG_VARIABLE() > 0 && ::allpix::log_context::active().shouldLog(::allpix::Level::level))) {                    \
+    if(GET_LOG_VARIABLE() <= 0 || !::allpix::log_context::active().shouldLog(::allpix::Level::level)) {                     \
     } else /* NOLINT(readability-inconsistent-ifelse-braces) */                                                             \
         ::allpix::log_context::active().log(::allpix::Level::level, std::source_location::current())                        \
             << ((--GET_LOG_VARIABLE() == 0) ? "[further messages suppressed] " : "")

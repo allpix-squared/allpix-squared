@@ -17,7 +17,6 @@
 #include <cstring>
 #include <memory>
 #include <set>
-#include <stdlib.h>
 #include <string>
 #include <thread>
 #include <vector>
@@ -45,6 +44,7 @@
 #include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 #include "core/module/exceptions.h"
+#include "core/utils/env.h"
 #include "core/utils/unit.h"
 #include "tools/geant4/G4LoggingDestination.hpp"
 
@@ -84,13 +84,13 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
     if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr && driver == "VRML2FILE") {
         LOG(TRACE) << "Invoking VRML workaround to prevent visualization under error conditions";
 
-        auto* str = getenv("G4VRMLFILE_VIEWER");
-        if(str != nullptr) {
-            setenv("G4VRMLFILE_VIEWER", "NONE", 1);
+        auto str = getenv("G4VRMLFILE_VIEWER");
+        if(str.has_value()) {
+            setenv("G4VRMLFILE_VIEWER", "NONE", 1); // NOLINT(concurrency-mt-unsafe)
         }
         vis_manager_g4_->GetCurrentViewer()->ShowView();
-        if(str != nullptr) {
-            setenv("G4VRMLFILE_VIEWER", str, 1);
+        if(str.has_value()) {
+            setenv("G4VRMLFILE_VIEWER", str.value().c_str(), 1); // NOLINT(concurrency-mt-unsafe)
         }
     }
 }
@@ -98,7 +98,7 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
 void VisualizationGeant4Module::initialize() {
 
     // Check if we have a running G4 manager
-    G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
+    const auto* run_manager_g4 = G4RunManager::GetRunManager();
     if(run_manager_g4 == nullptr) {
         throw ModuleError("Cannot visualize using Geant4 without a Geant4 geometry builder");
     }
@@ -139,7 +139,7 @@ void VisualizationGeant4Module::initialize() {
         std::set<G4String> candidates;
         for(auto* system : vis_manager_g4_->GetAvailableGraphicsSystems()) {
             for(const auto& nickname : system->GetNicknames()) {
-                if(nickname.find("FALLBACK") == std::string::npos) {
+                if(G4StrUtil::contains(nickname, "FALLBACK")) {
                     candidates.insert(nickname);
                 }
             }
@@ -418,8 +418,8 @@ void VisualizationGeant4Module::run(Event* /*event*/) {
     }
 }
 
-static bool has_gui = false;
-static void (*prev_handler)(int) = nullptr;
+static bool has_gui = false;                // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+static void (*prev_handler)(int) = nullptr; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 /**
  * @brief Override interrupt handling to close the Qt application in GUI mode
  */
@@ -432,8 +432,8 @@ static void interrupt_handler(int signal) {
     }
 #endif
 
-    std::signal(SIGINT, prev_handler);
-    std::raise(signal);
+    std::signal(SIGINT, prev_handler); // NOLINT(cert-err33-c)
+    std::raise(signal);                // NOLINT(cert-err33-c)
 }
 
 void VisualizationGeant4Module::add_visualization_volumes() {

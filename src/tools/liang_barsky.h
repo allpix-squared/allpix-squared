@@ -50,7 +50,9 @@ namespace allpix {
                         t0 = numerator / denominator;
                     }
                     return true;
-                } else if(denominator < 0) {
+                }
+
+                if(denominator < 0) {
                     if(numerator > denominator * t0) {
                         return false;
                     }
@@ -58,19 +60,19 @@ namespace allpix {
                         t1 = numerator / denominator;
                     }
                     return true;
-                } else {
-                    return numerator <= 0;
                 }
+
+                return numerator <= 0;
             };
 
             // Clip the particle track against the six possible box faces
             double t0 = std::numeric_limits<double>::lowest(), t1 = std::numeric_limits<double>::max();
-            bool intersect = clip(direction.X(), -position.X() - box.X() / 2, t0, t1) &&
-                             clip(-direction.X(), position.X() - box.X() / 2, t0, t1) &&
-                             clip(direction.Y(), -position.Y() - box.Y() / 2, t0, t1) &&
-                             clip(-direction.Y(), position.Y() - box.Y() / 2, t0, t1) &&
-                             clip(direction.Z(), -position.Z() - box.Z() / 2, t0, t1) &&
-                             clip(-direction.Z(), position.Z() - box.Z() / 2, t0, t1);
+            const bool intersect = clip(direction.X(), -position.X() - box.X() / 2, t0, t1) &&
+                                   clip(-direction.X(), position.X() - box.X() / 2, t0, t1) &&
+                                   clip(direction.Y(), -position.Y() - box.Y() / 2, t0, t1) &&
+                                   clip(-direction.Y(), position.Y() - box.Y() / 2, t0, t1) &&
+                                   clip(direction.Z(), -position.Z() - box.Z() / 2, t0, t1) &&
+                                   clip(-direction.Z(), position.Z() - box.Z() / 2, t0, t1);
 
             if(intersect) {
                 return std::make_pair(t0, t1);
@@ -101,9 +103,13 @@ namespace allpix {
             auto [t0, t1] = intersect.value();
             if(t0 > 0 && t1 > 0) {
                 return (position + std::min(t0, t1) * direction);
-            } else if(t0 > 0) {
+            }
+
+            if(t0 > 0) {
                 return (position + t0 * direction);
-            } else if(t1 > 0) {
+            }
+
+            if(t1 > 0) {
                 return (position + t1 * direction);
             }
 
