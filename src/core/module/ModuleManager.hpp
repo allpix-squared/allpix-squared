@@ -24,6 +24,7 @@
 #include <TH1D.h>
 
 #include "Module.hpp"
+#include "RunStatistics.hpp"
 #include "ThreadPool.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/histograms/HistogramManager.hpp"
@@ -132,6 +133,13 @@ namespace allpix {
         std::tuple<std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t> getEventCounts() const;
 
         /**
+         * @brief Statistics of the simulation: stage times, event counters, remaining time, event rate, module times, ...
+         * @details Can be queried at any time and from any thread, also while the simulation is running.
+         * @return Reference to the run statistics owned by this manager
+         */
+        const RunStatistics& getRunStatistics() const { return statistics_; }
+
+        /**
          * @brief Static method to return the Allpix Squared version of this manager
          * @return Allpix Squared version
          */
@@ -168,14 +176,8 @@ namespace allpix {
 
         HistogramManager* histogram_manager_{};
 
-        // Duration in ns
-        std::map<Module*, std::atomic_int64_t> module_execution_time_;
-        std::map<Module*, Histogram<TH1D>> module_event_time_;
-        Histogram<TH1D> event_time_;
-        Histogram<TH1D> buffer_fill_level_;
-
-        // Durations in ns
-        uint64_t initialize_time_{}, run_time_{}, finalize_time_{};
+        // Times of all stages, event counters, module execution times and performance histograms
+        RunStatistics statistics_;
 
         std::map<std::string, void*> loaded_libraries_;
 
@@ -185,12 +187,6 @@ namespace allpix {
 
         // The thread pool used in the run method
         std::unique_ptr<ThreadPool> thread_pool_{nullptr};
-
-        // Event counters
-        std::atomic<uint64_t> events_total_;
-        std::atomic<uint64_t> events_buffered_;
-        std::atomic<uint64_t> events_finished_;
-        std::atomic<uint64_t> events_aborted_;
 
         // User defined multithreading flags and parameters from configuration
         bool multithreading_flag_{false};

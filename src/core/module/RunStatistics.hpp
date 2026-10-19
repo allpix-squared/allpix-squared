@@ -117,8 +117,6 @@ namespace allpix {
         uint64_t getFinishedEvents() const { return finished_.load(std::memory_order_relaxed); }
         uint64_t getBufferedEvents() const { return buffered_.load(std::memory_order_relaxed); }
         uint64_t getAbortedEvents() const { return aborted_.load(std::memory_order_relaxed); }
-        // Events which are done, either finished or aborted. The run is complete when this reaches the total.
-        uint64_t getProcessedEvents() const { return progress_->done(); }
 
         /**
          * @brief Retrieve all event counts at once

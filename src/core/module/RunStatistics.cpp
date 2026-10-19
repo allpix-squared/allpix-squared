@@ -98,7 +98,7 @@ std::optional<std::chrono::nanoseconds> RunStatistics::getRemainingTime() const 
 }
 
 std::optional<double> RunStatistics::getAverageEventRate() const {
-    const auto finished = getProcessedEvents();
+    const auto finished = progress_->done();
     const auto elapsed = std::chrono::duration<double>(getElapsedTime()).count();
     if(finished == 0 || elapsed <= 0) {
         return std::nullopt;
@@ -107,7 +107,7 @@ std::optional<double> RunStatistics::getAverageEventRate() const {
 }
 
 std::optional<std::chrono::nanoseconds> RunStatistics::getAverageEventTime() const {
-    const auto finished = getProcessedEvents();
+    const auto finished = progress_->done();
     if(finished == 0) {
         return std::nullopt;
     }
