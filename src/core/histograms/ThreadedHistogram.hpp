@@ -137,6 +137,12 @@ namespace allpix {
          */
         std::shared_ptr<T> Get();
 
+    protected:
+        /**
+         * @brief An easy way to write a histogram. Applies draw & modification options before.
+         */
+        void write() override;
+
     private:
         /**
          * @brief Initialize the threaded histogram
@@ -145,11 +151,6 @@ namespace allpix {
          * initialize based on number of preregistered threads.
          */
         template <class... ARGS> void init(ARGS&&... args);
-
-        /**
-         * @brief An easy way to write a histogram. Applies draw & modification options before.
-         */
-        void write() override;
 
         // NOLINTEND(readability-identifier-naming)
 
