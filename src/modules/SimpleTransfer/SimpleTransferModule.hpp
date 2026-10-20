@@ -70,7 +70,7 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
         std::shared_ptr<const DetectorModel> model_;
 
-        Histogram<TH1D> drift_time_histo;
+        Histogram<TH1D> drift_time_histo_;
 
         // Configuration parameters:
         double max_depth_distance_{};
