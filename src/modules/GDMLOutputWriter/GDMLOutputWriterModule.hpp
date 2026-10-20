@@ -36,6 +36,17 @@ namespace allpix {
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
         GDMLOutputWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
+        ~GDMLOutputWriterModule() override = default;
+
+        /// @{
+        /**
+         * @brief Copying and moving the module is not allowed
+         */
+        GDMLOutputWriterModule(const GDMLOutputWriterModule&) = delete;
+        GDMLOutputWriterModule& operator=(const GDMLOutputWriterModule&) = delete;
+        GDMLOutputWriterModule(GDMLOutputWriterModule&&) = delete;
+        GDMLOutputWriterModule& operator=(GDMLOutputWriterModule&&) = delete;
+        /// @}
 
         /**
          * @brief Initializes Geant4 and construct the GDML output file from the internal geometry

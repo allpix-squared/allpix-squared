@@ -44,6 +44,16 @@ namespace allpix {
          */
         RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
+        /// @{
+        /**
+         * @brief Copying and moving the module is not allowed
+         */
+        RCEWriterModule(const RCEWriterModule&) = delete;
+        RCEWriterModule& operator=(const RCEWriterModule&) = delete;
+        RCEWriterModule(RCEWriterModule&&) = delete;
+        RCEWriterModule& operator=(RCEWriterModule&&) = delete;
+        /// @}
+
         /**
          * @brief Opens the file to write the objects to, and initializes the trees
          */
