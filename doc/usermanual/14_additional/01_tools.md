@@ -167,7 +167,7 @@ internally by the class, and if a file is requested a second time, the cached fi
 instance of the field parser class in a module, this allows to share field data across multiple module instances.
 
 ```cpp
-class MyVectorFieldModule(...) : Module(...) {
+class MyVectorFieldModule(...) : DetectorModule(...) {
 private:
     void some_function(std::string canonical_path);
     // Define static field parser instance

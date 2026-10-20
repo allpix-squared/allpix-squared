@@ -12,8 +12,8 @@ submitted to the thread pool and executed by the thread pool's workers.
 
 The thread pool features two independent queues. A FIFO-like unsorted queue for events to be processed, and a second,
 priority-ordered queue for buffered events. The former is constantly filled with new events to be processed by the main
-thread, while the latter is used to temporarily buffer events which wait to be picked up in the correct sequence by a
-`SequentialModule`.
+thread, while the latter is used to temporarily buffer events which wait to be picked up in the correct sequence by all
+modules requiring sequential event processing.
 
 By default modules are assumed to not operate in a thread-safe way and therefore cannot participate in multithreaded
 processing of events. Therefore each module must explicitly enable multithreading in its constructor in order to signal its
@@ -42,14 +42,14 @@ The `Messenger` handles communication in different events concurrently. It suppo
 `Messenger` owns the global message subscription information and internally forwards the module's requests to dispatch or
 fetch messages to the local messenger of the event in a thread-safe manner.
 
-### Running Events in order using SequentialModule
+### Running Events in order in sequential modules
 
-The `SequentialModule` class is made available for modules that require processing of events in the correct order without
-disabling multithreading. Inheriting from this class will allow the module to transparently check if the given event is in
-the correct sequence and decide whether to execute it immediately or to request buffering in the prioritized buffer queue if
-the thread pool if it is out of order.
+The `Module` base class offers a method for modules to indicate the requirement of processing of events in the correct order
+without disabling multithreading. Indicating this requirement by calling `require_sequence(true)` in the constructor of the
+module will allow it to transparently check if the given event is in the correct sequence and decide whether to execute it
+immediately or to request buffering in the prioritized buffer queue if the thread pool if it is out of order.
 
-Using the `SequentialModule` is suitable for I/O modules which read or write to the file system and do not allow random read
+Using the sequence requirement is suitable for I/O modules which read or write to the file system and do not allow random read
 or write access to events. This enables output modules to produce the same output file for the same simulation inputs
 without sacrificing the benefits of using multithreading for other modules.
 

@@ -42,7 +42,7 @@ while the PixelHit message should be optional:
 
 ```cpp
 MyModule::MyModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : Module(config, messenger, std::move(detector)) {
+    : DetectorModule(config, messenger, std::move(detector)) {
 
     // Bind messages
     messenger_->bindSingle<PixelHitMessage>(this);
