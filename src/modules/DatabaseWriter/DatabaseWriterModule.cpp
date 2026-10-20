@@ -35,13 +35,13 @@ DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* mes
     allow_multithreading();
 
     // Require sequential event processing
+    config_.setDefault("require_sequence", false);
     set_sequence_required(config_.get<bool>("require_sequence"));
 
     // Bind to all messages with filter
     messenger_->registerFilter(this, &DatabaseWriterModule::filter);
 
     config_.setDefault("global_timing", false);
-    config_.setDefault("require_sequence", false);
 
     config_.setDefault("run_id", "none");
 
