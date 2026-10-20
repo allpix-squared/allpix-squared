@@ -293,7 +293,7 @@ namespace allpix {
          *
          * @return true if strict event sequence is required and false if any processing order is valid
          */
-        bool require_sequence() const { return sequence_required_; }
+        bool sequence_required() const { return sequence_required_; }
         bool sequence_required_{false};
 
         /**

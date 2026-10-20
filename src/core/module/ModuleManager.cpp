@@ -701,7 +701,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
 
                 log_context::acquire(module->getLogger(), 'R', event->number);
                 try {
-                    if(module->require_sequence() && event_num != thread_pool_->minimumUncompleted()) {
+                    if(module->sequence_required() && event_num != thread_pool_->minimumUncompleted()) {
                         stop = true;
                     } else {
                         module->run(event.get());
