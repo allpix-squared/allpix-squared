@@ -126,11 +126,11 @@ namespace allpix {
         Detrapping detrapping_;
 
         // Precalculated value for Boltzmann constant:
-        double boltzmann_kT_;
+        double boltzmann_kt_;
 
         // Predefined values for electron/hole velocity calculation in magnetic fields
-        double electron_Hall_;
-        double hole_Hall_;
+        double electron_hall_;
+        double hole_hall_;
 
         // Magnetic field
         bool has_magnetic_field_{};
