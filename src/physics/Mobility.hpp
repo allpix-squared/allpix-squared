@@ -116,11 +116,11 @@ namespace allpix {
     public:
         explicit CanaliFast(SensorMaterial material, double temperature)
             : JacoboniCanali(material, temperature), Canali(material, temperature),
-              pow_e_beta(0., Units::get(1000., "kV/cm") / electron_ec_, electron_Beta_),
-              pow_e_inv_beta(
+              pow_e_beta_(0., Units::get(1000., "kV/cm") / electron_ec_, electron_Beta_),
+              pow_e_inv_beta_(
                   1., 1. + std::pow(Units::get(1000., "kV/cm") / electron_ec_, electron_Beta_), 1.0 / electron_Beta_),
-              pow_h_beta(0., Units::get(1000., "kV/cm") / hole_ec_, hole_Beta_),
-              pow_h_inv_beta(1., 1 + std::pow(Units::get(1000., "kV/cm") / hole_ec_, hole_Beta_), 1.0 / hole_Beta_) {
+              pow_h_beta_(0., Units::get(1000., "kV/cm") / hole_ec_, hole_Beta_),
+              pow_h_inv_beta_(1., 1 + std::pow(Units::get(1000., "kV/cm") / hole_ec_, hole_Beta_), 1.0 / hole_Beta_) {
 
             LOG(INFO) << "This mobility model uses a tabulated pow implementation and might be less accurate";
 
@@ -137,18 +137,18 @@ namespace allpix {
         double operator()(const CarrierType& type, double efield_mag, double /*doping*/) const override {
             // Compute carrier mobility from constants and electric field magnitude
             if(type == CarrierType::ELECTRON) {
-                return electron_Vm_ / electron_ec_ / pow_e_inv_beta(1. + pow_e_beta(efield_mag / electron_ec_));
+                return electron_Vm_ / electron_ec_ / pow_e_inv_beta_(1. + pow_e_beta_(efield_mag / electron_ec_));
             }
 
-            return hole_Vm_ / hole_ec_ / pow_h_inv_beta(1. + pow_h_beta(efield_mag / hole_ec_));
+            return hole_Vm_ / hole_ec_ / pow_h_inv_beta_(1. + pow_h_beta_(efield_mag / hole_ec_));
         };
 
     private:
-        TabulatedPow<1000> pow_e_beta;
-        TabulatedPow<1000> pow_e_inv_beta;
+        TabulatedPow<1000> pow_e_beta_;
+        TabulatedPow<1000> pow_e_inv_beta_;
 
-        TabulatedPow<1000> pow_h_beta;
-        TabulatedPow<1000> pow_h_inv_beta;
+        TabulatedPow<1000> pow_h_beta_;
+        TabulatedPow<1000> pow_h_inv_beta_;
     };
 
     /**
@@ -362,8 +362,8 @@ namespace allpix {
     class RuchKino : virtual public MobilityModel {
     public:
         explicit RuchKino(SensorMaterial material)
-            : E0_gaas_(Units::get(3100.0, "V/cm")), mu_e_gaas_(Units::get(7600.0, "cm*cm/V/s")),
-              Ec_gaas_(Units::get(1360.0, "V/cm")), mu_h_gaas_(Units::get(320.0, "cm*cm/V/s")) {
+            : e0_gaas_(Units::get(3100.0, "V/cm")), mu_e_gaas_(Units::get(7600.0, "cm*cm/V/s")),
+              ec_gaas_(Units::get(1360.0, "V/cm")), mu_h_gaas_(Units::get(320.0, "cm*cm/V/s")) {
             if(material != SensorMaterial::GALLIUM_ARSENIDE) {
                 LOG(WARNING) << "Sensor material " << allpix::to_string(material) << " not valid for this model.";
             }
@@ -372,20 +372,20 @@ namespace allpix {
         double operator()(const CarrierType& type, double efield_mag, double /*doping*/) const override {
             // Compute carrier mobility from constants and electric field magnitude
             if(type == CarrierType::ELECTRON) {
-                if(efield_mag < E0_gaas_) {
+                if(efield_mag < e0_gaas_) {
                     return mu_e_gaas_;
                 }
 
-                return mu_e_gaas_ / sqrt(1 + (std::pow((efield_mag - E0_gaas_), 2) / std::pow(Ec_gaas_, 2)));
+                return mu_e_gaas_ / sqrt(1 + (std::pow((efield_mag - e0_gaas_), 2) / std::pow(ec_gaas_, 2)));
             }
 
             return mu_h_gaas_;
         };
 
     private:
-        double E0_gaas_;
+        double e0_gaas_;
         double mu_e_gaas_;
-        double Ec_gaas_;
+        double ec_gaas_;
         double mu_h_gaas_;
     };
 
@@ -415,29 +415,29 @@ namespace allpix {
     public:
         Quay(SensorMaterial material, double temperature) {
             if(material == SensorMaterial::SILICON) {
-                electron_Vsat_ = vsat(Units::get(1.02e7, "cm/s"), 0.74, temperature);
-                hole_Vsat_ = vsat(Units::get(0.72e7, "cm/s"), 0.37, temperature);
+                electron_vsat_ = vsat(Units::get(1.02e7, "cm/s"), 0.74, temperature);
+                hole_vsat_ = vsat(Units::get(0.72e7, "cm/s"), 0.37, temperature);
 
                 // parameters for mobility at zero field defined in Jacoboni et al
                 // https://doi.org/10.1016/0038-1101(77)90054-5
-                electron_ec_ = electron_Vsat_ / (Units::get(1.43e9, "cm*cm*K/V/s") / std::pow(temperature, 2.42));
-                hole_ec_ = hole_Vsat_ / (Units::get(1.35e8, "cm*cm*K/V/s") / std::pow(temperature, 2.20));
+                electron_ec_ = electron_vsat_ / (Units::get(1.43e9, "cm*cm*K/V/s") / std::pow(temperature, 2.42));
+                hole_ec_ = hole_vsat_ / (Units::get(1.35e8, "cm*cm*K/V/s") / std::pow(temperature, 2.20));
             } else if(material == SensorMaterial::GERMANIUM) {
-                electron_Vsat_ = vsat(Units::get(0.7e7, "cm/s"), 0.45, temperature);
-                hole_Vsat_ = vsat(Units::get(0.63e7, "cm/s"), 0.39, temperature);
+                electron_vsat_ = vsat(Units::get(0.7e7, "cm/s"), 0.45, temperature);
+                hole_vsat_ = vsat(Units::get(0.63e7, "cm/s"), 0.39, temperature);
 
                 // Parameters for mobility at zero field defined in Omar et al for electrons
                 // https://doi.org/10.1016/0038-1101(87)90063-3 and in Landolt-Bornstein - Group III Condensed Matter
                 // https://doi.org/10.1007/b80447 for holes
-                electron_ec_ = electron_Vsat_ / (Units::get(5.66e7, "cm*cm*K/V/s") / std::pow(temperature, 1.68));
-                hole_ec_ = hole_Vsat_ / (Units::get(1.05e9, "cm*cm*K/V/s") / std::pow(temperature, 2.33));
+                electron_ec_ = electron_vsat_ / (Units::get(5.66e7, "cm*cm*K/V/s") / std::pow(temperature, 1.68));
+                hole_ec_ = hole_vsat_ / (Units::get(1.05e9, "cm*cm*K/V/s") / std::pow(temperature, 2.33));
 
             } else if(material == SensorMaterial::GALLIUM_ARSENIDE) {
-                electron_Vsat_ = vsat(Units::get(0.72e7, "cm/s"), 0.44, temperature);
-                hole_Vsat_ = vsat(Units::get(0.9e7, "cm/s"), 0.59, temperature);
+                electron_vsat_ = vsat(Units::get(0.72e7, "cm/s"), 0.44, temperature);
+                hole_vsat_ = vsat(Units::get(0.9e7, "cm/s"), 0.59, temperature);
 
-                electron_ec_ = electron_Vsat_ / (Units::get(2.5e6, "cm*cm*K/V/s") / std::pow(temperature, 1.));
-                hole_ec_ = hole_Vsat_ / (Units::get(6.3e7, "cm*cm*K/V/s") / std::pow(temperature, 2.1));
+                electron_ec_ = electron_vsat_ / (Units::get(2.5e6, "cm*cm*K/V/s") / std::pow(temperature, 1.));
+                hole_ec_ = hole_vsat_ / (Units::get(6.3e7, "cm*cm*K/V/s") / std::pow(temperature, 2.1));
             }
 
             throw ModelUnsuitable("Sensor material " + allpix::to_string(material) + " not valid for this model.");
@@ -445,11 +445,11 @@ namespace allpix {
 
         double operator()(const CarrierType& type, double efield_mag, double /*doping*/) const override {
             if(type == CarrierType::ELECTRON) {
-                return electron_Vsat_ / electron_ec_ /
+                return electron_vsat_ / electron_ec_ /
                        std::sqrt(1. + (efield_mag * efield_mag / electron_ec_ / electron_ec_));
             }
 
-            return hole_Vsat_ / hole_ec_ / std::sqrt(1. + (efield_mag * efield_mag / hole_ec_ / hole_ec_));
+            return hole_vsat_ / hole_ec_ / std::sqrt(1. + (efield_mag * efield_mag / hole_ec_ / hole_ec_));
         };
 
     private:
@@ -457,8 +457,8 @@ namespace allpix {
             return vsat300 / ((1 - a) + a * (temperature / 300));
         };
 
-        double electron_Vsat_;
-        double hole_Vsat_;
+        double electron_vsat_;
+        double hole_vsat_;
         double electron_ec_;
         double hole_ec_;
     };
