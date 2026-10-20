@@ -68,9 +68,9 @@ void GeometryManager::loadGeometry(const std::list<Configuration>& detector_conf
         std::ranges::transform(role, role.begin(), ::tolower);
         if(role == "passive") {
             // Check for duplicate names:
-            auto it = std::ranges::find_if(passive_elements_, [name = geometry_section.getName()](const Configuration& cfg) {
-                return name == cfg.getName();
-            });
+            auto it = std::ranges::find_if(
+                passive_elements_,
+                [name = geometry_section.getName()](const Configuration& cfg) noexcept { return name == cfg.getName(); });
             if(it != passive_elements_.end()) {
                 throw PassiveElementExistsError(geometry_section.getName());
             }

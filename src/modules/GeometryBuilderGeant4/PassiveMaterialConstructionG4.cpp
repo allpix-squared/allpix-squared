@@ -45,8 +45,9 @@ void PassiveMaterialConstructionG4::registerVolumes() {
     hierarchy = [&hierarchy](const std::shared_ptr<PassiveMaterialModel>& vol,
                              const std::vector<std::shared_ptr<PassiveMaterialModel>>& vols,
                              size_t n) {
-        auto m = std::ranges::find_if(
-            vols, [&vol](const std::shared_ptr<PassiveMaterialModel>& v) { return v->getName() == vol->getMotherVolume(); });
+        auto m = std::ranges::find_if(vols, [&vol](const std::shared_ptr<PassiveMaterialModel>& v) noexcept {
+            return v->getName() == vol->getMotherVolume();
+        });
 
         if(n > 100) {
             throw ModuleError(

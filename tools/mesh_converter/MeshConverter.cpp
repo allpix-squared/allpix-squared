@@ -297,12 +297,13 @@ int main(int argc, char** argv) {
         field = field_temp;
 
         // Find minimum and maximum from mesh coordinates
-        auto maxx = (dimension == 2 ? 1 : std::ranges::max_element(points, [](auto& a, auto& b) { return a.x < b.x; })->x);
-        auto minx = std::ranges::min_element(points, [](auto& a, auto& b) { return a.x < b.x; })->x;
-        auto maxy = std::ranges::max_element(points, [](auto& a, auto& b) { return a.y < b.y; })->y;
-        auto miny = std::ranges::min_element(points, [](auto& a, auto& b) { return a.y < b.y; })->y;
-        auto maxz = std::ranges::max_element(points, [](auto& a, auto& b) { return a.z < b.z; })->z;
-        auto minz = std::ranges::min_element(points, [](auto& a, auto& b) { return a.z < b.z; })->z;
+        auto maxx =
+            (dimension == 2 ? 1 : std::ranges::max_element(points, [](auto& a, auto& b) noexcept { return a.x < b.x; })->x);
+        auto minx = std::ranges::min_element(points, [](auto& a, auto& b) noexcept { return a.x < b.x; })->x;
+        auto maxy = std::ranges::max_element(points, [](auto& a, auto& b) noexcept { return a.y < b.y; })->y;
+        auto miny = std::ranges::min_element(points, [](auto& a, auto& b) noexcept { return a.y < b.y; })->y;
+        auto maxz = std::ranges::max_element(points, [](auto& a, auto& b) noexcept { return a.z < b.z; })->z;
+        auto minz = std::ranges::min_element(points, [](auto& a, auto& b) noexcept { return a.z < b.z; })->z;
 
         // Creating a new mesh points cloud with a regular pitch
         const double xstep = (maxx - minx) / static_cast<double>(divisions.x());

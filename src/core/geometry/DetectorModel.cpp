@@ -248,7 +248,9 @@ ROOT::Math::XYZPoint DetectorModel::getModelCenter() const {
 
     // Find first and last element of detector assembly stack:
     auto boundaries = std::ranges::minmax_element(
-        stack, [](const std::pair<double, double>& s1, const std::pair<double, double>& s2) { return s1.first < s2.first; });
+        stack, [](const std::pair<double, double>& s1, const std::pair<double, double>& s2) noexcept {
+            return s1.first < s2.first;
+        });
 
     auto element_first = *boundaries.min;
     auto element_last = *boundaries.max;

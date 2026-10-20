@@ -297,7 +297,7 @@ void CSADigitizerModule::run(Event* event) {
                 // Generate x-axis:
                 std::vector<double> time(impulse_response_function_.size());
                 // clang-format off
-                std::ranges::generate(time, [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
+                std::ranges::generate(time, [n = 0.0, timestep]() mutable noexcept {  auto now = n; n += timestep; return now; });
                 // clang-format on
 
                 auto* response_graph = new TGraph(
@@ -479,7 +479,7 @@ void CSADigitizerModule::create_output_pulsegraphs(const std::string& s_event_nu
     // Generate x-axis:
     std::vector<double> amptime(plot_pulse_vec.size());
     // clang-format off
-    std::ranges::generate(amptime, [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
+    std::ranges::generate(amptime, [n = 0.0, timestep]() mutable noexcept {  auto now = n; n += timestep; return now; });
     // clang-format on
 
     // scale the y-axis values to be in mV instead of MV
