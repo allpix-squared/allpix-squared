@@ -92,14 +92,14 @@ namespace allpix {
         bool flip_odd_rows_{};
         bool flip_odd_cols_{};
 
-        void getCapacitanceScan(TFile* root_file);
+        void get_capacitance_scan(TFile* root_file);
         std::array<TGraph*, 9> capacitances_{};
 
         Eigen::Hyperplane<double, 3> plane_;
 
-        Histogram<TH2D> coupling_map;
-        Histogram<TH2D> gap_map;
-        Histogram<TH2D> capacitance_map;
-        Histogram<TH2D> relative_capacitance_map;
+        Histogram<TH2D> coupling_map_;
+        Histogram<TH2D> gap_map_;
+        Histogram<TH2D> capacitance_map_;
+        Histogram<TH2D> relative_capacitance_map_;
     };
 } // namespace allpix
