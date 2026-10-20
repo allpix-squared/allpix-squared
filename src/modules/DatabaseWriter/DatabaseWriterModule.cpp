@@ -36,7 +36,7 @@ DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* mes
 
     // Require sequential event processing
     config_.setDefault("require_sequence", false);
-    set_sequence_required(config_.get<bool>("require_sequence"));
+    require_sequence(config_.get<bool>("require_sequence"));
 
     // Bind to all messages with filter
     messenger_->registerFilter(this, &DatabaseWriterModule::filter);

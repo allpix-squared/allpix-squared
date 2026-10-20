@@ -49,7 +49,7 @@ CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messen
     allow_multithreading();
 
     // Require sequential event processing
-    set_sequence_required();
+    require_sequence(true);
 
     // Require PixelHit messages for single detector
     messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);

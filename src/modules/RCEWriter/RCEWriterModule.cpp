@@ -315,7 +315,7 @@ RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, Ge
     allow_multithreading();
 
     // Require sequential event processing
-    set_sequence_required();
+    require_sequence(true);
 
     assert(messenger && "messenger must be non-null");
     assert(geo_manager && "geo_manager must be non-null");

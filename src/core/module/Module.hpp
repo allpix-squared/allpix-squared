@@ -215,7 +215,7 @@ namespace allpix {
         /**
          * @brief Sets the sequence requirement flag
          */
-        void set_sequence_required(bool sequence_requred = true) { sequence_required_ = sequence_requred; }
+        void require_sequence(bool sequence_required) { sequence_required_ = sequence_required; }
 
         /**
          * @brief Get the module configuration for internal use

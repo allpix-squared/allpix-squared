@@ -106,7 +106,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     allow_multithreading();
 
     // Require sequential event processing
-    set_sequence_required();
+    require_sequence(true);
 
     // Set configuration defaults:
     config_.setDefault("file_name", "output.slcio");

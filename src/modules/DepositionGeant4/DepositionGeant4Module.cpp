@@ -87,7 +87,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     allow_multithreading();
 
     // Waive any sequence requirement: base module not sequential, but derived modules might be
-    set_sequence_required(false);
+    require_sequence(false);
 
     // Set default physics list
     config_.setDefault("physics_list", "FTFP_BERT_LIV");

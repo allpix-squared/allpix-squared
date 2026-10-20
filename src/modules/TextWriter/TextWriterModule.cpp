@@ -36,7 +36,7 @@ TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, 
     allow_multithreading();
 
     // Require sequential event processing
-    set_sequence_required();
+    require_sequence(true);
 
     // Bind to all messages with filter
     messenger_->registerFilter(this, &TextWriterModule::filter);

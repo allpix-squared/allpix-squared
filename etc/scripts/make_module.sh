@@ -143,7 +143,7 @@ fi
 if [ "$sequence" = 1 ]; then
     # Change implementation file
     command="sed ${opt} \
-        -e 's/ \/\/ set_sequence_required();/ set_sequence_required();/g' \
+        -e 's/ \/\/ require_sequence(true);/ require_sequence(true);/g' \
         $MODDIR/$MODNAME/${MODNAME}Module.cpp"
     eval $command
 fi

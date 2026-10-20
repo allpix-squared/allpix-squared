@@ -29,7 +29,7 @@ PixESLWriterModule::PixESLWriterModule(Configuration& config, Messenger* messeng
     allow_multithreading();
 
     // Require sequential event processing
-    set_sequence_required();
+    require_sequence(true);
 
     message_pixelcharge_ = config_.get<bool>("write_pixelcharge", false);
     if(message_pixelcharge_) {

@@ -53,7 +53,7 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     allow_multithreading();
 
     // Require sequential event processing
-    set_sequence_required();
+    require_sequence(true);
 
     config_.setDefault<size_t>("detector_name_chars", 0);
     config_.setDefault<std::string>("unit_length", "mm");

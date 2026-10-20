@@ -49,7 +49,7 @@ ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger*
 
     // Waive sequence requirement if requested by user
     config_.setDefault("require_sequence", true);
-    set_sequence_required(config_.get<bool>("require_sequence"));
+    require_sequence(config_.get<bool>("require_sequence"));
 
     // Bind to all messages with filter
     messenger_->registerFilter(this, &ROOTObjectWriterModule::filter);
