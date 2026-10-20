@@ -61,12 +61,6 @@ namespace allpix {
 
     public:
         /**
-         * @brief Base constructor for modules
-         * @param config Configuration for this module
-         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
-         */
-        explicit Module(Configuration& config, Messenger* messenger);
-        /**
          * @brief Essential virtual destructor.
          *
          * Also removes all delegates linked to this module
@@ -207,6 +201,12 @@ namespace allpix {
         virtual void finalize() {}
 
     protected:
+        /**
+         * @brief Base constructor for modules
+         * @param config Configuration for this module
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         */
+        explicit Module(Configuration& config, Messenger* messenger);
         /**
          * @brief Enable multithreading for this module
          */
