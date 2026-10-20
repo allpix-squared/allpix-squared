@@ -43,10 +43,6 @@ namespace allpix {
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
         RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
-        /**
-         * @brief Destructor deletes the internal objects used to build the ROOT Tree
-         */
-        ~RCEWriterModule() override = default;
 
         /**
          * @brief Opens the file to write the objects to, and initializes the trees
