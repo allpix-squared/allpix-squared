@@ -123,9 +123,9 @@ void DepositionPointChargeModule::initialize() {
         auto events = conf_manager->getGlobalConfiguration().get<unsigned int>("number_of_events");
         scan_coordinates_ = config_.getArray<std::string>("scan_coordinates", {"x", "y", "z"});
 
-        scan_x_ = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "x") != scan_coordinates_.end();
-        scan_y_ = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "y") != scan_coordinates_.end();
-        scan_z_ = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "z") != scan_coordinates_.end();
+        scan_x_ = std::ranges::find(scan_coordinates_, "x") != scan_coordinates_.end();
+        scan_y_ = std::ranges::find(scan_coordinates_, "y") != scan_coordinates_.end();
+        scan_z_ = std::ranges::find(scan_coordinates_, "z") != scan_coordinates_.end();
 
         no_of_coordinates_ = scan_coordinates_.size();
 

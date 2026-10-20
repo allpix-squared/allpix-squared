@@ -194,7 +194,7 @@ int main(int argc, char** argv) {
 
         // Output file format:
         auto format = config.get<std::string>("model", "apf");
-        std::transform(format.begin(), format.end(), format.begin(), ::tolower);
+        std::ranges::transform(format, format.begin(), ::tolower);
         const FileType file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
         if(file_type == FileType::UNKNOWN) {
             throw allpix::InvalidValueError(config, "model", "only models 'apf' and 'init' are currently supported");
@@ -297,14 +297,12 @@ int main(int argc, char** argv) {
         field = field_temp;
 
         // Find minimum and maximum from mesh coordinates
-        auto maxx =
-            (dimension == 2 ? 1
-                            : std::max_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.x < b.x; })->x);
-        auto minx = std::min_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.x < b.x; })->x;
-        auto maxy = std::max_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.y < b.y; })->y;
-        auto miny = std::min_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.y < b.y; })->y;
-        auto maxz = std::max_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.z < b.z; })->z;
-        auto minz = std::min_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.z < b.z; })->z;
+        auto maxx = (dimension == 2 ? 1 : std::ranges::max_element(points, [](auto& a, auto& b) { return a.x < b.x; })->x);
+        auto minx = std::ranges::min_element(points, [](auto& a, auto& b) { return a.x < b.x; })->x;
+        auto maxy = std::ranges::max_element(points, [](auto& a, auto& b) { return a.y < b.y; })->y;
+        auto miny = std::ranges::min_element(points, [](auto& a, auto& b) { return a.y < b.y; })->y;
+        auto maxz = std::ranges::max_element(points, [](auto& a, auto& b) { return a.z < b.z; })->z;
+        auto minz = std::ranges::min_element(points, [](auto& a, auto& b) { return a.z < b.z; })->z;
 
         // Creating a new mesh points cloud with a regular pitch
         const double xstep = (maxx - minx) / static_cast<double>(divisions.x());
@@ -427,7 +425,7 @@ int main(int argc, char** argv) {
 
                     // Sort by lowest distance first, this drastically reduces the number of permutations required to find a
                     // valid mesh element and also ensures that this is the one with the smallest volume.
-                    std::sort(results.begin(), results.end(), [&](unsigned int a, unsigned int b) {
+                    std::ranges::sort(results, [&](unsigned int a, unsigned int b) {
                         return unibn::L2Distance<Point>::compute(points[a], q) <
                                unibn::L2Distance<Point>::compute(points[b], q);
                     });

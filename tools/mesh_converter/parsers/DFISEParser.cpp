@@ -267,7 +267,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
             }
 
             // Remove duplicates
-            auto iter = std::unique(face.begin(), face.end());
+            auto iter = std::ranges::unique(face).begin();
             face.erase(iter, face.end());
             face.pop_back();
 
@@ -369,8 +369,8 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
     for(auto& name_region_vertices : regions_vertices) {
         auto region_vertices = name_region_vertices.second;
 
-        std::sort(region_vertices.begin(), region_vertices.end());
-        auto iter = std::unique(region_vertices.begin(), region_vertices.end());
+        std::ranges::sort(region_vertices);
+        auto iter = std::ranges::unique(region_vertices).begin();
         region_vertices.erase(iter, region_vertices.end());
 
         std::vector<Point> ret_vector;

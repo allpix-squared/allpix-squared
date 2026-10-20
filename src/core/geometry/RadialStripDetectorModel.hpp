@@ -74,7 +74,7 @@ namespace allpix {
          * @brief Get the maximum angular strip pitch in all strip rows
          * @return Maximum angular strip pitch in all strip rows
          */
-        double getAngularPitchMax() const { return *std::max_element(angular_pitch_.begin(), angular_pitch_.end()); }
+        double getAngularPitchMax() const { return *std::ranges::max_element(angular_pitch_); }
 
         /**
          * @brief Get the inner strip pitch in a given strip row
@@ -99,7 +99,7 @@ namespace allpix {
          * @brief Get the maximum angle subtended by the widest strip row
          * @return Angle subtended by the widest strip row
          */
-        double getRowAngleMax() const { return *std::max_element(row_angle_.begin(), row_angle_.end()); }
+        double getRowAngleMax() const { return *std::ranges::max_element(row_angle_); }
 
         /**
          * @brief Get the inner radius of a given strip row

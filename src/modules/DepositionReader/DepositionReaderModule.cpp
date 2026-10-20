@@ -290,9 +290,8 @@ void DepositionReaderModule::run(Event* event) {
         }
 
         auto detectors = geo_manager_->getDetectors();
-        auto pos = std::find_if(detectors.begin(), detectors.end(), [volume](const std::shared_ptr<Detector>& d) {
-            return d->getName() == volume;
-        });
+        auto pos =
+            std::ranges::find_if(detectors, [volume](const std::shared_ptr<Detector>& d) { return d->getName() == volume; });
         if(pos == detectors.end()) {
             LOG(TRACE) << "Ignored detector \"" << volume << "\", not found in current simulation";
             continue;

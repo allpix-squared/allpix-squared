@@ -65,13 +65,12 @@ void GeometryManager::loadGeometry(const std::list<Configuration>& detector_conf
 
         // Read role of this section and default to "active" (i.e. detector)
         auto role = geometry_section.get<std::string>("role", "active");
-        std::transform(role.begin(), role.end(), role.begin(), ::tolower);
+        std::ranges::transform(role, role.begin(), ::tolower);
         if(role == "passive") {
             // Check for duplicate names:
-            auto it = std::find_if(
-                passive_elements_.begin(),
-                passive_elements_.end(),
-                [name = geometry_section.getName()](const Configuration& cfg) { return name == cfg.getName(); });
+            auto it = std::ranges::find_if(passive_elements_, [name = geometry_section.getName()](const Configuration& cfg) {
+                return name == cfg.getName();
+            });
             if(it != passive_elements_.end()) {
                 throw PassiveElementExistsError(geometry_section.getName());
             }
@@ -81,7 +80,7 @@ void GeometryManager::loadGeometry(const std::list<Configuration>& detector_conf
 
             // Check material unless it's a GDML file placement
             auto type = geometry_section.get<std::string>("type");
-            std::transform(type.begin(), type.end(), type.begin(), ::tolower);
+            std::ranges::transform(type, type.begin(), ::tolower);
 
             passive_elements_.push_back(geometry_section);
             LOG(DEBUG) << "Passive element " << geometry_section.getName() << ", putting aside";
@@ -345,7 +344,7 @@ void GeometryManager::close_geometry() {
             std::vector<std::string> valid_sections = {"", "implant", "support"};
             for(auto& conf : model_configs) {
                 auto section_name = allpix::transform(conf.getName(), ::tolower);
-                if(std::find(valid_sections.begin(), valid_sections.end(), section_name) == valid_sections.end()) {
+                if(std::ranges::find(valid_sections, section_name) == valid_sections.end()) {
                     LOG(WARNING) << "Section [" << section_name << "] is not valid in sensor geometry definition.";
                 }
             }

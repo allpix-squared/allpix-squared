@@ -297,7 +297,7 @@ void CSADigitizerModule::run(Event* event) {
                 // Generate x-axis:
                 std::vector<double> time(impulse_response_function_.size());
                 // clang-format off
-                std::generate(time.begin(), time.end(), [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
+                std::ranges::generate(time, [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
                 // clang-format on
 
                 auto* response_graph = new TGraph(
@@ -343,10 +343,9 @@ void CSADigitizerModule::run(Event* event) {
         // Apply noise to the amplified pulse
         allpix::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
         LOG(TRACE) << "Adding electronics noise with sigma = " << Units::display(sigmaNoise_, {"mV", "V"});
-        std::transform(amplified_pulse.begin(),
-                       amplified_pulse.end(),
-                       amplified_pulse.begin(),
-                       [&pulse_smearing, &event](auto& c) { return c + (pulse_smearing(event->getRandomEngine())); });
+        std::ranges::transform(amplified_pulse, amplified_pulse.begin(), [&pulse_smearing, &event](auto& c) {
+            return c + (pulse_smearing(event->getRandomEngine()));
+        });
 
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
@@ -480,13 +479,12 @@ void CSADigitizerModule::create_output_pulsegraphs(const std::string& s_event_nu
     // Generate x-axis:
     std::vector<double> amptime(plot_pulse_vec.size());
     // clang-format off
-    std::generate(amptime.begin(), amptime.end(), [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
+    std::ranges::generate(amptime, [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
     // clang-format on
 
     // scale the y-axis values to be in mV instead of MV
     std::vector<double> pulse_in_mV(plot_pulse_vec.size());
-    std::transform(
-        plot_pulse_vec.begin(), plot_pulse_vec.end(), pulse_in_mV.begin(), [](auto& c) { return Units::convert(c, "mV"); });
+    std::ranges::transform(plot_pulse_vec, pulse_in_mV.begin(), [](auto& c) { return Units::convert(c, "mV"); });
 
     const std::string name = s_name + "_ev" + s_event_num + "_px" + s_pixel_index;
     auto* csa_pulse_graph = new TGraph(static_cast<int>(pulse_in_mV.size()), amptime.data(), pulse_in_mV.data());

@@ -40,7 +40,7 @@ std::unique_ptr<TrackInfoG4> TrackInfoManager::makeTrackInfo(const G4Track* cons
 }
 
 void TrackInfoManager::setTrackInfoToBeStored(int track_id) {
-    auto element = std::find(to_store_track_ids_.begin(), to_store_track_ids_.end(), track_id);
+    auto element = std::ranges::find(to_store_track_ids_, track_id);
     // If track id is not present we add it, otherwise skip as we only need each track once
     if(element == to_store_track_ids_.end()) {
         to_store_track_ids_.emplace_back(track_id);
@@ -49,7 +49,7 @@ void TrackInfoManager::setTrackInfoToBeStored(int track_id) {
 
 void TrackInfoManager::storeTrackInfo(std::unique_ptr<TrackInfoG4> the_track_info) {
     auto track_id = the_track_info->getID();
-    auto element = std::find(to_store_track_ids_.begin(), to_store_track_ids_.end(), track_id);
+    auto element = std::ranges::find(to_store_track_ids_, track_id);
 
     if(record_all_ || element != to_store_track_ids_.end()) {
         LOG(DEBUG) << "Storing MCTrack with ID " << track_id;

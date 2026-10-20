@@ -172,7 +172,7 @@ DetectorModel::DetectorModel(std::string type,
 
         auto material = support_config.get<std::string>("material", "g10");
         auto hole_type = support_config.get<std::string>("hole_type", "rectangular");
-        std::transform(hole_type.begin(), hole_type.end(), hole_type.begin(), ::tolower);
+        std::ranges::transform(hole_type, hole_type.begin(), ::tolower);
         auto hole_size = support_config.get<XYVector>("hole_size", {0, 0});
         auto hole_offset = support_config.get<XYVector>("hole_offset", {0, 0});
         add_support_layer(size,
@@ -247,13 +247,11 @@ ROOT::Math::XYZPoint DetectorModel::getModelCenter() const {
     }
 
     // Find first and last element of detector assembly stack:
-    auto boundaries = std::minmax_element(
-        stack.begin(), stack.end(), [](const std::pair<double, double>& s1, const std::pair<double, double>& s2) {
-            return s1.first < s2.first;
-        });
+    auto boundaries = std::ranges::minmax_element(
+        stack, [](const std::pair<double, double>& s1, const std::pair<double, double>& s2) { return s1.first < s2.first; });
 
-    auto element_first = *boundaries.first;
-    auto element_last = *boundaries.second;
+    auto element_first = *boundaries.min;
+    auto element_last = *boundaries.max;
 
     // Calculate geometrical center as mid-point between boundaries (first element minus half thickness, last element plus
     // half thickness)

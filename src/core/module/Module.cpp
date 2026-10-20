@@ -96,10 +96,9 @@ Module::createOutputFile(const std::string& pathname, const std::string& extensi
 #ifdef __APPLE__ // Fix compiling error caused by Xcode iterator legacy
             auto path_it_v = std::vector<std::string>(path.begin(), path.end());
             auto file_it_v = std::vector<std::string>(file.begin(), file.end());
-            const auto is_outside =
-                std::search(path_it_v.begin(), path_it_v.end(), file_it_v.begin(), file_it_v.end()) == path_it_v.end();
+            const auto is_outside = std::ranges::search(path_it_v, file_it_v).begin() == path_it_v.end();
 #else
-            const auto is_outside = std::search(path.begin(), path.end(), file.begin(), file.end()) == path.end();
+            const auto is_outside = std::ranges::search(path, file).begin() == path.end();
 #endif
             if(is_outside) {
                 LOG(WARNING) << "Storing file at requested absolute location " << path
@@ -186,7 +185,7 @@ void Module::set_histogram_manager(HistogramManager* histogram_manager) {
 void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) { delegates_.emplace_back(messenger, delegate); }
 bool Module::check_delegates(Messenger* messenger, Event* event) {
     // Return false if any delegate is not satisfied
-    return std::all_of(delegates_.cbegin(), delegates_.cend(), [messenger, event](auto& delegate) {
+    return std::ranges::all_of(delegates_, [messenger, event](const auto& delegate) {
         return !delegate.second->isRequired() || messenger->isSatisfied(delegate.second, event);
     });
 }

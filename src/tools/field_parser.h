@@ -305,7 +305,7 @@ namespace allpix {
          */
         void check_unit_match(const std::string& file_units, const std::string& units) {
             // If we read "##SEED#" or a number, the file is provided in the original format and we ignore it.
-            if(file_units == "##SEED##" || std::all_of(file_units.begin(), file_units.end(), ::isdigit)) {
+            if(file_units == "##SEED##" || std::ranges::all_of(file_units, ::isdigit)) {
                 LOG(DEBUG) << "INIT file does not contain unit information. Header states \"" << file_units << "\"";
             } else if(file_units == "internal") { // File reports internal units
                 // Parser requests unit conversion:

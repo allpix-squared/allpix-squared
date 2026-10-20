@@ -227,7 +227,7 @@ void ModuleManager::load(Messenger* messenger,
             ModuleIdentifier identifier = id_mod.first;
 
             // Check if the unique instantiation already exists
-            auto iter = std::find_if(id_to_module_.begin(), id_to_module_.end(), [&identifier](const auto& mapv) {
+            auto iter = std::ranges::find_if(id_to_module_, [&identifier](const auto& mapv) {
                 return identifier.getUniqueName() == mapv.first.getUniqueName();
             });
             if(iter != id_to_module_.end()) {
@@ -326,7 +326,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     // Specialize instance configuration
     std::filesystem::path output_dir = instance_config.get<std::string>("_global_dir");
     auto path_mod_name = identifier.getUniqueName();
-    std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '_');
+    std::ranges::replace(path_mod_name, ':', '_');
     output_dir /= path_mod_name;
 
     // Convert to correct generator function
@@ -435,7 +435,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         // Add internal module config
         std::filesystem::path output_dir = instance_config.get<std::string>("_global_dir");
         auto path_mod_name = instance.second.getUniqueName();
-        std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '/');
+        std::ranges::replace(path_mod_name, ':', '/');
         output_dir /= path_mod_name;
 
         // Build module, logging its construction through its own permanent logger

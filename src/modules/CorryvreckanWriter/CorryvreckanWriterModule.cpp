@@ -283,7 +283,7 @@ void CorryvreckanWriterModule::finalize() {
             if(detector->getName() == reference_) {
                 roles += "reference";
             }
-            if(std::find(dut_.begin(), dut_.end(), detector->getName()) != dut_.end()) {
+            if(std::ranges::find(dut_, detector->getName()) != dut_.end()) {
                 if(!roles.empty()) {
                     roles += ",";
                 }

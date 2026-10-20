@@ -266,8 +266,7 @@ void DefaultDigitizerModule::run(Event* event) {
     // Loop over selected channels:
     for(const auto& index : pixels) {
 
-        const auto it = std::find_if(
-            pixel_charges.begin(), pixel_charges.end(), [index](const auto& px) { return px.getIndex() == index; });
+        const auto it = std::ranges::find_if(pixel_charges, [index](const auto& px) { return px.getIndex() == index; });
         const auto& pixel_charge = (it == pixel_charges.end() ? PixelCharge(getDetector()->getPixel(index), 0.) : *it);
         auto charge = static_cast<double>(pixel_charge.getAbsoluteCharge());
 

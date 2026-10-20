@@ -600,11 +600,7 @@ void DetectorHistogrammerModule::run(Event* event) {
 
         // Find all particles connected to this cluster which are also primaries:
         std::vector<const MCParticle*> intersection;
-        std::set_intersection(primary_particles.begin(),
-                              primary_particles.end(),
-                              cluster_particles.begin(),
-                              cluster_particles.end(),
-                              std::back_inserter(intersection));
+        std::ranges::set_intersection(primary_particles, cluster_particles, std::back_inserter(intersection));
 
         LOG(TRACE) << "Matching primaries: " << intersection.size();
         for(const auto& particle : intersection) {
@@ -731,7 +727,7 @@ void DetectorHistogrammerModule::run(Event* event) {
         auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
         auto inPixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
 
-        auto matched_cluster = std::find_if(clusters.begin(), clusters.end(), [this, &particlePos](const Cluster& clus) {
+        auto matched_cluster = std::ranges::find_if(clusters, [this, &particlePos](const Cluster& clus) {
             return (std::fabs(clus.getPosition().x() - particlePos.x()) < matching_cut_.x()) &&
                    (std::fabs(clus.getPosition().y() - particlePos.y()) < matching_cut_.y());
         });
