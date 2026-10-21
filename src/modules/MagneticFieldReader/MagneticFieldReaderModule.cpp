@@ -34,7 +34,7 @@ using namespace allpix;
 MagneticFieldReaderModule::MagneticFieldReaderModule(Configuration& config,
                                                      Messenger* /*unused*/,
                                                      GeometryManager* geo_manager)
-    : Module(config), geometryManager_(geo_manager) {
+    : Module(config), geometry_manager_(geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 }
@@ -54,7 +54,7 @@ void MagneticFieldReaderModule::initialize() {
 
         const MagneticFieldFunction function = [b_field](const ROOT::Math::XYZPoint&) noexcept { return b_field; };
 
-        geometryManager_->setMagneticFieldFunction(function, type);
+        geometry_manager_->setMagneticFieldFunction(function, type);
         LOG(INFO) << "Set constant magnetic field: " << Units::display(b_field, {"T", "mT"});
     } else if(field_model == MagneticField::MESH) {
         type = MagneticFieldType::CUSTOM;
@@ -94,16 +94,16 @@ void MagneticFieldReaderModule::initialize() {
                 return ROOT::Math::XYZVector(bfieldx, bfieldy, bfieldz);
             };
 
-        geometryManager_->setMagneticFieldFunction(function, type);
+        geometry_manager_->setMagneticFieldFunction(function, type);
         LOG(INFO) << "Set meshed magnetic field from file";
     }
 
-    auto detectors = geometryManager_->getDetectors();
+    auto detectors = geometry_manager_->getDetectors();
     for(auto& detector : detectors) {
         // TODO(simonspa): the magnetic field is calculated once for the center position of the detector. This could be
         // extended to a function enabling a gradient in the magnetic field inside the sensor
         auto position = detector->getPosition();
-        detector->setMagneticField(detector->getOrientation().Inverse() * geometryManager_->getMagneticField(position));
+        detector->setMagneticField(detector->getOrientation().Inverse() * geometry_manager_->getMagneticField(position));
         LOG(DEBUG) << "Magnetic field in detector " << detector->getName() << ": "
                    << Units::display(detector->getMagneticField(detector->getLocalPosition(position)), {"T", "mT"});
     }

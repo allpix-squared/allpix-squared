@@ -109,7 +109,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     distance_ = config_.get<unsigned int>("distance");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
-    boltzmann_kT_ = Units::get(8.6173333e-5, "eV/K") * temperature_;
+    boltzmann_kt_ = Units::get(8.6173333e-5, "eV/K") * temperature_;
     surface_reflectivity_ = config_.get<double>("surface_reflectivity");
 
     max_multiplication_level_ = config.get<unsigned int>("max_multiplication_level");
@@ -137,8 +137,8 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
 
     // Parameter for charge transport in magnetic field (approximated from graphs:
     // http://www.ioffe.ru/SVA/NSM/Semicond/Si/electric.html) FIXME
-    electron_Hall_ = 1.15;
-    hole_Hall_ = 0.9;
+    electron_hall_ = 1.15;
+    hole_hall_ = 0.9;
 }
 
 void TransientPropagationModule::initialize() {
@@ -572,7 +572,7 @@ TransientPropagationModule::propagate(Event* event,
 
     // Define a function to compute the diffusion
     auto carrier_diffusion = [&](double efield_mag, double doping, double timestep) -> Eigen::Vector3d {
-        const double diffusion_constant = boltzmann_kT_ * mobility_(type, efield_mag, doping);
+        const double diffusion_constant = boltzmann_kt_ * mobility_(type, efield_mag, doping);
         const double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
 
         // Compute the independent diffusion in three
@@ -611,7 +611,7 @@ TransientPropagationModule::propagate(Event* event,
         auto exb = efield.cross(bfield);
 
         Eigen::Vector3d term1;
-        const double hallFactor = (type == CarrierType::ELECTRON ? electron_Hall_ : hole_Hall_);
+        const double hallFactor = (type == CarrierType::ELECTRON ? electron_hall_ : hole_hall_);
         term1 = static_cast<int>(type) * mob * hallFactor * exb;
 
         const Eigen::Vector3d term2 = mob * mob * hallFactor * hallFactor * efield.dot(bfield) * bfield;

@@ -96,19 +96,19 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     // Time-of-Arrival
     if(config_.has("clock_bin_toa")) {
         store_toa_ = true;
-        clockToA_ = config_.get<double>("clock_bin_toa");
+        clock_toa_ = config_.get<double>("clock_bin_toa");
     }
     // Time-over-Threshold
     if(config_.has("clock_bin_tot")) {
         store_tot_ = true;
-        clockToT_ = config_.get<double>("clock_bin_tot");
+        clock_tot_ = config_.get<double>("clock_bin_tot");
     }
 
     // Synchronize the clock binning to global simulation time
     sync_event_time_ = config_.get<bool>("sync_event_time");
     tdc_offset_ = config_.get<double>("tdc_offset");
 
-    sigmaNoise_ = config_.get<double>("sigma_noise");
+    sigma_noise_ = config_.get<double>("sigma_noise");
     threshold_ = config_.get<double>("threshold");
     ignore_polarity_ = config.get<bool>("ignore_polarity");
 
@@ -230,26 +230,26 @@ void CSADigitizerModule::initialize() {
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
-        h_tot = CreateHistogram<TH1D>(
+        h_tot_ = CreateHistogram<TH1D>(
             "signal",
             (store_tot_ ? "Time-over-Threshold;time over threshold [clk];pixels" : "Signal;signal;pixels"),
-            (store_tot_ ? static_cast<int>(integration_time_ / clockToT_) : nbins),
+            (store_tot_ ? static_cast<int>(integration_time_ / clock_tot_) : nbins),
             0,
-            (store_tot_ ? integration_time_ / clockToT_ : 1000));
-        h_toa = CreateHistogram<TH1D>(
+            (store_tot_ ? integration_time_ / clock_tot_ : 1000));
+        h_toa_ = CreateHistogram<TH1D>(
             "time",
             (store_toa_ ? "Time-of-Arrival;time of arrival [clk];pixels" : "Time-of-Arrival;time of arrival [ns];pixels"),
-            (store_toa_ ? static_cast<int>(integration_time_ / clockToA_) : nbins),
+            (store_toa_ ? static_cast<int>(integration_time_ / clock_toa_) : nbins),
             0,
-            (store_toa_ ? integration_time_ / clockToA_ : integration_time_));
-        h_pxq_vs_tot = CreateHistogram<TH2D>("pxqvstot",
-                                             "ToT vs raw pixel charge;pixel charge [ke];ToT [ns]",
-                                             nbins,
-                                             0,
-                                             maximum,
-                                             nbins,
-                                             0,
-                                             integration_time_);
+            (store_toa_ ? integration_time_ / clock_toa_ : integration_time_));
+        h_pxq_vs_tot_ = CreateHistogram<TH2D>("pxqvstot",
+                                              "ToT vs raw pixel charge;pixel charge [ke];ToT [ns]",
+                                              nbins,
+                                              0,
+                                              maximum,
+                                              nbins,
+                                              0,
+                                              integration_time_);
     }
 }
 
@@ -297,7 +297,7 @@ void CSADigitizerModule::run(Event* event) {
                 // Generate x-axis:
                 std::vector<double> time(impulse_response_function_.size());
                 // clang-format off
-                std::generate(time.begin(), time.end(), [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
+                std::ranges::generate(time, [n = 0.0, timestep]() mutable noexcept {  auto now = n; n += timestep; return now; });
                 // clang-format on
 
                 auto* response_graph = new TGraph(
@@ -341,12 +341,11 @@ void CSADigitizerModule::run(Event* event) {
         }
 
         // Apply noise to the amplified pulse
-        allpix::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
-        LOG(TRACE) << "Adding electronics noise with sigma = " << Units::display(sigmaNoise_, {"mV", "V"});
-        std::transform(amplified_pulse.begin(),
-                       amplified_pulse.end(),
-                       amplified_pulse.begin(),
-                       [&pulse_smearing, &event](auto& c) { return c + (pulse_smearing(event->getRandomEngine())); });
+        allpix::normal_distribution<double> pulse_smearing(0, sigma_noise_);
+        LOG(TRACE) << "Adding electronics noise with sigma = " << Units::display(sigma_noise_, {"mV", "V"});
+        std::ranges::transform(amplified_pulse, amplified_pulse.begin(), [&pulse_smearing, &event](auto& c) {
+            return c + (pulse_smearing(event->getRandomEngine()));
+        });
 
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
@@ -389,9 +388,9 @@ void CSADigitizerModule::run(Event* event) {
 
         // Fill histograms if requested
         if(output_plots_) {
-            h_tot->Fill(charge);
-            h_toa->Fill(time);
-            h_pxq_vs_tot->Fill(inputcharge / 1e3, charge);
+            h_tot_->Fill(charge);
+            h_toa_->Fill(time);
+            h_pxq_vs_tot_->Fill(inputcharge / 1e3, charge);
         }
 
         // Add the hit to the hitmap
@@ -420,7 +419,7 @@ CSADigitizerModule::get_toa(double timestep, const std::vector<double>& pulse, d
 
     LOG(TRACE) << "Calculating time-of-arrival";
     bool threshold_crossed = false;
-    auto comparator_cycles = static_cast<unsigned int>(std::floor(time_offset / clockToA_));
+    auto comparator_cycles = static_cast<unsigned int>(std::floor(time_offset / clock_toa_));
     double arrival_time = time_offset;
 
     // Lambda for threshold calculation:
@@ -439,7 +438,7 @@ CSADigitizerModule::get_toa(double timestep, const std::vector<double>& pulse, d
             break;
         };
         comparator_cycles++;
-        arrival_time += (store_toa_ ? clockToA_ : timestep);
+        arrival_time += (store_toa_ ? clock_toa_ : timestep);
     }
     return {threshold_crossed, comparator_cycles, arrival_time};
 }
@@ -458,14 +457,14 @@ unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, c
     };
 
     // Start calculation from the next ToT clock cycle following the threshold crossing
-    auto tot_time = clockToT_ * std::ceil(arrival_time / clockToT_);
+    auto tot_time = clock_tot_ * std::ceil(arrival_time / clock_tot_);
     while(tot_time < integration_time_) {
         auto bin = pulse.at(static_cast<size_t>(std::floor(tot_time / timestep)));
         if(is_below_threshold(bin)) {
             break;
         }
         tot_clock_cycles++;
-        tot_time += clockToT_;
+        tot_time += clock_tot_;
     }
     return tot_clock_cycles;
 }
@@ -480,13 +479,12 @@ void CSADigitizerModule::create_output_pulsegraphs(const std::string& s_event_nu
     // Generate x-axis:
     std::vector<double> amptime(plot_pulse_vec.size());
     // clang-format off
-    std::generate(amptime.begin(), amptime.end(), [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
+    std::ranges::generate(amptime, [n = 0.0, timestep]() mutable noexcept {  auto now = n; n += timestep; return now; });
     // clang-format on
 
     // scale the y-axis values to be in mV instead of MV
     std::vector<double> pulse_in_mV(plot_pulse_vec.size());
-    std::transform(
-        plot_pulse_vec.begin(), plot_pulse_vec.end(), pulse_in_mV.begin(), [](auto& c) { return Units::convert(c, "mV"); });
+    std::ranges::transform(plot_pulse_vec, pulse_in_mV.begin(), [](auto& c) { return Units::convert(c, "mV"); });
 
     const std::string name = s_name + "_ev" + s_event_num + "_px" + s_pixel_index;
     auto* csa_pulse_graph = new TGraph(static_cast<int>(pulse_in_mV.size()), amptime.data(), pulse_in_mV.data());

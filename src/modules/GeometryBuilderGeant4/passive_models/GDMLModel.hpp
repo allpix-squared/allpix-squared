@@ -85,7 +85,7 @@ namespace allpix {
                 gdml_world_log->RemoveDaughter(gdml_daughter);
 
                 std::string gdml_daughter_name = gdml_daughter->GetName();
-                if(std::find(name_list.begin(), name_list.end(), gdml_daughter_name) != name_list.end()) {
+                if(std::ranges::find(name_list, gdml_daughter_name) != name_list.end()) {
                     gdml_daughter_name += "_";
                     gdml_daughter->SetName(gdml_daughter_name);
                     gdml_daughter->SetCopyNo(gdml_daughter->GetCopyNo() + 1);
@@ -108,7 +108,7 @@ namespace allpix {
 
                 // Check if color information is available and set it to the daughter volume
                 for(auto& aux : parser_.GetVolumeAuxiliaryInformation(gdml_daughter_log)) {
-                    std::transform(aux.type.begin(), aux.type.end(), aux.type.begin(), ::tolower);
+                    std::ranges::transform(aux.type, aux.type.begin(), ::tolower);
                     if(aux.type == "color" || aux.type == "colour") {
                         gdml_daughter_log->SetVisAttributes(G4VisAttributes(get_color(aux.value)));
                         color_from_gdml = true;
@@ -152,12 +152,12 @@ namespace allpix {
          * @return Color value as G4COlor
          */
         G4Colour get_color(std::string value) {
-            std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+            std::ranges::transform(value, value.begin(), ::tolower);
 
             int r = 256, g = 256, b = 256, a = 256;
             if(value.size() >= 6) {
                 // Value contains RGBA color
-                value.erase(std::remove(value.begin(), value.end(), '#'), value.end());
+                value.erase(std::ranges::remove(value, '#').begin(), value.end());
                 std::istringstream(value.substr(0, 2)) >> std::hex >> r;
                 std::istringstream(value.substr(2, 2)) >> std::hex >> g;
                 std::istringstream(value.substr(4, 2)) >> std::hex >> b;

@@ -90,11 +90,11 @@ void SimpleTransferModule::initialize() {
     if(output_plots_) {
         auto time_bins =
             static_cast<int>(config_.get<double>("output_plots_range") / config_.get<double>("output_plots_step"));
-        drift_time_histo = CreateHistogram<TH1D>("drift_time_histo",
-                                                 "Charge carrier arrival time;t[ns];charge carriers",
-                                                 time_bins,
-                                                 0.,
-                                                 config_.get<double>("output_plots_range"));
+        drift_time_histo_ = CreateHistogram<TH1D>("drift_time_histo",
+                                                  "Charge carrier arrival time;t[ns];charge carriers",
+                                                  time_bins,
+                                                  0.,
+                                                  config_.get<double>("output_plots_range"));
     }
 }
 
@@ -149,7 +149,7 @@ void SimpleTransferModule::run(Event* event) {
         transferred_charges_count += propagated_charge.getCharge();
 
         if(output_plots_) {
-            drift_time_histo->Fill(propagated_charge.getGlobalTime(), propagated_charge.getCharge());
+            drift_time_histo_->Fill(propagated_charge.getGlobalTime(), propagated_charge.getCharge());
         }
 
         LOG(TRACE) << "Set of " << propagated_charge.getCharge() << " propagated charges at "

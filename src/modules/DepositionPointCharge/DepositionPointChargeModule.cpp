@@ -94,7 +94,7 @@ void DepositionPointChargeModule::initialize() {
         // To get the step size, look at the intersection points along the MIP direction starting from the centre of the
         // sensitive region
         auto centre_position = detector_model_->getMatrixCenter();
-        auto [start_local, end_local] = SensorIntersection(centre_position);
+        auto [start_local, end_local] = sensor_intersection(centre_position);
         step_size_ = sqrt((end_local - start_local).Mag2()) / granularity;
 
         // We should deposit the equivalent of about 80 e/h pairs per micro meter (80`000 per mm):
@@ -123,9 +123,9 @@ void DepositionPointChargeModule::initialize() {
         auto events = conf_manager->getGlobalConfiguration().get<unsigned int>("number_of_events");
         scan_coordinates_ = config_.getArray<std::string>("scan_coordinates", {"x", "y", "z"});
 
-        scan_x_ = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "x") != scan_coordinates_.end();
-        scan_y_ = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "y") != scan_coordinates_.end();
-        scan_z_ = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "z") != scan_coordinates_.end();
+        scan_x_ = std::ranges::find(scan_coordinates_, "x") != scan_coordinates_.end();
+        scan_y_ = std::ranges::find(scan_coordinates_, "y") != scan_coordinates_.end();
+        scan_z_ = std::ranges::find(scan_coordinates_, "z") != scan_coordinates_.end();
 
         no_of_coordinates_ = scan_coordinates_.size();
 
@@ -199,7 +199,7 @@ void DepositionPointChargeModule::initialize() {
             static_cast<int>(output_plots_bins_per_um_ * Units::convert(detector_model_->getPixelSize().y(), "um"));
         auto bins_z =
             static_cast<int>(output_plots_bins_per_um_ * Units::convert(detector_model_->getSensorSize().z(), "um"));
-        deposition_position_xy =
+        deposition_position_xy_ =
             CreateHistogram<TH2D>("deposition_position_xy",
                                   "In-pixel deposition position, x-y plane;x [#mum];y [#mum]",
                                   bins_x,
@@ -208,7 +208,7 @@ void DepositionPointChargeModule::initialize() {
                                   bins_y,
                                   -static_cast<double>(Units::convert(detector_model_->getPixelSize().y() / 2, "um")),
                                   static_cast<double>(Units::convert(detector_model_->getPixelSize().y() / 2, "um")));
-        deposition_position_xz =
+        deposition_position_xz_ =
             CreateHistogram<TH2D>("deposition_position_xz",
                                   "In-pixel deposition position, x-z plane;x [#mum];z [#mum]",
                                   bins_x,
@@ -217,7 +217,7 @@ void DepositionPointChargeModule::initialize() {
                                   bins_z,
                                   -static_cast<double>(Units::convert(detector_model_->getSensorSize().z() / 2, "um")),
                                   static_cast<double>(Units::convert(detector_model_->getSensorSize().z() / 2, "um")));
-        deposition_position_yz =
+        deposition_position_yz_ =
             CreateHistogram<TH2D>("deposition_position_yz",
                                   "In-pixel deposition position, y-z plane;y [#mum];z [#mum]",
                                   bins_y,
@@ -227,9 +227,9 @@ void DepositionPointChargeModule::initialize() {
                                   -static_cast<double>(Units::convert(detector_model_->getSensorSize().z() / 2, "um")),
                                   static_cast<double>(Units::convert(detector_model_->getSensorSize().z() / 2, "um")));
 
-        deposition_position_xy->SetOption("colz");
-        deposition_position_xz->SetOption("colz");
-        deposition_position_yz->SetOption("colz");
+        deposition_position_xy_->SetOption("colz");
+        deposition_position_xz_->SetOption("colz");
+        deposition_position_yz_->SetOption("colz");
     }
 }
 
@@ -291,23 +291,23 @@ void DepositionPointChargeModule::run(Event* event) {
 
     // Create charge carriers at requested position
     if(type_ == SourceType::MIP) {
-        DepositLine(event, position);
+        deposit_line(event, position);
     } else {
-        DepositPoint(event, position);
+        deposit_point(event, position);
         if(output_plots_) {
             auto [xpixel, ypixel] = detector_model_->getPixelIndex(position);
             auto inPixelPos = position - detector_model_->getPixelCenter(xpixel, ypixel);
             auto in_pixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
             auto in_pixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
             auto in_pixel_um_z = static_cast<double>(Units::convert(position.z(), "um"));
-            deposition_position_xy->Fill(in_pixel_um_x, in_pixel_um_y);
-            deposition_position_xz->Fill(in_pixel_um_x, in_pixel_um_z);
-            deposition_position_yz->Fill(in_pixel_um_y, in_pixel_um_z);
+            deposition_position_xy_->Fill(in_pixel_um_x, in_pixel_um_y);
+            deposition_position_xz_->Fill(in_pixel_um_x, in_pixel_um_z);
+            deposition_position_yz_->Fill(in_pixel_um_y, in_pixel_um_z);
         }
     }
 }
 
-void DepositionPointChargeModule::DepositPoint(Event* event, const ROOT::Math::XYZPoint& position) {
+void DepositionPointChargeModule::deposit_point(Event* event, const ROOT::Math::XYZPoint& position) {
     // Vector of deposited charges and their "MCParticle"
     std::vector<DepositedCharge> charges;
     std::vector<MCParticle> mcparticles;
@@ -341,7 +341,7 @@ void DepositionPointChargeModule::DepositPoint(Event* event, const ROOT::Math::X
     messenger_->dispatchMessage(this, std::move(deposit_message), event);
 }
 
-void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XYZPoint& position) {
+void DepositionPointChargeModule::deposit_line(Event* event, const ROOT::Math::XYZPoint& position) {
     // Vector of deposited charges and their "MCParticle"
     std::vector<DepositedCharge> charges;
     std::vector<MCParticle> mcparticles;
@@ -355,7 +355,7 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
     // Start and end position of MCParticle:
     // End point is the intersection along the line to the box. Start position is also that, but in the other direction.
     // The given position is a point the line intersects. Need to extrapolate to surfaces using this
-    auto [start_local, end_local] = SensorIntersection(position);
+    auto [start_local, end_local] = sensor_intersection(position);
     const ROOT::Math::XYZPoint start_global = detector_->getGlobalPosition(start_local);
     const ROOT::Math::XYZPoint end_global = detector_->getGlobalPosition(end_local);
 
@@ -388,9 +388,9 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
             auto in_pixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
             auto in_pixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
             auto in_pixel_um_z = static_cast<double>(Units::convert(position_local.z(), "um"));
-            deposition_position_xy->Fill(in_pixel_um_x, in_pixel_um_y);
-            deposition_position_xz->Fill(in_pixel_um_x, in_pixel_um_z);
-            deposition_position_yz->Fill(in_pixel_um_y, in_pixel_um_z);
+            deposition_position_xy_->Fill(in_pixel_um_x, in_pixel_um_y);
+            deposition_position_xz_->Fill(in_pixel_um_x, in_pixel_um_z);
+            deposition_position_yz_->Fill(in_pixel_um_y, in_pixel_um_z);
         }
 
         position_local += step_size_ * mip_direction_;
@@ -405,7 +405,7 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
 }
 
 std::tuple<ROOT::Math::XYZPoint, ROOT::Math::XYZPoint>
-DepositionPointChargeModule::SensorIntersection(const ROOT::Math::XYZPoint& line_origin) const {
+DepositionPointChargeModule::sensor_intersection(const ROOT::Math::XYZPoint& line_origin) const {
     // We have to be centered around the sensor box. This means we need to shift by the matrix center
     auto translation_local =
         ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(detector_model_->getMatrixCenter()));

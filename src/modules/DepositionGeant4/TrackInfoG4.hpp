@@ -93,26 +93,26 @@ namespace allpix {
          * @brief Getter for the kinetic energy the particle had when the track was created
          * @return The kinetic energy in MeV of the particle at the beginning of the track
          */
-        double getKineticEnergyInitial() const { return initial_kin_E_; }
+        double getKineticEnergyInitial() const { return initial_kin_e_; }
         /**
          * @brief Getter for the total energy (i.e. kinetic energy and dynamic mass) the particle had when the track was
          * created
          * @return The total energy in MeV of the particle at the beginning of the track
          */
-        double getTotalEnergyInitial() const { return initial_tot_E_; }
+        double getTotalEnergyInitial() const { return initial_tot_e_; }
 
         /**
          * @brief Getter for the kinetic energy the particle had when the track terminated
          * @return The kinetic energy in MeV of the particle at the end of the track
          */
-        double getKineticEnergyFinal() const { return final_kin_E_; }
+        double getKineticEnergyFinal() const { return final_kin_e_; }
 
         /**
          * @brief Getter for the total energy (i.e. kinetic energy and dynamic mass) the particle had when the track
          * terminated
          * @return The total energy in MeV of the particle at the end of the track
          */
-        double getTotalEnergyFinal() const { return final_tot_E_; }
+        double getTotalEnergyFinal() const { return final_tot_e_; }
 
         /**
          * @brief Getter for the Geant4 name of the physical volume in which the track originated
@@ -168,13 +168,13 @@ namespace allpix {
         // Name of Geant4 process which created this track
         std::string origin_g4_process_name_;
         // Initial kinetic energy (MeV)
-        double initial_kin_E_{};
+        double initial_kin_e_{};
         // Initial total energy (MeV)
-        double initial_tot_E_{};
+        double initial_tot_e_{};
         // Final kinetic energy (MeV)
-        double final_kin_E_{};
+        double final_kin_e_{};
         // Final total energy (MeV)
-        double final_tot_E_{};
+        double final_tot_e_{};
         // Initial momentum direction
         ROOT::Math::XYZVector initial_momentum_direction_;
         // Final momentum direction

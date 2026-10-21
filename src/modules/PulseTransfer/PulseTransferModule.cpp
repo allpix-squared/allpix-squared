@@ -294,7 +294,7 @@ void PulseTransferModule::create_pulsegraphs(uint64_t event_num, const Pixel::In
     // Generate x-axis:
     std::vector<double> time(pulse.size());
     // clang-format off
-    std::generate(time.begin(), time.end(), [n = 0.0, step]() mutable { auto now = n; n += step; return now; });
+    std::ranges::generate(time, [n = 0.0, step]() mutable noexcept { auto now = n; n += step; return now; });
     // clang-format on
 
     std::string name =
@@ -309,7 +309,7 @@ void PulseTransferModule::create_pulsegraphs(uint64_t event_num, const Pixel::In
     getROOTDirectory()->WriteTObject(pulse_graph, name.c_str());
 
     auto abs_vec = pulse;
-    std::for_each(abs_vec.begin(), abs_vec.end(), [](auto& bin) { bin = std::fabs(bin); });
+    std::ranges::for_each(abs_vec, [](auto& bin) noexcept { bin = std::fabs(bin); });
     name = "pulse_abs_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" + std::to_string(index.y());
     auto* pulse_abs_graph = new TGraph(static_cast<int>(abs_vec.size()), time.data(), abs_vec.data());
     pulse_abs_graph->GetXaxis()->SetTitle("t [ns]");
@@ -323,7 +323,7 @@ void PulseTransferModule::create_pulsegraphs(uint64_t event_num, const Pixel::In
 
     auto current_vec = pulse;
     // Convert charge bins to current in uA
-    std::for_each(current_vec.begin(), current_vec.end(), [step](auto& bin) {
+    std::ranges::for_each(current_vec, [step](auto& bin) {
         bin = static_cast<double>(Units::convert(bin, "fC") / Units::convert(step, "ns"));
     });
 

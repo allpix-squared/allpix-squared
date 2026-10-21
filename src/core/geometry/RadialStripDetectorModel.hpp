@@ -74,7 +74,7 @@ namespace allpix {
          * @brief Get the maximum angular strip pitch in all strip rows
          * @return Maximum angular strip pitch in all strip rows
          */
-        double getAngularPitchMax() const { return *std::max_element(angular_pitch_.begin(), angular_pitch_.end()); }
+        double getAngularPitchMax() const { return *std::ranges::max_element(angular_pitch_); }
 
         /**
          * @brief Get the inner strip pitch in a given strip row
@@ -99,7 +99,7 @@ namespace allpix {
          * @brief Get the maximum angle subtended by the widest strip row
          * @return Angle subtended by the widest strip row
          */
-        double getRowAngleMax() const { return *std::max_element(row_angle_.begin(), row_angle_.end()); }
+        double getRowAngleMax() const { return *std::ranges::max_element(row_angle_); }
 
         /**
          * @brief Get the inner radius of a given strip row
@@ -297,61 +297,61 @@ namespace allpix {
          * @brief Set the number of strips
          * @param val Vector describing number of strips in each strip row
          */
-        void setNumberOfStrips(std::vector<unsigned int> val) { number_of_strips_ = std::move(val); }
+        void set_number_of_strips(std::vector<unsigned int> val) { number_of_strips_ = std::move(val); }
 
         /**
          * @brief Set the strip length
          * @param val Vector describing strip length in each strip row
          */
-        void setStripLength(std::vector<double> val) { strip_length_ = std::move(val); }
+        void set_strip_length(std::vector<double> val) { strip_length_ = std::move(val); }
 
         /**
          * @brief Set the angular strip pitch
          * @param val Vector describing angular strip pitch in each row
          */
-        void setAngularPitch(std::vector<double> val) { angular_pitch_ = std::move(val); }
+        void set_angular_pitch(std::vector<double> val) { angular_pitch_ = std::move(val); }
 
         /**
          * @brief Set the inner strip pitch
          * @param val Vector describing inner strip pitch in each strip row
          */
-        void setInnerPitch(std::vector<double> val) { inner_pitch_ = std::move(val); }
+        void set_inner_pitch(std::vector<double> val) { inner_pitch_ = std::move(val); }
 
         /**
          * @brief Set the length of the trapezoidal sensor wrapper
          * @param val Length of the trapezoidal sensor wrapper
          */
-        void setSensorLength(double val) { sensor_length_ = val; }
+        void set_sensor_length(double val) { sensor_length_ = val; }
 
         /**
          * @brief Set the smaller base length of the trapezoidal sensor wrapper
          * @param val Length of the smaller base of the trapezoidal sensor wrapper
          */
-        void setSensorBaseInner(double val) { sensor_base_.at(0) = val; }
+        void set_sensor_base_inner(double val) { sensor_base_.at(0) = val; }
 
         /**
          * @brief Set the larger base length of the trapezoidal sensor wrapper
          * @param val Length of the larger base of the trapezoidal sensor wrapper
          */
-        void setSensorBaseOuter(double val) { sensor_base_.at(1) = val; }
+        void set_sensor_base_outer(double val) { sensor_base_.at(1) = val; }
 
         /**
          * @brief Set the angle subtended by each strip row
          * @param val Vector describing angle subtended by each strip row
          */
-        void setRowAngle(std::vector<double> val) { row_angle_ = std::move(val); }
+        void set_row_angle(std::vector<double> val) { row_angle_ = std::move(val); }
 
         /**
          * @brief Set outer radius of each strip row
          * @param val Vector describing outer radius of each strip row
          */
-        void setRowRadius(std::vector<double> val) { row_radius_ = std::move(val); }
+        void set_row_radius(std::vector<double> val) { row_radius_ = std::move(val); }
 
         /**
          * @brief Set the sensor stereo angle
          * @param val Sensor stereo angle
          */
-        void setStereoAngle(double val) { stereo_angle_ = val; }
+        void set_stereo_angle(double val) { stereo_angle_ = val; }
 
         std::vector<unsigned int> number_of_strips_{};
         std::vector<double> strip_length_{};

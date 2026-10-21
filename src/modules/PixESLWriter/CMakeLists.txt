@@ -19,8 +19,8 @@ IF(NOT Libapx_FOUND)
       Libapx
       GIT_REPOSITORY https://gitlab.cern.ch/allpix-squared/libapx.git
       GIT_TAG        0117f7ae54982e67c7add35ec4e57745d8bd73b5
+      SYSTEM
       FIND_PACKAGE_ARGS 0.4.10
-
     )
     FetchContent_MakeAvailable(Libapx)
 ELSE()

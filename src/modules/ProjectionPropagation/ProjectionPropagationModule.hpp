@@ -85,15 +85,15 @@ namespace allpix {
         double top_z_;
 
         // Precalculated values for electron and hole critical fields
-        double hole_Ec_;
-        double electron_Ec_;
+        double hole_ec_;
+        double electron_ec_;
 
         // Models for electron and hole mobility and lifetime
         std::unique_ptr<JacoboniCanali> mobility_;
         Recombination recombination_;
 
         // Precalculated value for Boltzmann constant:
-        double boltzmann_kT_;
+        double boltzmann_kt_;
 
         // Statistical information
         std::atomic<unsigned int> total_deposits_, deposits_exceeding_max_groups_;

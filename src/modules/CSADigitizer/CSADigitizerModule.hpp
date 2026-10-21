@@ -84,7 +84,7 @@ namespace allpix {
         double graph_amplitude_unit_;
 
         // Parameters of the electronics: Noise, time-over-threshold logic
-        double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{}, tdc_offset_{};
+        double sigma_noise_{}, clock_tot_{}, clock_toa_{}, threshold_{}, tdc_offset_{};
 
         // Helper variables for transfer function
         double integration_time_{};
@@ -92,8 +92,8 @@ namespace allpix {
         std::once_flag first_event_flag_;
 
         // Output histograms
-        Histogram<TH1D> h_tot, h_toa;
-        Histogram<TH2D> h_pxq_vs_tot;
+        Histogram<TH1D> h_tot_, h_toa_;
+        Histogram<TH2D> h_pxq_vs_tot_;
 
         /**
          * @brief Calculate time of first threshold crossing

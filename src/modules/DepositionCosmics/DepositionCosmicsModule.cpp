@@ -139,7 +139,7 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
         auto max = geo_manager_->getMaximumCoordinate();
         std::vector<double> max_candidates = {
             std::fabs(max.x()), std::fabs(max.y()), std::fabs(min.x()), std::fabs(min.y())};
-        auto max_abs_coord = *std::max_element(begin(max_candidates), end(max_candidates));
+        auto max_abs_coord = *std::ranges::max_element(max_candidates);
 
         // Round margins up to 10 cm
         auto size_meters = static_cast<double>(std::ceil(Units::convert(2 * max_abs_coord, "m") * 10.0)) / 10.0;

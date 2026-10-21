@@ -64,11 +64,11 @@ namespace allpix {
     private:
         // General module members
         Messenger* messenger_;
-        GeometryManager* geometryManager_;
+        GeometryManager* geometry_manager_;
 
         // Parameters for output writing
-        std::string fileName_;               // Output filename
-        std::string geometryFileName_;       // Output geometry filename
+        std::string file_name_;              // Output filename
+        std::string geometry_file_name_;     // Output geometry filename
         std::unique_ptr<TFile> output_file_; // Output file
         double time_{};                      // Event time being written
         bool output_mc_truth_{};             // Decision to write out MC

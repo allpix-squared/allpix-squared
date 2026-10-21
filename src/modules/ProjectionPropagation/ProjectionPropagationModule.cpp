@@ -96,15 +96,15 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     }
 
     auto temperature = config_.get<double>("temperature");
-    boltzmann_kT_ = Units::get(8.6173333e-5, "eV/K") * temperature;
+    boltzmann_kt_ = Units::get(8.6173333e-5, "eV/K") * temperature;
 
     // Mobility fixed to Jacoboni:
     mobility_ = std::make_unique<JacoboniCanali>(model_->getSensorMaterial(), temperature);
 
     // We need direct access to the critical field values of the model since we have a discrete integration of the formula
     // for the total drift time. Taken from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
-    electron_Ec_ = Units::get(1.01 * std::pow(temperature, 1.55), "V/cm");
-    hole_Ec_ = Units::get(1.24 * std::pow(temperature, 1.68), "V/cm");
+    electron_ec_ = Units::get(1.01 * std::pow(temperature, 1.55), "V/cm");
+    hole_ec_ = Units::get(1.24 * std::pow(temperature, 1.68), "V/cm");
 
     config_.setDefault<bool>("ignore_magnetic_field", false);
 }
@@ -259,7 +259,7 @@ void ProjectionPropagationModule::run(Event* event) {
                 if(!diffuse_deposit_) {
                     continue;
                 }
-                const double diffusion_constant = boltzmann_kT_ * (*mobility_)(type, efield_mag, doping);
+                const double diffusion_constant = boltzmann_kt_ * (*mobility_)(type, efield_mag, doping);
                 const double diffusion_std_dev = std::sqrt(2. * diffusion_constant * integration_time_);
                 LOG(TRACE) << "Diffusion width of this charge carrier is " << Units::display(diffusion_std_dev, "um");
 
@@ -341,7 +341,7 @@ void ProjectionPropagationModule::run(Event* event) {
                     return 0.;
                 }
 
-                const double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
+                const double Ec = (type == CarrierType::ELECTRON ? electron_ec_ : hole_ec_);
 
                 return ((log(efield_mag_top) - log(efield_mag)) / slope_efield + std::abs(top_z_ - position.z()) / Ec) /
                        (*mobility_)(type, 0, doping);
@@ -350,7 +350,7 @@ void ProjectionPropagationModule::run(Event* event) {
 
             // Assume linear electric field over the depleted part of the sensor
             const double diffusion_constant =
-                boltzmann_kT_ * ((*mobility_)(type, efield_mag, doping) + (*mobility_)(type, efield_mag_top, doping)) / 2.;
+                boltzmann_kt_ * ((*mobility_)(type, efield_mag, doping) + (*mobility_)(type, efield_mag_top, doping)) / 2.;
 
             const double drift_time = calc_drift_time();
             const double propagation_time = drift_time + diffusion_time;

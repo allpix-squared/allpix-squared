@@ -115,18 +115,18 @@ void CapacitiveTransferModule::initialize() {
             LOG(TRACE) << "Creating output plots";
 
             // Create histograms if needed
-            coupling_map = CreateHistogram<TH2D>("coupling_map",
-                                                 "Coupling;pixel x;pixel y",
-                                                 static_cast<int>(max_col_),
-                                                 -0.5,
-                                                 static_cast<int>(max_col_) - 0.5,
-                                                 static_cast<int>(max_row_),
-                                                 -0.5,
-                                                 static_cast<int>(max_row_) - 0.5);
+            coupling_map_ = CreateHistogram<TH2D>("coupling_map",
+                                                  "Coupling;pixel x;pixel y",
+                                                  static_cast<int>(max_col_),
+                                                  -0.5,
+                                                  static_cast<int>(max_col_) - 0.5,
+                                                  static_cast<int>(max_row_),
+                                                  -0.5,
+                                                  static_cast<int>(max_row_) - 0.5);
 
             for(size_t col = 0; col < max_col_; col++) {
                 for(size_t row = 0; row < max_row_; row++) {
-                    coupling_map->SetBinContent(
+                    coupling_map_->SetBinContent(
                         static_cast<int>(col + 1), static_cast<int>(row + 1), relative_coupling_[max_row_ - row - 1][col]);
                 }
             }
@@ -179,18 +179,18 @@ void CapacitiveTransferModule::initialize() {
             LOG(TRACE) << "Creating output plots";
 
             // Create histograms if needed
-            coupling_map = CreateHistogram<TH2D>("coupling_map",
-                                                 "Coupling;pixel x;pixel y",
-                                                 static_cast<int>(max_col_),
-                                                 -0.5,
-                                                 static_cast<int>(max_col_) - 0.5,
-                                                 static_cast<int>(max_row_),
-                                                 -0.5,
-                                                 static_cast<int>(max_row_) - 0.5);
+            coupling_map_ = CreateHistogram<TH2D>("coupling_map",
+                                                  "Coupling;pixel x;pixel y",
+                                                  static_cast<int>(max_col_),
+                                                  -0.5,
+                                                  static_cast<int>(max_col_) - 0.5,
+                                                  static_cast<int>(max_row_),
+                                                  -0.5,
+                                                  static_cast<int>(max_row_) - 0.5);
 
             for(col = 0; col < max_col_; col++) {
                 for(row = 0; row < max_row_; row++) {
-                    coupling_map->SetBinContent(
+                    coupling_map_->SetBinContent(
                         static_cast<int>(col + 1), static_cast<int>(row + 1), relative_coupling_[col][row]);
                 }
             }
@@ -261,20 +261,20 @@ void CapacitiveTransferModule::initialize() {
             auto xpixels = static_cast<int>(model_->getNPixels().x());
             auto ypixels = static_cast<int>(model_->getNPixels().y());
 
-            gap_map = CreateHistogram<TH2D>(
+            gap_map_ = CreateHistogram<TH2D>(
                 "gap_map", "Gap;pixel x;pixel y", xpixels, -0.5, xpixels, ypixels, -0.5, ypixels - 0.5);
 
-            capacitance_map = CreateHistogram<TH2D>(
+            capacitance_map_ = CreateHistogram<TH2D>(
                 "capacitance_map", "Capacitance;pixel x;pixel y", xpixels, -0.5, xpixels, ypixels, -0.5, ypixels - 0.5);
 
-            relative_capacitance_map = CreateHistogram<TH2D>("relative_capacitance_map",
-                                                             "Relative Capacitance;pixel x;pixel y",
-                                                             xpixels,
-                                                             -0.5,
-                                                             xpixels,
-                                                             ypixels,
-                                                             -0.5,
-                                                             ypixels - 0.5);
+            relative_capacitance_map_ = CreateHistogram<TH2D>("relative_capacitance_map",
+                                                              "Relative Capacitance;pixel x;pixel y",
+                                                              xpixels,
+                                                              -0.5,
+                                                              xpixels,
+                                                              ypixels,
+                                                              -0.5,
+                                                              ypixels - 0.5);
 
             for(int col = 0; col < xpixels; col++) {
                 for(int row = 0; row < ypixels; row++) {
@@ -285,12 +285,12 @@ void CapacitiveTransferModule::initialize() {
                     Eigen::Vector3d pixel_projection = plane_.projection(pixel_point);
                     auto pixel_gap = pixel_projection[2];
 
-                    gap_map->Fill(col, row, static_cast<double>(Units::convert(pixel_gap, "um")));
-                    capacitance_map->Fill(
+                    gap_map_->Fill(col, row, static_cast<double>(Units::convert(pixel_gap, "um")));
+                    capacitance_map_->Fill(
                         col,
                         row,
                         capacitances_[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S"));
-                    relative_capacitance_map->Fill(
+                    relative_capacitance_map_->Fill(
                         col,
                         row,
                         capacitances_[4]->Eval(static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S") /

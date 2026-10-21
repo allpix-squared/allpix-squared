@@ -69,13 +69,13 @@ namespace allpix {
         /**
          * @brief Perform a sparse clustering on the PixelHits
          */
-        std::vector<Cluster> doClustering(std::shared_ptr<PixelHitMessage>& pixels_message) const;
+        std::vector<Cluster> do_clustering(std::shared_ptr<PixelHitMessage>& pixels_message) const;
 
         /**
          * @brief analyze the available MCParticles and return the all particles identified as primary (i.e. that do not have
          * a parent). This might be several particles.
          */
-        static std::vector<const MCParticle*> getPrimaryParticles(std::shared_ptr<MCParticleMessage>& mcparticle_message);
+        static std::vector<const MCParticle*> get_primary_particles(std::shared_ptr<MCParticleMessage>& mcparticle_message);
 
         Messenger* messenger_;
 
@@ -94,20 +94,20 @@ namespace allpix {
         bool output_maps_;
 
         // Histograms to output
-        Histogram<TH2D> hit_map, hit_map_global, hit_map_global_mc, hit_map_local, hit_map_local_mc, charge_map, cluster_map,
-            polar_hit_map;
-        Histogram<TProfile2D> cluster_size_map_local, cluster_size_map, cluster_size_x_map, cluster_size_y_map;
-        Histogram<TProfile2D> cluster_charge_map, seed_charge_map;
-        Histogram<TProfile2D> residual_map, residual_x_map, residual_y_map, residual_detector, residual_x_detector,
-            residual_y_detector;
-        Histogram<TH1D> residual_x, residual_y, residual_r, residual_phi;
-        Histogram<TProfile> residual_x_vs_x, residual_y_vs_y, residual_x_vs_y, residual_y_vs_x;
-        Histogram<TProfile2D> efficiency_map, efficiency_local, efficiency_detector;
-        Histogram<TProfile> efficiency_vs_x, efficiency_vs_y;
-        Histogram<TH1D> event_size;
-        Histogram<TH1D> cluster_size, cluster_size_x, cluster_size_y;
-        Histogram<TH1D> n_cluster;
-        Histogram<TH1D> cluster_charge, pixel_charge, total_charge, cluster_seed_charge;
+        Histogram<TH2D> hit_map_, hit_map_global_, hit_map_global_mc_, hit_map_local_, hit_map_local_mc_, charge_map_,
+            cluster_map_, polar_hit_map_;
+        Histogram<TProfile2D> cluster_size_map_local_, cluster_size_map_, cluster_size_x_map_, cluster_size_y_map_;
+        Histogram<TProfile2D> cluster_charge_map_, seed_charge_map_;
+        Histogram<TProfile2D> residual_map_, residual_x_map_, residual_y_map_, residual_detector_, residual_x_detector_,
+            residual_y_detector_;
+        Histogram<TH1D> residual_x_, residual_y_, residual_r_, residual_phi_;
+        Histogram<TProfile> residual_x_vs_x_, residual_y_vs_y_, residual_x_vs_y_, residual_y_vs_x_;
+        Histogram<TProfile2D> efficiency_map_, efficiency_local_, efficiency_detector_;
+        Histogram<TProfile> efficiency_vs_x_, efficiency_vs_y_;
+        Histogram<TH1D> event_size_;
+        Histogram<TH1D> cluster_size_, cluster_size_x_, cluster_size_y_;
+        Histogram<TH1D> n_cluster_;
+        Histogram<TH1D> cluster_charge_, pixel_charge_, total_charge_, cluster_seed_charge_;
     };
 } // namespace allpix
 

@@ -182,9 +182,9 @@ print_device(std::ostream& os, const std::vector<std::string>& names, GeometryMa
     std::vector<sensor_type> sensor_types = list_sensor_types(names, geo_mgr, cfg_mgr);
     // reduce to unique sensor types
     std::vector<sensor_type> unique_types = sensor_types;
-    std::sort(unique_types.begin(), unique_types.end(), [](const auto& a, const auto& b) { return a.name < b.name; });
+    std::ranges::sort(unique_types, [](const auto& a, const auto& b) noexcept { return a.name < b.name; });
     unique_types.erase(
-        std::unique(unique_types.begin(), unique_types.end(), [](const auto& a, const auto& b) { return a.name == b.name; }),
+        std::ranges::unique(unique_types, [](const auto& a, const auto& b) noexcept { return a.name == b.name; }).begin(),
         unique_types.end());
 
     for(const auto& sensor_type : unique_types) {
@@ -333,7 +333,7 @@ void RCEWriterModule::initialize() {
     for(const auto& detector : geo_mgr_->getDetectors()) {
         detector_names.push_back(detector->getName());
     }
-    std::sort(detector_names.begin(), detector_names.end());
+    std::ranges::sort(detector_names);
 
     // Open output data file
     const std::string path_data = createOutputFile(config_.get<std::string>("file_name"), "root");

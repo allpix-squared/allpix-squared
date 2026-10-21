@@ -44,12 +44,12 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
 
     // Set geometry parameters from config file
     // Required parameters
-    setNumberOfStrips(config.getArray<unsigned int>("number_of_strips"));
-    setStripLength(config.getArray<double>("strip_length"));
-    setAngularPitch(config.getArray<double>("angular_pitch"));
-    setInnerPitch(config.getArray<double>("inner_pitch"));
+    set_number_of_strips(config.getArray<unsigned int>("number_of_strips"));
+    set_strip_length(config.getArray<double>("strip_length"));
+    set_angular_pitch(config.getArray<double>("angular_pitch"));
+    set_inner_pitch(config.getArray<double>("inner_pitch"));
     // Optional parameters
-    setStereoAngle(config.get<double>("stereo_angle", 0.0));
+    set_stereo_angle(config.get<double>("stereo_angle", 0.0));
     setCenterRadius(config.get<double>("center_radius", 0.0));
     setInnerRadius(config.get<double>("inner_radius", 0.0));
 
@@ -89,11 +89,11 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
     auto strip_extension = radius_extension * (1 - cos(max_angle / 2));
 
     // Set the smaller base of the trapezoidal wrapper
-    setSensorBaseInner(2 * radius_extension * sin(max_angle / 2));
+    set_sensor_base_inner(2 * radius_extension * sin(max_angle / 2));
     // Set the larger base of the trapezoidal wrapper
-    setSensorBaseOuter(2 * (radius_extension + total_strip_length) * sin(max_angle / 2));
+    set_sensor_base_outer(2 * (radius_extension + total_strip_length) * sin(max_angle / 2));
     // Set the total length of the trapezoidal wrapper
-    setSensorLength(total_strip_length + strip_extension);
+    set_sensor_length(total_strip_length + strip_extension);
 
     // If inner radius was not provided, fall back to an approximate calculation
     if(getInnerRadius() < 1e-6) {

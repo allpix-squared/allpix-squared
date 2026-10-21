@@ -66,14 +66,14 @@ namespace allpix {
          * @param event Pointer to current event
          * @param position
          */
-        void DepositPoint(Event*, const ROOT::Math::XYZPoint& position);
+        void deposit_point(Event*, const ROOT::Math::XYZPoint& position);
 
         /**
          * @brief Helper function to deposit charges along a line
          * @param event Pointer to current event
          * @param position
          */
-        void DepositLine(Event*, const ROOT::Math::XYZPoint& position);
+        void deposit_line(Event*, const ROOT::Math::XYZPoint& position);
 
         /**
          * @brief Finds and returns the points where a line with mip_direction through a given point intersects the sensor
@@ -83,7 +83,7 @@ namespace allpix {
          * @note This method uses the Liang-Barsky clipping of a line segment with a box
          */
         std::tuple<ROOT::Math::XYZPoint, ROOT::Math::XYZPoint>
-        SensorIntersection(const ROOT::Math::XYZPoint& line_origin) const;
+        sensor_intersection(const ROOT::Math::XYZPoint& line_origin) const;
 
         Messenger* messenger_;
 
@@ -109,8 +109,8 @@ namespace allpix {
         bool output_plots_{};
         int output_plots_bins_per_um_{};
 
-        Histogram<TH2D> deposition_position_xy;
-        Histogram<TH2D> deposition_position_xz;
-        Histogram<TH2D> deposition_position_yz;
+        Histogram<TH2D> deposition_position_xy_;
+        Histogram<TH2D> deposition_position_xz_;
+        Histogram<TH2D> deposition_position_yz_;
     };
 } // namespace allpix

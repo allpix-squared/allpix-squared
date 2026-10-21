@@ -44,7 +44,7 @@
 using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : SequentialModule(config), messenger_(messenger), geometryManager_(geo_manager) {
+    : SequentialModule(config), messenger_(messenger), geometry_manager_(geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
@@ -64,12 +64,12 @@ void CorryvreckanWriterModule::initialize() {
     output_mc_truth_ = config_.get<bool>("output_mctruth");
 
     reference_ = config_.get<std::string>("reference");
-    if(!geometryManager_->hasDetector(reference_)) {
+    if(!geometry_manager_->hasDetector(reference_)) {
         throw InvalidValueError(config_, "reference", "detector not defined");
     }
     dut_ = config_.getArray<std::string>("dut", std::vector<std::string>());
     for(auto& dut : dut_) {
-        if(!geometryManager_->hasDetector(dut)) {
+        if(!geometry_manager_->hasDetector(dut)) {
             throw InvalidValueError(config_, "dut", "detector not defined");
         }
     }
@@ -78,13 +78,13 @@ void CorryvreckanWriterModule::initialize() {
     timing_global_ = config_.get<bool>("global_timing");
 
     // Create output file and directories
-    fileName_ = createOutputFile(config_.get<std::string>("file_name"), "root");
-    LOG(TRACE) << "Creating output file \"" << fileName_ << "\"";
-    output_file_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
+    file_name_ = createOutputFile(config_.get<std::string>("file_name"), "root");
+    LOG(TRACE) << "Creating output file \"" << file_name_ << "\"";
+    output_file_ = std::make_unique<TFile>(file_name_.c_str(), "RECREATE");
     output_file_->cd();
 
     // Create geometry file:
-    geometryFileName_ = createOutputFile(config_.get<std::string>("geometry_file"), "conf");
+    geometry_file_name_ = createOutputFile(config_.get<std::string>("geometry_file"), "conf");
 
     // Create trees:
     LOG(TRACE) << "Booking event tree";
@@ -242,20 +242,20 @@ void CorryvreckanWriterModule::finalize() {
     output_file_->Write();
 
     // Print statistics
-    LOG(STATUS) << "Wrote output data to file:" << '\n' << fileName_;
+    LOG(STATUS) << "Wrote output data to file:" << '\n' << file_name_;
 
     // Loop over all detectors and store the geometry:
     // Write geometry:
     std::ofstream geometry_file;
-    if(!geometryFileName_.empty()) {
-        geometry_file.open(geometryFileName_, std::ios_base::out | std::ios_base::trunc);
+    if(!geometry_file_name_.empty()) {
+        geometry_file.open(geometry_file_name_, std::ios_base::out | std::ios_base::trunc);
         if(!geometry_file.good()) {
             throw ModuleError("Cannot write to Corryvreckan geometry file");
         }
 
         geometry_file << "# Allpix Squared detector geometry - https://cern.ch/allpix-squared" << '\n' << '\n';
 
-        auto detectors = geometryManager_->getDetectors();
+        auto detectors = geometry_manager_->getDetectors();
         for(auto& detector : detectors) {
             geometry_file << "[" << detector->getName() << "]" << '\n';
             geometry_file << "position = " << Units::display(detector->getPosition().x(), {"mm", "um"}) << ", "
@@ -283,7 +283,7 @@ void CorryvreckanWriterModule::finalize() {
             if(detector->getName() == reference_) {
                 roles += "reference";
             }
-            if(std::find(dut_.begin(), dut_.end(), detector->getName()) != dut_.end()) {
+            if(std::ranges::find(dut_, detector->getName()) != dut_.end()) {
                 if(!roles.empty()) {
                     roles += ",";
                 }
@@ -294,7 +294,7 @@ void CorryvreckanWriterModule::finalize() {
             }
 
             // Get the material budget if available:
-            auto budget = geometryManager_->getExternalObject<double>(detector->getName(), "material_budget");
+            auto budget = geometry_manager_->getExternalObject<double>(detector->getName(), "material_budget");
             if(budget != nullptr) {
                 LOG(DEBUG) << "Found calculated material budget for detector " << detector->getName() << ", storing.";
                 geometry_file << "material_budget = " << *budget << '\n';

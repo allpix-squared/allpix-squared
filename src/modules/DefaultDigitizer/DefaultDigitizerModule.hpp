@@ -103,9 +103,9 @@ namespace allpix {
         std::atomic<unsigned long long> total_hits_;
 
         // Output histograms
-        Histogram<TH1D> h_pxq, h_pxq_noise, h_gain, h_pxq_gain, h_thr, h_pxq_thr, h_pxq_sat, h_pxq_adc_smear, h_pxq_adc,
-            h_px_toa, h_px_tdc_smear, h_px_tdc;
-        Histogram<TH2D> h_calibration, h_toa_calibration;
+        Histogram<TH1D> h_pxq_, h_pxq_noise_, h_gain_, h_pxq_gain_, h_thr_, h_pxq_thr_, h_pxq_sat_, h_pxq_adc_smear_,
+            h_pxq_adc_, h_px_toa_, h_px_tdc_smear_, h_px_tdc_;
+        Histogram<TH2D> h_calibration_, h_toa_calibration_;
     };
 } // namespace allpix
 

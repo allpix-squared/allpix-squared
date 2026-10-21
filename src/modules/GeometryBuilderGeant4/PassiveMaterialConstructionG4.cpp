@@ -45,7 +45,7 @@ void PassiveMaterialConstructionG4::registerVolumes() {
     hierarchy = [&hierarchy](const std::shared_ptr<PassiveMaterialModel>& vol,
                              const std::vector<std::shared_ptr<PassiveMaterialModel>>& vols,
                              size_t n) {
-        auto m = std::find_if(vols.begin(), vols.end(), [&vol](const std::shared_ptr<PassiveMaterialModel>& v) {
+        auto m = std::ranges::find_if(vols, [&vol](const std::shared_ptr<PassiveMaterialModel>& v) noexcept {
             return v->getName() == vol->getMotherVolume();
         });
 
@@ -56,12 +56,11 @@ void PassiveMaterialConstructionG4::registerVolumes() {
         return (m == vols.end() ? 0 : hierarchy(*m, vols, ++n)) + 1;
     };
 
-    std::sort(passive_volumes_.begin(),
-              passive_volumes_.end(),
-              [&hierarchy, volumes = passive_volumes_](const std::shared_ptr<PassiveMaterialModel>& lhs,
-                                                       const std::shared_ptr<PassiveMaterialModel>& rhs) {
-                  return (hierarchy(lhs, volumes, 0) < hierarchy(rhs, volumes, 0));
-              });
+    std::ranges::sort(passive_volumes_,
+                      [&hierarchy, volumes = passive_volumes_](const std::shared_ptr<PassiveMaterialModel>& lhs,
+                                                               const std::shared_ptr<PassiveMaterialModel>& rhs) {
+                          return (hierarchy(lhs, volumes, 0) < hierarchy(rhs, volumes, 0));
+                      });
 }
 
 void PassiveMaterialConstructionG4::buildVolumes(const std::shared_ptr<G4LogicalVolume>& world_log) {

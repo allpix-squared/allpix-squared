@@ -182,7 +182,7 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
     incident_track_position_.reserve(track_begin_.size());
 
     // Calculate time reference:
-    auto time_reference = std::min_element(track_time_.begin(), track_time_.end(), [](const auto& l, const auto& r) {
+    auto time_reference = std::ranges::min_element(track_time_, [](const auto& l, const auto& r) noexcept {
                               return l.second < r.second;
                           })->second;
     LOG(TRACE) << "Earliest MCParticle arrived at " << Units::display(time_reference, {"ns", "ps"}) << " global";

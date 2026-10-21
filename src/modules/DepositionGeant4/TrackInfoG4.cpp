@@ -17,8 +17,8 @@ using namespace allpix;
 TrackInfoG4::TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track* const aTrack)
     : custom_track_id_(custom_track_id), parent_track_id_(parent_track_id),
       particle_id_(aTrack->GetDynamicParticle()->GetPDGcode()), start_time_(aTrack->GetGlobalTime()),
-      initial_g4_vol_name_(aTrack->GetVolume()->GetName()), initial_kin_E_(aTrack->GetKineticEnergy()),
-      initial_tot_E_(aTrack->GetTotalEnergy()) {
+      initial_g4_vol_name_(aTrack->GetVolume()->GetName()), initial_kin_e_(aTrack->GetKineticEnergy()),
+      initial_tot_e_(aTrack->GetTotalEnergy()) {
     start_point_ = static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition());
     initial_momentum_direction_ = static_cast<ROOT::Math::XYZVector>(aTrack->GetMomentumDirection());
     const auto* G4Process = aTrack->GetCreatorProcess();
@@ -28,8 +28,8 @@ TrackInfoG4::TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track
 
 void TrackInfoG4::finalizeInfo(const G4Track* const aTrack) {
     final_g4_vol_name_ = aTrack->GetVolume()->GetName();
-    final_kin_E_ = aTrack->GetKineticEnergy();
-    final_tot_E_ = aTrack->GetTotalEnergy();
+    final_kin_e_ = aTrack->GetKineticEnergy();
+    final_tot_e_ = aTrack->GetTotalEnergy();
     final_momentum_direction_ = static_cast<ROOT::Math::XYZVector>(aTrack->GetMomentumDirection());
     end_point_ = static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition());
     end_time_ = aTrack->GetGlobalTime();
