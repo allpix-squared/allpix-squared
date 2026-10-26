@@ -227,7 +227,7 @@ void DepositionReaderModule::create_tree_reader(std::shared_ptr<T>& branch_ptr, 
     branch_ptr = std::make_shared<T>(*tree_reader_, name.c_str());
 }
 
-template <typename T> void DepositionReaderModule::check_tree_reader(std::shared_ptr<T> branch_ptr) {
+template <typename T> void DepositionReaderModule::check_tree_reader(const std::shared_ptr<T>& branch_ptr) {
     if(branch_ptr->GetSetupStatus() < 0) {
         throw InvalidValueError(
             config_, "branch_names", "Could not read branch \"" + std::string(branch_ptr->GetBranchName()) + "\"");
@@ -297,7 +297,7 @@ void DepositionReaderModule::run(Event* event) {
             continue;
         }
         // Assign detector
-        auto detector = (*pos);
+        const auto& detector = *pos;
         LOG(DEBUG) << "Found detector \"" << detector->getName() << "\"";
 
         auto local_position = detector->getLocalPosition(global_position);

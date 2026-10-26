@@ -41,7 +41,7 @@ namespace allpix {
          * This factory method will take care that it will only assign every track id once for this
          * TrackInfoManager instance, until reset @see #resetTrackInfoManager
          */
-        std::unique_ptr<TrackInfoG4> makeTrackInfo(const G4Track* const track);
+        std::unique_ptr<TrackInfoG4> makeTrackInfo(const G4Track* track);
 
         /**
          * @brief Will take a MCTrack and attempt to store it

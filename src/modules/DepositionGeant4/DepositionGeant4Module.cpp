@@ -231,16 +231,16 @@ void DepositionGeant4Module::initialize() {
         }
     } catch(ModuleError&) {
         std::string message = "specified physics list does not exists";
-        const std::vector<G4String> base_lists = physListFactory.AvailablePhysLists();
+        const std::vector<G4String>& base_lists = physListFactory.AvailablePhysLists();
         message += "\nAvailable base lists are: ";
-        for(auto& base_list : base_lists) {
+        for(const auto& base_list : base_lists) {
             message += base_list;
             message += ", ";
         }
         message = message.substr(0, message.size() - 2);
         message += "\nwith optional suffixes for electromagnetic lists: ";
-        const std::vector<G4String> em_lists = physListFactory.AvailablePhysListsEM();
-        for(auto& em_list : em_lists) {
+        const std::vector<G4String>& em_lists = physListFactory.AvailablePhysListsEM();
+        for(const auto& em_list : em_lists) {
             if(em_list.empty()) {
                 continue;
             }

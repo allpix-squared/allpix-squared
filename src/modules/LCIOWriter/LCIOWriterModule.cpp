@@ -124,7 +124,8 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
                                       {"output_collection_name", "detector_assignment"},
                                       "Provide either a \"output_collection_name\" or a \"detector_assignment\" "
                                       "configuration parameter. They are mutually exclusive!");
-    } else if(!has_short_config && !has_long_config) {
+    }
+    if(!has_short_config && !has_long_config) {
         config_.setDefault("output_collection_name", "zsdata_m26");
         has_short_config = true;
     }
@@ -407,9 +408,10 @@ void LCIOWriterModule::run(Event* event) {
             mc_tracker_hit->setType(1); // corresponds to kEUTelGenericSparseClusterImpl
             (*mc_hit_encoder)["sensorID"] = mcp_to_det_id[mc_particle];
 
-            int hit_properties = eutelescope::HitProperties::kHitInGlobalCoord + eutelescope::HitProperties::kSimulatedHit;
+            int hit_properties = static_cast<int>(eutelescope::HitProperties::kHitInGlobalCoord) +
+                                 static_cast<int>(eutelescope::HitProperties::kSimulatedHit);
             if(mc_particle->getTrack()->getParent() != nullptr) {
-                hit_properties += eutelescope::HitProperties::kDeltaHit;
+                hit_properties += static_cast<int>(eutelescope::HitProperties::kDeltaHit);
             }
             (*mc_hit_encoder)["properties"] = hit_properties;
 

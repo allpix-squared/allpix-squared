@@ -66,7 +66,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
     const std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
     LOG(TRACE) << "Building " << detectors.size() << " device(s)";
 
-    for(auto& detector : detectors) {
+    for(const auto& detector : detectors) {
         // Material budget:
         double total_material_budget = 0;
 

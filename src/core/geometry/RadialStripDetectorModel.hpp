@@ -281,7 +281,7 @@ namespace allpix {
          *
          * @note The returned set should always also include the initial pixel indices the neighbors are calculated for
          */
-        std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, const size_t distance) const override;
+        std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, size_t distance) const override;
 
         /**
          * @brief Check if two pixel indices are neighbors to each other
@@ -290,7 +290,7 @@ namespace allpix {
          * @param distance Distance for pixels to be considered neighbors
          * @return         Boolean whether pixels are neighbors or not
          */
-        bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const override;
+        bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, size_t distance) const override;
 
     private:
         /**
@@ -353,18 +353,18 @@ namespace allpix {
          */
         void set_stereo_angle(double val) { stereo_angle_ = val; }
 
-        std::vector<unsigned int> number_of_strips_{};
-        std::vector<double> strip_length_{};
-        std::vector<double> angular_pitch_{};
-        std::vector<double> inner_pitch_{};
+        std::vector<unsigned int> number_of_strips_;
+        std::vector<double> strip_length_;
+        std::vector<double> angular_pitch_;
+        std::vector<double> inner_pitch_;
         double stereo_angle_{};
         double center_radius_{};
         double inner_radius_{};
 
         std::array<double, 2> sensor_base_{};
         double sensor_length_{};
-        std::vector<double> row_radius_{};
-        std::vector<double> row_angle_{};
+        std::vector<double> row_radius_;
+        std::vector<double> row_angle_;
 
         ROOT::Math::XYZVector focus_translation_;
     };

@@ -151,10 +151,13 @@ namespace allpix {
          * @param  value Color representation as string
          * @return Color value as G4COlor
          */
-        G4Colour get_color(std::string value) {
+        static G4Colour get_color(std::string value) {
             std::ranges::transform(value, value.begin(), ::tolower);
 
-            int r = 256, g = 256, b = 256, a = 256;
+            int r = 256;
+            int g = 256;
+            int b = 256;
+            int a = 256;
             if(value.size() >= 6) {
                 // Value contains RGBA color
                 value.erase(std::ranges::remove(value, '#').begin(), value.end());

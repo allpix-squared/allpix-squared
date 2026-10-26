@@ -122,7 +122,7 @@ namespace allpix {
          * @note Works for all vector types that can be converted to a string using \ref StringConversions "the string
          * utilities".
          */
-        template <typename T> static std::string display(T input, std::initializer_list<std::string> units);
+        template <typename T> static std::string display(const T& input, std::initializer_list<std::string> units);
 
     private:
         static std::map<std::string, UnitType> unit_map_;

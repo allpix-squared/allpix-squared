@@ -68,7 +68,7 @@ void PrimariesReaderGenie::create_tree_reader(std::shared_ptr<T>& branch_ptr, co
 }
 
 template <typename T>
-void PrimariesReaderGenie::check_tree_reader(const Configuration& config, std::shared_ptr<T> branch_ptr) {
+void PrimariesReaderGenie::check_tree_reader(const Configuration& config, const std::shared_ptr<T>& branch_ptr) {
     if(branch_ptr->GetSetupStatus() < 0) {
         throw InvalidValueError(
             config, "file_name", "Could not read branch \"" + std::string(branch_ptr->GetBranchName()) + "\"");

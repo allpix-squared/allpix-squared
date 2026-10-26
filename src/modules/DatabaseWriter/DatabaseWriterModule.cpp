@@ -125,7 +125,8 @@ void DatabaseWriterModule::initializeThread() {
     // Read include and exclude list
     if(config_.has("include") && config_.has("exclude")) {
         throw InvalidValueError(config_, "exclude", "include and exclude parameter are mutually exclusive");
-    } else if(config_.has("include")) {
+    }
+    if(config_.has("include")) {
         auto inc_arr = config_.getArray<std::string>("include");
         include_.insert(inc_arr.begin(), inc_arr.end());
     } else if(config_.has("exclude")) {

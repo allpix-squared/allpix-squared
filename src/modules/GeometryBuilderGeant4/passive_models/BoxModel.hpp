@@ -83,7 +83,7 @@ namespace allpix {
                 solids_.push_back(inner_volume);
             }
             // Get the maximum of the size parameters
-            max_size_ = std::max(outer_size_.x(), std::max(outer_size_.y(), outer_size_.z()));
+            max_size_ = std::max({outer_size_.x(), outer_size_.y(), outer_size_.z()});
 
             LOG(DEBUG) << "Adding points for volume";
             add_points();

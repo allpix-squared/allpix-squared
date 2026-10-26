@@ -163,7 +163,8 @@ void CapacitiveTransferModule::initialize() {
         max_col_ = matrix_cols_;
         max_row_ = matrix_rows_;
 
-        size_t row = matrix_rows_ - 1, col = 0;
+        size_t row = matrix_rows_ - 1;
+        size_t col = 0;
         while(getline(input_file, file_line)) {
             std::stringstream mystream(file_line);
             col = 0;

@@ -231,9 +231,7 @@ void ProjectionPropagationModule::run(Event* event) {
                       << charge_per_step << " for this deposit.";
         }
         while(charges_remaining > 0) {
-            if(charge_per_step > charges_remaining) {
-                charge_per_step = charges_remaining;
-            }
+            charge_per_step = std::min(charge_per_step, charges_remaining);
             charges_remaining -= charge_per_step;
 
             auto position = initial_position;

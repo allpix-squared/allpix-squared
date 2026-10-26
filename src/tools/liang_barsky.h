@@ -66,7 +66,8 @@ namespace allpix {
             };
 
             // Clip the particle track against the six possible box faces
-            double t0 = std::numeric_limits<double>::lowest(), t1 = std::numeric_limits<double>::max();
+            double t0 = std::numeric_limits<double>::lowest();
+            double t1 = std::numeric_limits<double>::max();
             const bool intersect = clip(direction.X(), -position.X() - box.X() / 2, t0, t1) &&
                                    clip(-direction.X(), position.X() - box.X() / 2, t0, t1) &&
                                    clip(direction.Y(), -position.Y() - box.Y() / 2, t0, t1) &&
