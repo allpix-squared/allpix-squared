@@ -155,7 +155,7 @@ void ROOTObjectReaderModule::initialize() {
             }
 
             // Check if a version of this tree has already been read
-            if(tree_names.find(tree->GetName()) != tree_names.end()) {
+            if(tree_names.contains(tree->GetName())) {
                 LOG(TRACE) << "Skipping copy of tree with name " << tree->GetName()
                            << " because one with identical name has already been processed";
                 continue;
@@ -164,8 +164,8 @@ void ROOTObjectReaderModule::initialize() {
             tree_names.insert(tree->GetName());
 
             // Check if this tree should be used
-            if((!include_.empty() && include_.find(tree->GetName()) == include_.end()) ||
-               (!exclude_.empty() && exclude_.find(tree->GetName()) != exclude_.end())) {
+            if((!include_.empty() && !include_.contains(tree->GetName())) ||
+               (!exclude_.empty() && exclude_.contains(tree->GetName()))) {
                 LOG(TRACE) << "Ignoring tree with " << tree->GetName()
                            << " objects because it has been excluded or not explicitly included";
                 continue;

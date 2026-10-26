@@ -153,8 +153,7 @@ bool DatabaseWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
         const auto class_name = allpix::demangle(typeid(first_object).name());
 
         // Check if this message should be kept
-        if((!include_.empty() && include_.find(class_name) == include_.end()) ||
-           (!exclude_.empty() && exclude_.find(class_name) != exclude_.end())) {
+        if((!include_.empty() && !include_.contains(class_name)) || (!exclude_.empty() && exclude_.contains(class_name))) {
             LOG(TRACE) << "Database writer ignored message with object " << allpix::demangle(typeid(*inst).name())
                        << " because it has been excluded or not explicitly included";
             return false;

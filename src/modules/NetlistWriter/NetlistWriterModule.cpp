@@ -277,7 +277,7 @@ void NetlistWriterModule::run(Event* event) {
 
             // Select whether the net needs to be iterated or not
             for(const auto& net : net_list_) {
-                if(common_nets_.find(net) != common_nets_.end()) {
+                if(common_nets_.contains(net)) {
                     // must NOT be iterated !
                     file << net << " ";
                 } else {

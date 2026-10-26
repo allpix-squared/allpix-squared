@@ -108,7 +108,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory* 
         (track->GetVolume()->GetLogicalVolume() == track->GetLogicalVolumeAtVertex() ? userTrackInfo->getParentID() : 0);
 
     // Save begin point when track is seen for the first time
-    if(track_begin_.find(trackID) == track_begin_.end()) {
+    if(!track_begin_.contains(trackID)) {
         track_info_manager_->setTrackInfoToBeStored(trackID);
         auto start_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStep->GetPosition()));
         track_begin_.emplace(trackID, start_position);
@@ -224,7 +224,7 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
     for(auto& track_parent : track_parents_) {
         auto track_id = track_parent.first;
         auto parent_id = track_parent.second;
-        if(id_to_particle_.find(parent_id) == id_to_particle_.end()) {
+        if(!id_to_particle_.contains(parent_id)) {
             // Skip tracks without direct parents with deposits
             // FIXME: Geant4 does not allow for an easy way retrieve the whole hierarchy
             continue;

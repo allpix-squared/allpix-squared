@@ -137,7 +137,7 @@ void CorryvreckanWriterModule::run(Event* event) {
 
         LOG(DEBUG) << "Received " << message->getData().size() << " pixel hits from detector " << detector_name;
 
-        if(write_list_px_.find(detector_name) == write_list_px_.end()) {
+        if(!write_list_px_.contains(detector_name)) {
             write_list_px_[detector_name] = new std::vector<corryvreckan::Pixel*>();
             pixel_tree_->Bronch(detector_name.c_str(),
                                 std::string("std::vector<corryvreckan::Pixel*>").c_str(),
@@ -153,7 +153,7 @@ void CorryvreckanWriterModule::run(Event* event) {
             }
         }
 
-        if(output_mc_truth_ && write_list_mcp_.find(detector_name) == write_list_mcp_.end()) {
+        if(output_mc_truth_ && !write_list_mcp_.contains(detector_name)) {
             write_list_mcp_[detector_name] = new std::vector<corryvreckan::MCParticle*>();
             mcparticle_tree_->Bronch(detector_name.c_str(),
                                      std::string("std::vector<corryvreckan::MCParticle*>").c_str(),

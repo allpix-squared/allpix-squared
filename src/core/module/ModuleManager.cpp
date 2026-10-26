@@ -403,7 +403,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
 
             for(auto& det : detectors) {
                 // Skip all that were already added by name
-                if(module_names.find(det->getName()) != module_names.end()) {
+                if(module_names.contains(det->getName())) {
                     continue;
                 }
 
