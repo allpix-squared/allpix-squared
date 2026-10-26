@@ -140,7 +140,7 @@ void ROOTObjectReaderModule::initialize() {
     input_file_ = std::make_unique<TFile>(input_file_name.c_str());
 
     // Read all the trees in the file
-    TList* keys = input_file_->GetListOfKeys();
+    const TList* keys = input_file_->GetListOfKeys();
     std::set<std::string> tree_names;
 
     for(auto&& object : *keys) {
@@ -222,7 +222,7 @@ void ROOTObjectReaderModule::initialize() {
     // Loop over all found trees
     for(auto& tree : trees_) {
         // Loop over the list of branches and create the set of receiver objects
-        TObjArray* branches = tree->GetListOfBranches();
+        const TObjArray* branches = tree->GetListOfBranches();
         for(int i = 0; i < branches->GetEntries(); i++) {
             auto* branch = dynamic_cast<TBranch*>(branches->At(i));
 

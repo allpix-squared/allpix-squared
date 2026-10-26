@@ -299,7 +299,7 @@ namespace allpix {
         std::unique_ptr<TFormula> tf_tau_eff_hole_;
 
         std::unique_ptr<TFormula> configure_tau_eff(const Configuration& config, const CarrierType type) {
-            std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
+            const std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
             auto function = config.get<std::string>("trapping_function_" + name);
             auto parameters = config.getArray<double>("trapping_parameters_" + name, {});
 

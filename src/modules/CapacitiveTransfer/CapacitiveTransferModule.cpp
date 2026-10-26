@@ -281,7 +281,7 @@ void CapacitiveTransferModule::initialize() {
                     auto local_x = col * model_->getPixelSize().x();
                     auto local_y = row * model_->getPixelSize().y();
 
-                    Eigen::Vector3d pixel_point(local_x, local_y, 0);
+                    const Eigen::Vector3d pixel_point(local_x, local_y, 0);
                     Eigen::Vector3d pixel_projection = plane_.projection(pixel_point);
                     auto pixel_gap = pixel_projection[2];
 

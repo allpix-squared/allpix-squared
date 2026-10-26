@@ -104,7 +104,7 @@ void PassiveMaterialModel::buildVolume(const std::shared_ptr<G4LogicalVolume>& w
     LOG(TRACE) << "Building passive material: " << getName();
     G4LogicalVolume* mother_log_volume = nullptr;
     if(!getMotherVolume().empty()) {
-        G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
+        const G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
         mother_log_volume = log_volume_store->GetVolume(getMotherVolume() + "_log");
     } else {
         mother_log_volume = world_log.get();

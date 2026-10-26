@@ -49,7 +49,7 @@ namespace allpix {
                 inner_size_ = {outer_size_.x() - thickness, outer_size_.y() - thickness, outer_size_.z() - thickness};
             }
 
-            std::string name = config_.getName();
+            const std::string name = config_.getName();
             // Limit the values that can be given
             if(inner_size_.x() > outer_size_.x() || inner_size_.y() > outer_size_.y() || inner_size_.z() > outer_size_.z()) {
                 throw InvalidValueError(config_, "inner_size", "inner_size_ cannot be larger than the outer_size_");

@@ -132,7 +132,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 }
 
 void GeometryConstructionG4::check_overlaps() {
-    G4PhysicalVolumeStore* phys_volume_store = G4PhysicalVolumeStore::GetInstance();
+    const G4PhysicalVolumeStore* phys_volume_store = G4PhysicalVolumeStore::GetInstance();
     LOG(TRACE) << "Checking overlaps";
     bool overlapFlag = false;
 

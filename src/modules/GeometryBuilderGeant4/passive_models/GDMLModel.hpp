@@ -96,7 +96,7 @@ namespace allpix {
                 name_list.push_back(gdml_daughter_name);
 
                 // Add offset and rotation to current daughter location
-                G4ThreeVector position_vector = toG4Vector(position_);
+                const G4ThreeVector position_vector = toG4Vector(position_);
                 auto* daughter_rotation = gdml_daughter->GetRotation();
                 // It seems that in the case of a trivial rotation the daughter_rotation can be a nullptr
                 auto* rotation_matrix =

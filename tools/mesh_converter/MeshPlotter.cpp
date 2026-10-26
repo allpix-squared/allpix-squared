@@ -154,9 +154,9 @@ int main(int argc, char** argv) {
 
         FieldParser<double> field_parser(quantity);
         auto field_data = field_parser.getByFileName(file_name, units);
-        size_t xdiv = field_data.getDimensions()[0];
-        size_t ydiv = field_data.getDimensions()[1];
-        size_t zdiv = field_data.getDimensions()[2];
+        const size_t xdiv = field_data.getDimensions()[0];
+        const size_t ydiv = field_data.getDimensions()[1];
+        const size_t zdiv = field_data.getDimensions()[2];
 
         LOG(STATUS) << "Number of divisions in x/y/z: " << xdiv << "/" << ydiv << "/" << zdiv;
 

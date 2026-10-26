@@ -64,8 +64,8 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detec
 G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory* /*ROhist*/) {
     // Get the step parameters
     auto edep = step->GetTotalEnergyDeposit();
-    G4StepPoint* preStep = step->GetPreStepPoint();
-    G4StepPoint* postStep = step->GetPostStepPoint();
+    const G4StepPoint* preStep = step->GetPreStepPoint();
+    const G4StepPoint* postStep = step->GetPostStepPoint();
     LOG(TRACE) << "Distance of this step: " << (postStep->GetPosition() - preStep->GetPosition()).mag();
 
     // Get Transportaion Matrix

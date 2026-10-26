@@ -417,9 +417,9 @@ std::optional<ROOT::Math::XYZPoint> DetectorModel::Implant::intersect(const ROOT
         };
 
         // Calculate quadratic parameters with semimajor/minor axes (half-diameter) and discriminant.
-        double A = 4 * dir.x() * dir.x() / size_.x() / size_.x() + 4 * dir.y() * dir.y() / size_.y() / size_.y();
-        double B = 8 * pos.x() * dir.x() / size_.x() / size_.x() + 8 * pos.y() * dir.y() / size_.y() / size_.y();
-        double C = 4 * pos.x() * pos.x() / size_.x() / size_.x() + 4 * pos.y() * pos.y() / size_.y() / size_.y() - 1;
+        const double A = 4 * dir.x() * dir.x() / size_.x() / size_.x() + 4 * dir.y() * dir.y() / size_.y() / size_.y();
+        const double B = 8 * pos.x() * dir.x() / size_.x() / size_.x() + 8 * pos.y() * dir.y() / size_.y() / size_.y();
+        const double C = 4 * pos.x() * pos.x() / size_.x() / size_.x() + 4 * pos.y() * pos.y() / size_.y() / size_.y() - 1;
         auto discriminant = B * B - 4 * A * C;
 
         // No intersection with negative discriminant:

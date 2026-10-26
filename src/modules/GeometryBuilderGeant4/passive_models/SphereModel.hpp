@@ -49,7 +49,7 @@ namespace allpix {
             arc_length_phi_ = config_.get<double>("arc_length_phi", 360 * CLHEP::deg);
             starting_angle_theta_ = config_.get<double>("starting_angle_theta", 0);
             arc_length_theta_ = config_.get<double>("arc_length_theta", 180 * CLHEP::deg);
-            std::string name = config_.getName();
+            const std::string name = config_.getName();
 
             // Limit the values that can be given
             if(inner_radius_ >= outer_radius_) {

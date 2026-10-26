@@ -150,7 +150,7 @@ bool DatabaseWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
             return false;
         }
         const Object& first_object = object_array[0];
-        std::string class_name = allpix::demangle(typeid(first_object).name());
+        const auto class_name = allpix::demangle(typeid(first_object).name());
 
         // Check if this message should be kept
         if((!include_.empty() && include_.find(class_name) == include_.end()) ||
@@ -192,7 +192,7 @@ void DatabaseWriterModule::run(Event* event) {
 
         // Writing entry to event table
         auto event_row = transaction.exec(pqxx::prepped{"add_event"}, pqxx::params{run_nr_, event->number}).one_row();
-        int event_nr = event_row.front().as<int>();
+        const auto event_nr = event_row.front().as<int>();
 
         // Looping through messages
         for(auto& pair : messages) {
@@ -201,7 +201,7 @@ void DatabaseWriterModule::run(Event* event) {
 
             for(const auto& object : message->getObjectArray()) {
                 auto& o = object.get();
-                std::string class_name = allpix::demangle(typeid(o).name());
+                const auto class_name = allpix::demangle(typeid(o).name());
 
                 // Writing objects to corresponding database tables
                 if(class_name == "PixelHit") {
@@ -238,7 +238,7 @@ void DatabaseWriterModule::run(Event* event) {
                     pixelcharge_nr = charge_row.front().as<int>();
                     LOG(TRACE) << "Inserted PixelCharge  with db id " << pixelcharge_nr.value();
                 } else if(class_name == "PropagatedCharge") {
-                    PropagatedCharge charge = static_cast<PropagatedCharge&>(object.get());
+                    const auto charge = static_cast<PropagatedCharge&>(object.get());
                     auto prop_row = transaction
                                         .exec(pqxx::prepped{"add_propagatedcharge"},
                                               pqxx::params{run_nr_,
