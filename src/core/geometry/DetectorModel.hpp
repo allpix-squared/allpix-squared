@@ -78,7 +78,7 @@ namespace allpix {
          * @param stack Stack with the configuration for this model
          * @return Detector model instantiated from the configuration
          */
-        static std::shared_ptr<DetectorModel> factory(std::string name, const ConfigStack&);
+        static std::shared_ptr<DetectorModel> factory(std::string name, const ConfigStack& stack);
 
         /**
          * @brief Helper method to determine if this detector model is of a given type

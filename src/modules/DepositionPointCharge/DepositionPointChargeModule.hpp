@@ -66,14 +66,14 @@ namespace allpix {
          * @param event Pointer to current event
          * @param position
          */
-        void deposit_point(Event*, const ROOT::Math::XYZPoint& position);
+        void deposit_point(Event* event, const ROOT::Math::XYZPoint& position);
 
         /**
          * @brief Helper function to deposit charges along a line
          * @param event Pointer to current event
          * @param position
          */
-        void deposit_line(Event*, const ROOT::Math::XYZPoint& position);
+        void deposit_line(Event* event, const ROOT::Math::XYZPoint& position);
 
         /**
          * @brief Finds and returns the points where a line with mip_direction through a given point intersects the sensor

@@ -58,7 +58,12 @@ namespace allpix {
      */
     class None : virtual public RecombinationModel {
     public:
-        bool operator()(const CarrierType&, double, double, double) const override { return false; };
+        bool operator()(const CarrierType& /*type*/,
+                        double /*doping*/,
+                        double /*survival_prob*/,
+                        double /*timestep*/) const override {
+            return false;
+        };
     };
 
     /**
@@ -125,7 +130,9 @@ namespace allpix {
         };
 
     protected:
-        double lifetime(const CarrierType&, double doping) const { return 1. / (auger_coefficient_ * doping * doping); }
+        double lifetime(const CarrierType& /*type*/, double doping) const {
+            return 1. / (auger_coefficient_ * doping * doping);
+        }
 
     private:
         double auger_coefficient_;
@@ -163,7 +170,7 @@ namespace allpix {
         ConstantLifetime(double electron_lifetime, double hole_lifetime)
             : electron_lifetime_(electron_lifetime), hole_lifetime_(hole_lifetime) {}
 
-        bool operator()(const CarrierType& type, double, double survival_prob, double timestep) const override {
+        bool operator()(const CarrierType& type, double /*doping*/, double survival_prob, double timestep) const override {
             return survival_prob <
                    (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? electron_lifetime_ : hole_lifetime_)));
         };

@@ -29,7 +29,7 @@ using namespace allpix;
 
 thread_local std::shared_ptr<pqxx::connection> DatabaseWriterModule::conn_ = nullptr;
 
-DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager*)
+DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager* /*geo_manager*/)
     : SequentialModule(config), messenger_(messenger) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();

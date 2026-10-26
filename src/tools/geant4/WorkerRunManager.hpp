@@ -109,7 +109,7 @@ namespace allpix {
          *
          * Merge the run results with the master results. It will now do nothing.
          */
-        void MergePartialResults(G4bool) override {}
+        void MergePartialResults(G4bool /*mergeEvents*/) override {}
 #endif
     };
 } // namespace allpix

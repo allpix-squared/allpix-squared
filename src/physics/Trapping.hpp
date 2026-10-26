@@ -53,7 +53,7 @@ namespace allpix {
          * additional possible parameter: efield_mag Magnitude of the electric field
          * @return Trapping status of the charge carrier
          */
-        virtual bool operator()(const CarrierType& type, double probability, double timestep, double) const {
+        virtual bool operator()(const CarrierType& type, double probability, double timestep, double /*efield_mag*/) const {
             return probability <
                    (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_)));
         }
@@ -76,7 +76,12 @@ namespace allpix {
      */
     class NoTrapping : virtual public TrappingModel {
     public:
-        bool operator()(const CarrierType&, double, double, double) const override { return false; };
+        bool operator()(const CarrierType& /*type*/,
+                        double /*probability*/,
+                        double /*timestep*/,
+                        double /*efield_mag*/) const override {
+            return false;
+        };
     };
 
     /**

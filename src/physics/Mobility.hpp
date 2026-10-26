@@ -254,7 +254,7 @@ namespace allpix {
             }
         }
 
-        double operator()(const CarrierType& type, double, double doping) const override {
+        double operator()(const CarrierType& type, double /*efield_mag*/, double doping) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_mu0_ +
                        ((electron_mumax_ - electron_mu0_) /
