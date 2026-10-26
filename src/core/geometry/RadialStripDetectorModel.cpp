@@ -80,7 +80,7 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
 
     // Calculations of trapezoidal wrapper dimensions
     // Total strip length
-    auto total_strip_length = std::accumulate(strip_length_.begin(), strip_length_.end(), 0);
+    auto total_strip_length = std::accumulate(strip_length_.begin(), strip_length_.end(), 0.0);
     // Distance from wrapper inner edge to its focal point
     auto radius_extension = inner_pitch_.at(0) / (2 * tan(0.5 * angular_pitch_.at(0)));
     // Maximum angle subtended by the widest strip row
