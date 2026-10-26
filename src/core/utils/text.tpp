@@ -42,7 +42,7 @@ namespace allpix {
         // Generate list of available values for the exception:
         auto v = enum_names<T>();
         std::string vstr = std::accumulate(v.begin(), v.end(), std::string(), [](const auto& a, const auto& s) {
-            return a + (a.empty() ? "" : ", ") + std::string(s.data());
+            return a + (a.empty() ? "" : ", ") + std::string(s);
         });
         std::ranges::transform(vstr, vstr.begin(), ::tolower);
         throw std::invalid_argument("invalid value, possible values are: " + vstr);
