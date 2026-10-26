@@ -246,7 +246,8 @@ std::pair<FieldFunction<ROOT::Math::XYZVector>, FieldType> ElectricFieldReaderMo
         auto z = std::make_shared<TFormula>("ez", field_functions.at(2).c_str(), false);
 
         // Check if number of parameters match up
-        if(static_cast<size_t>(x->GetNpar() + y->GetNpar() + z->GetNpar()) != field_parameters.size()) {
+        if(static_cast<size_t>(x->GetNpar()) + static_cast<size_t>(y->GetNpar()) + static_cast<size_t>(z->GetNpar()) !=
+           field_parameters.size()) {
             throw InvalidValueError(
                 config_,
                 "field_parameters",
@@ -258,10 +259,12 @@ std::pair<FieldFunction<ROOT::Math::XYZVector>, FieldType> ElectricFieldReaderMo
             x->SetParameter(n, field_parameters.at(static_cast<size_t>(n)));
         }
         for(auto n = 0; n < y->GetNpar(); ++n) {
-            y->SetParameter(n, field_parameters.at(static_cast<size_t>(n + x->GetNpar())));
+            y->SetParameter(n, field_parameters.at(static_cast<size_t>(n) + static_cast<size_t>(x->GetNpar())));
         }
         for(auto n = 0; n < z->GetNpar(); ++n) {
-            z->SetParameter(n, field_parameters.at(static_cast<size_t>(n + x->GetNpar() + y->GetNpar())));
+            z->SetParameter(n,
+                            field_parameters.at(static_cast<size_t>(n) + static_cast<size_t>(x->GetNpar()) +
+                                                static_cast<size_t>(y->GetNpar())));
         }
 
         LOG(DEBUG) << "Value of custom field at pixel center: "
