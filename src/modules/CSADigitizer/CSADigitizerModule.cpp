@@ -129,7 +129,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     } else if(model_ == DigitizerType::CSA) {
         auto ikrum = config_.get<double>("krummenacher_current");
         if(ikrum <= 0) {
-            InvalidValueError(
+            throw InvalidValueError(
                 config_, "krummenacher_current", "The Krummenacher feedback current has to be positive definite.");
         }
 
