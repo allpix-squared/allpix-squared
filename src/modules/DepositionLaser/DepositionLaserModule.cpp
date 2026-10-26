@@ -606,6 +606,12 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(con
 
     // Intersect the refracted ray with the detector
     auto intersection = intersect_with_sensor(detector, position + direction * t0, new_direction);
+    if(!intersection) {
+        // Can only happen through numerical issues, the refracted ray starts on the sensor surface
+        LOG(WARNING) << "Refracted ray does not intersect with " << detector->getName() << ", skipping photon";
+        return std::nullopt;
+    }
+
     auto [t0_refract, t1_refract] = intersection.value();
     const double crossing_distance = t1_refract - t0_refract;
 
