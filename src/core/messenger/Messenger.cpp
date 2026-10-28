@@ -11,6 +11,7 @@
 
 #include "Messenger.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <memory>
 #include <mutex>
@@ -80,13 +81,8 @@ bool Messenger::hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& 
         }
     }
     // Check if a base message generic listener exists
-    for(auto& delegate : delegates_[typeid(BaseMessage)]["*"]) {
-        if(check_send(source, message.get(), delegate.get())) {
-            return true;
-        }
-    }
-
-    return false;
+    return std::ranges::any_of(delegates_[typeid(BaseMessage)]["*"],
+                               [&](const auto& delegate) { return check_send(source, message.get(), delegate.get()); });
 }
 
 bool Messenger::isSatisfied(BaseDelegate* delegate, Event* event) {
