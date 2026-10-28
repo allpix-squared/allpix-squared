@@ -194,7 +194,12 @@ int main(int argc, char** argv) {
         // Output file format:
         auto format = config.get<std::string>("model", "apf");
         std::ranges::transform(format, format.begin(), ::tolower);
-        const FileType file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
+        FileType file_type = FileType::UNKNOWN;
+        if(format == "init") {
+            file_type = FileType::INIT;
+        } else if(format == "apf") {
+            file_type = FileType::APF;
+        }
         if(file_type == FileType::UNKNOWN) {
             throw allpix::InvalidValueError(config, "model", "only models 'apf' and 'init' are currently supported");
         }

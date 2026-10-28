@@ -43,19 +43,26 @@ namespace eutelescope {
     static const std::string gTrackerPulseEncoding = "sensorID:7,xSeed:12,ySeed:12,xCluSize:5,yCluSize:5,type:5,quality:5";
     static const std::string gTrackerDataEncoding = "sensorID:7,sparsePixelType:5";
 
-    enum HitProperties { kHitInGlobalCoord = 1L << 0, kFittedHit = 1L << 1, kSimulatedHit = 1L << 2, kDeltaHit = 1L << 3 };
-    enum ClusterType {
-        kEUTelFFClusterImpl = 0,
-        kEUTelSparseClusterImpl = 1,
-        kEUTelDFFClusterImpl = 2,
-        kEUTelBrickedClusterImpl = 3,
-        kEUTelGenericSparseClusterImpl = 4,
-        kUnknown = 31
-    };
+    namespace {
+        enum class HitProperties : std::uint8_t {
+            kHitInGlobalCoord = 1U << 0U,
+            kFittedHit = 1U << 1U,
+            kSimulatedHit = 1U << 2U,
+            kDeltaHit = 1U << 3U
+        };
+        enum class ClusterType : std::uint8_t {
+            kEUTelFFClusterImpl = 0,
+            kEUTelSparseClusterImpl = 1,
+            kEUTelDFFClusterImpl = 2,
+            kEUTelBrickedClusterImpl = 3,
+            kEUTelGenericSparseClusterImpl = 4,
+            kUnknown = 31
+        };
+    } // namespace
 
 } // namespace eutelescope
 
-inline std::array<long double, 3> getRotationAnglesFromMatrix(const ROOT::Math::Rotation3D& rot_mat) {
+static std::array<long double, 3> getRotationAnglesFromMatrix(const ROOT::Math::Rotation3D& rot_mat) {
     double r00 = 0;
     double r01 = 0;
     double r02 = 0;
