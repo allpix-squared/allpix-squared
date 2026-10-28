@@ -53,16 +53,16 @@ using allpix::Log;
 using allpix::ThreadPool;
 using allpix::Units;
 
-void interrupt_handler(int /*unused*/);
-
-/**
- * @brief Handle termination request (CTRL+C)
- */
-void interrupt_handler(int /*unused*/) {
-    LOG(STATUS) << "Interrupted! Aborting conversion...";
-    Log::finish();
-    std::quick_exit(0);
-}
+namespace {
+    /**
+     * @brief Handle termination request (CTRL+C)
+     */
+    void interrupt_handler(int /*unused*/) {
+        LOG(STATUS) << "Interrupted! Aborting conversion...";
+        Log::finish();
+        std::quick_exit(0);
+    }
+} // namespace
 
 int main(int argc, char** argv) {
     using XYZVectorUInt = DisplacementVector3D<Cartesian3D<unsigned int>>;

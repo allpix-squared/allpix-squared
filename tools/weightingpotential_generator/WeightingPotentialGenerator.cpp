@@ -48,8 +48,6 @@
 
 using allpix::ThreadPool;
 
-void interrupt_handler(int /*unused*/);
-
 bool ROOT::Math::operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& lhs,
                            const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& rhs) {
     if(lhs.x() == rhs.x()) {
@@ -58,14 +56,16 @@ bool ROOT::Math::operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Ca
     return lhs.x() < rhs.x();
 }
 
-/**
- * @brief Handle termination request (CTRL+C)
- */
-void interrupt_handler(int /*unused*/) {
-    LOG(STATUS) << "Interrupted! Aborting generation...";
-    allpix::Log::finish();
-    std::quick_exit(0);
-}
+namespace {
+    /**
+     * @brief Handle termination request (CTRL+C)
+     */
+    void interrupt_handler(int /*unused*/) {
+        LOG(STATUS) << "Interrupted! Aborting generation...";
+        allpix::Log::finish();
+        std::quick_exit(0);
+    }
+} // namespace
 
 int main(int argc, char** argv) {
     using XYZVectorInt = ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<size_t>>;
