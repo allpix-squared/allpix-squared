@@ -152,12 +152,12 @@ namespace allpix {
             if(minorityType != type) {
                 // Auger only applies to minority charge carriers, if we have a majority carrier just return SRH lifetime:
                 return ShockleyReadHall::operator()(type, doping, survival_prob, timestep); // NOLINT
-            } else {
-                // If we have a minority charge carrier, combine the lifetimes:
-                auto combined_lifetime =
-                    1. / (1. / ShockleyReadHall::lifetime(type, doping) + 1. / Auger::lifetime(type, doping));
-                return survival_prob < (1 - std::exp(-1. * timestep / combined_lifetime));
             }
+
+            // If we have a minority charge carrier, combine the lifetimes:
+            auto combined_lifetime =
+                1. / (1. / ShockleyReadHall::lifetime(type, doping) + 1. / Auger::lifetime(type, doping));
+            return survival_prob < (1 - std::exp(-1. * timestep / combined_lifetime));
         };
     };
 
