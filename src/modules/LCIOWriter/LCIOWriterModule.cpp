@@ -483,7 +483,7 @@ void LCIOWriterModule::finalize() {
         geometry_file << "  <global detectorName=\"" << detector_name_ << "\"/>\n";
         if(geo_mgr_->getMagneticFieldType() == MagneticFieldType::CONSTANT) {
             const ROOT::Math::XYZVector b_field = geo_mgr_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
-            geometry_file << "  <BField type=\"ConstantBField\" x=\"" << Units::convert(b_field.x(), "T") << "\" y=\""
+            geometry_file << R"(  <BField type="ConstantBField" x=")" << Units::convert(b_field.x(), "T") << "\" y=\""
                           << Units::convert(b_field.y(), "T") << "\" z=\"" << Units::convert(b_field.z(), "T") << "\"/>\n";
         } else if(geo_mgr_->getMagneticFieldType() == MagneticFieldType::NONE) {
             geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>\n";
