@@ -100,15 +100,15 @@ bool PixelDetectorModel::isOnSensorBoundary(const ROOT::Math::XYZPoint& local_po
  * The definition of the pixel grid size is determined by the detector model
  */
 bool PixelDetectorModel::isWithinMatrix(const Pixel::Index& pixel_index) const {
-    return !(pixel_index.x() < 0 || pixel_index.x() >= static_cast<int>(number_of_pixels_.x()) || pixel_index.y() < 0 ||
-             pixel_index.y() >= static_cast<int>(number_of_pixels_.y()));
+    return pixel_index.x() >= 0 && pixel_index.x() < static_cast<int>(number_of_pixels_.x()) && pixel_index.y() >= 0 &&
+           pixel_index.y() < static_cast<int>(number_of_pixels_.y());
 }
 
 /**
  * The definition of the pixel grid size is determined by the detector model
  */
 bool PixelDetectorModel::isWithinMatrix(const int x, const int y) const {
-    return !(x < 0 || x >= static_cast<int>(number_of_pixels_.x()) || y < 0 || y >= static_cast<int>(number_of_pixels_.y()));
+    return x >= 0 && x < static_cast<int>(number_of_pixels_.x()) && y >= 0 && y < static_cast<int>(number_of_pixels_.y());
 }
 
 /**
