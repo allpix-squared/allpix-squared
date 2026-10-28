@@ -142,7 +142,8 @@ void DetectorHistogrammerModule::initialize() {
                                                    std::max({global_ll.y(), global_ur.y(), global_lr.y(), global_ul.y()}));
         hit_map_global_mc_->SetOption("colz");
 
-        const std::string hit_map_local_title = "Hitmap (" + getDetector()->getName() + ") in local coord.;x (mm);y (mm);hits";
+        const std::string hit_map_local_title =
+            "Hitmap (" + getDetector()->getName() + ") in local coord.;x (mm);y (mm);hits";
         hit_map_local_ = CreateHistogram<TH2D>("hit_map_local",
                                                hit_map_local_title.c_str(),
                                                static_cast<int>(model->getMatrixSize().x() / model->getPixelSize().x()),
@@ -174,7 +175,8 @@ void DetectorHistogrammerModule::initialize() {
         charge_map_->setAdjustAxisDivisions();
 
         // Create histogram of cluster map
-        const std::string cluster_map_title = "Cluster map (" + getDetector()->getName() + ");x (pixels);y (pixels); clusters";
+        const std::string cluster_map_title =
+            "Cluster map (" + getDetector()->getName() + ");x (pixels);y (pixels); clusters";
         cluster_map_ = CreateHistogram<TH2D>(
             "cluster_map", cluster_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
         cluster_map_->SetOption("colz");
@@ -268,12 +270,14 @@ void DetectorHistogrammerModule::initialize() {
         "cluster_size", "cluster_size", cluster_size_title.c_str(), max_cluster_size, 0.5, max_cluster_size + 0.5);
     cluster_size_->setAdjustAxisRanges();
 
-    const std::string cluster_size_x_title = "Cluster size in X (" + getDetector()->getName() + ");cluster size x [px];clusters";
+    const std::string cluster_size_x_title =
+        "Cluster size in X (" + getDetector()->getName() + ");cluster size x [px];clusters";
     cluster_size_x_ = CreateHistogramSubdirectory<TH1D>(
         "cluster_size", "cluster_size_x", cluster_size_x_title.c_str(), xpixels, 0.5, xpixels + 0.5);
     cluster_size_x_->setAdjustAxisRanges();
 
-    const std::string cluster_size_y_title = "Cluster size in Y (" + getDetector()->getName() + ");cluster size y [px];clusters";
+    const std::string cluster_size_y_title =
+        "Cluster size in Y (" + getDetector()->getName() + ");cluster size y [px];clusters";
     cluster_size_y_ = CreateHistogramSubdirectory<TH1D>(
         "cluster_size", "cluster_size_y", cluster_size_y_title.c_str(), ypixels, 0.5, ypixels + 0.5);
     cluster_size_y_->setAdjustAxisRanges();
@@ -354,7 +358,8 @@ void DetectorHistogrammerModule::initialize() {
                                                                   inpixel_bins.y(),
                                                                   -pitch_y / 2,
                                                                   pitch_y / 2);
-        const std::string residual_x_detector_title = "Mean absolute deviation of residual in X (" + getDetector()->getName() +
+        const std::string residual_x_detector_title = "Mean absolute deviation of residual in X (" +
+                                                      getDetector()->getName() +
                                                       ");x (pixels);y (pixels);MAD(#Deltax) [#mum]";
         residual_x_detector_ = CreateHistogramSubdirectory<TProfile2D>("residuals",
                                                                        "residual_x_detector",
@@ -378,7 +383,8 @@ void DetectorHistogrammerModule::initialize() {
                                                                   inpixel_bins.y(),
                                                                   -pitch_y / 2,
                                                                   pitch_y / 2);
-        const std::string residual_y_detector_title = "Mean absolute deviation of residual in Y (" + getDetector()->getName() +
+        const std::string residual_y_detector_title = "Mean absolute deviation of residual in Y (" +
+                                                      getDetector()->getName() +
                                                       ");x (pixels);y (pixels);MAD(#Deltay) [#mum]";
         residual_y_detector_ = CreateHistogramSubdirectory<TProfile2D>("residuals",
                                                                        "residual_y_detector",
@@ -452,7 +458,8 @@ void DetectorHistogrammerModule::initialize() {
 
     // Create cluster charge plot
     auto max_cluster_charge = Units::convert(config_.get<double>("max_cluster_charge"), "ke");
-    const std::string cluster_charge_title = "Cluster charge (" + getDetector()->getName() + ");cluster charge [ke];clusters";
+    const std::string cluster_charge_title =
+        "Cluster charge (" + getDetector()->getName() + ");cluster charge [ke];clusters";
     cluster_charge_ = CreateHistogramSubdirectory<TH1D>(
         "charge", "cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
     cluster_charge_->setAdjustAxisRanges();
@@ -466,7 +473,8 @@ void DetectorHistogrammerModule::initialize() {
     pixel_charge_ = CreateHistogramSubdirectory<TH1D>(
         "charge", "pixel_charge", pixel_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
 
-    const std::string total_charge_title = "Total charge per event (" + getDetector()->getName() + ");total charge [ke];events";
+    const std::string total_charge_title =
+        "Total charge per event (" + getDetector()->getName() + ");total charge [ke];events";
     total_charge_ = CreateHistogramSubdirectory<TH1D>(
         "charge", "total_charge", total_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge * 4));
 
@@ -480,7 +488,8 @@ void DetectorHistogrammerModule::initialize() {
         auto row_radii = radial_model->getRowRadii();
 
         if(output_maps_) {
-            const std::string polar_hit_map_title = "Polar hitmap (" + getDetector()->getName() + ");#varphi (rad);r [mm];hits";
+            const std::string polar_hit_map_title =
+                "Polar hitmap (" + getDetector()->getName() + ");#varphi (rad);r [mm];hits";
             polar_hit_map_ = CreateHistogramSubdirectory<TH2D>("polar",
                                                                "polar_hit_map",
                                                                polar_hit_map_title.c_str(),

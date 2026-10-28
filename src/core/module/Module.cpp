@@ -34,7 +34,8 @@
 
 using namespace allpix;
 
-Module::Module(Configuration& config, Messenger* messenger) : config_(config), logger_(generate_logger(config)), messenger_(messenger) {}
+Module::Module(Configuration& config, Messenger* messenger)
+    : config_(config), logger_(generate_logger(config)), messenger_(messenger) {}
 
 /**
  * @note The remove_delegate can throw in theory, but this should never happen in practice
