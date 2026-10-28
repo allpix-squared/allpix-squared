@@ -453,7 +453,7 @@ namespace allpix {
         };
 
     private:
-        double vsat(double vsat300, double a, double temperature) const {
+        static double vsat(double vsat300, double a, double temperature) {
             return vsat300 / ((1 - a) + a * (temperature / 300));
         };
 
@@ -553,7 +553,8 @@ namespace allpix {
         std::unique_ptr<TFormula> electron_mobility_;
         std::unique_ptr<TFormula> hole_mobility_;
 
-        std::unique_ptr<TFormula> configure_mobility(const Configuration& config, const CarrierType type, bool doping) {
+        static std::unique_ptr<TFormula>
+        configure_mobility(const Configuration& config, const CarrierType type, bool doping) {
             const std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
             auto function = config.get<std::string>("mobility_function_" + name);
             auto parameters = config.getArray<double>("mobility_parameters_" + name, {});

@@ -201,7 +201,8 @@ namespace allpix {
         std::unique_ptr<TFormula> electron_lifetime_;
         std::unique_ptr<TFormula> hole_lifetime_;
 
-        std::unique_ptr<TFormula> configure_lifetime(const Configuration& config, const CarrierType type, bool doping) {
+        static std::unique_ptr<TFormula>
+        configure_lifetime(const Configuration& config, const CarrierType type, bool doping) {
             const std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
             auto function = config.get<std::string>("lifetime_function_" + name);
             auto parameters = config.getArray<double>("lifetime_parameters_" + name, {});
