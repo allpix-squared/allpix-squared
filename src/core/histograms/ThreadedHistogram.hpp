@@ -135,7 +135,7 @@ namespace allpix {
          *
          * Based on get in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html, optimized for faster retrieval.
          */
-        std::shared_ptr<T> Get();
+        std::shared_ptr<T> Get(); // NOLINT(readability-identifier-naming)
 
     protected:
         /**
