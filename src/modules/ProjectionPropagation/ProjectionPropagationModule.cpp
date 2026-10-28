@@ -238,7 +238,7 @@ void ProjectionPropagationModule::run(Event* event) {
             // Add point of deposition to the output plots if requested
             if(output_linegraphs_) {
                 carrier_path = CarrierPath(charge_per_step, deposit.getType(), CarrierState::HALTED, &deposit);
-                carrier_path.addPoint(initial_position, deposit.getGlobalTime());
+                carrier_path.addPoint(initial_position, deposit.getLocalTime());
             }
 
             // Get the electric field at the position of the deposited charge and the top of the sensor:
@@ -277,7 +277,7 @@ void ProjectionPropagationModule::run(Event* event) {
                     // Add position after diffusion to line graphs:
                     if(output_linegraphs_) {
                         // FIXME time
-                        carrier_path.addPoint(local_position_diffusion, deposit.getGlobalTime());
+                        carrier_path.addPoint(local_position_diffusion, deposit.getLocalTime());
                     }
 
                     continue;
@@ -310,7 +310,7 @@ void ProjectionPropagationModule::run(Event* event) {
                     // Add position at sensor intercept:
                     if(output_linegraphs_) {
                         auto intercept = getDetector()->getModel()->getSensorIntercept(initial_position, position);
-                        carrier_path.addPoint(intercept, deposit.getGlobalTime() + diffusion_time);
+                        carrier_path.addPoint(intercept, deposit.getLocalTime() + diffusion_time);
                     }
 
                     continue;
@@ -318,7 +318,7 @@ void ProjectionPropagationModule::run(Event* event) {
 
                 // Add potential position after diffusion to line graphs:
                 if(output_linegraphs_) {
-                    carrier_path.addPoint(position, deposit.getGlobalTime() + diffusion_time);
+                    carrier_path.addPoint(position, deposit.getLocalTime() + diffusion_time);
                 }
 
                 LOG(TRACE) << "Charge diffused to position: " << Units::display(position, {"mm", "um"});
@@ -400,7 +400,7 @@ void ProjectionPropagationModule::run(Event* event) {
 
             // Finalize line graph by adding final position
             if(output_linegraphs_) {
-                carrier_path.addPoint(local_position, global_time);
+                carrier_path.addPoint(local_position, local_time);
                 carrier_paths.push_back(std::move(carrier_path));
             }
 

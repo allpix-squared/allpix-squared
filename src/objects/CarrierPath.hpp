@@ -65,13 +65,13 @@ namespace allpix {
 
         /**
          * @brief Add a point to the carrier trajectory
-         * @param position New position to add to trajectory
-         * @param time Time in global frame of reference when this position was reached
+         * @param position New position in local coordinates to add to trajectory
+         * @param time Time in local frame of reference when this position was reached
          */
         void addPoint(ROOT::Math::XYZPoint position, double time) { points_.emplace_back(std::move(position), time); }
 
         /**
-         * @brief Obtain the deposition time of the carrier in global time reference
+         * @brief Obtain the deposition time of the carrier in local time reference
          * @details This method will use the deposition time of the related DepositedCharge object if available and return
          *          the first timestamp of the trajectory otherwise. If neither is available, zero is returned.
          * @return Deposition time of this charge carrier
