@@ -138,8 +138,8 @@ namespace allpix {
     /**
      * Defined here rather than in unit.tpp to avoid a circular include between text.h and unit.h
      */
-    template <typename T> std::string Units::display(T inp, std::initializer_list<std::string> units) {
-        auto split = allpix::split<Units::UnitType>(allpix::to_string(std::move(inp)));
+    template <typename T> std::string Units::display(const T& inp, std::initializer_list<std::string> units) {
+        auto split = allpix::split<Units::UnitType>(allpix::to_string(inp));
 
         std::string ret_str;
         if(split.size() > 1) {
