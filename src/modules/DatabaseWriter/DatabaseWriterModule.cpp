@@ -170,7 +170,7 @@ bool DatabaseWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
 }
 
 void DatabaseWriterModule::run(Event* event) {
-    auto messages = messenger_->fetchFilteredMessages(this, event);
+    auto messages = Messenger::fetchFilteredMessages(this, event);
 
     // TO BE NOTED
     // the correct relations of objects in the database are guaranteed by the fact that sequence of dispatched messages
