@@ -14,7 +14,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <math.h>
 #include <memory>
 #include <string>
 #include <utility>

@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -23,7 +24,6 @@
 #include <memory>
 #include <regex>
 #include <sstream>
-#include <stdlib.h>
 #include <string>
 #include <utility>
 
@@ -114,9 +114,8 @@ void NetlistWriterModule::initialize() {
             source_line_number_ = line_number;
 
             // regex for the ISOURCE line
-            std::regex source_regex;
-            (target_ == Target::SPECTRE) ? source_regex = (R"(^\S+\s+\((\S+)\s+(\S+)\).*)")
-                                         : source_regex = (R"(^\S+\s+(\S+)\s+(\S+))");
+            const std::regex source_regex(target_ == Target::SPECTRE ? R"(^\S+\s+\((\S+)\s+(\S+)\).*)"
+                                                                     : R"(^\S+\s+(\S+)\s+(\S+))");
             std::smatch connection_match;
             if(std::regex_search(line, connection_match, source_regex)) {
                 LOG(INFO) << "Found connections in netlist template: " << connection_match[0];
@@ -136,9 +135,8 @@ void NetlistWriterModule::initialize() {
             subckt_line_number_ = line_number;
 
             // regex for the SUBCKT line
-            std::regex subckt_regex;
-            (target_ == Target::SPECTRE) ? subckt_regex = (R"(^(\w+)\s+\((.+)\)\s+(\w+))")
-                                         : subckt_regex = (R"(^(\S+)\s+(.*?)\s+(\S+)$)");
+            const std::regex subckt_regex(target_ == Target::SPECTRE ? R"(^(\w+)\s+\((.+)\)\s+(\w+))"
+                                                                     : R"(^(\S+)\s+(.*?)\s+(\S+)$)");
             std::smatch connection_match;
 
             if(std::regex_search(line, connection_match, subckt_regex)) {

@@ -12,6 +12,7 @@
 #ifndef ALLPIX_PASSIVE_MATERIAL_BOX_H
 #define ALLPIX_PASSIVE_MATERIAL_BOX_H
 
+#include <algorithm>
 #include <string>
 
 #include <G4Box.hh>

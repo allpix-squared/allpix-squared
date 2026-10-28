@@ -54,15 +54,19 @@ namespace allpix {
             // Limit the values that can be given
             if(inner_radius_ >= outer_radius_) {
                 throw InvalidValueError(config_, "inner_radius", "inner_radius cannot be larger than the outer_radius");
-            } else if(thickness > outer_radius_) {
+            }
+            if(thickness > outer_radius_) {
                 throw InvalidValueError(config_, "thickness", "thickness cannot be larger than the outer_radius");
-            } else if(arc_length_phi_ > 360 * CLHEP::deg) {
+            }
+            if(arc_length_phi_ > 360 * CLHEP::deg) {
                 throw InvalidValueError(
                     config_, "arc_length_phi", "arc_length_phi exceeds the maximum value of 360 degrees");
-            } else if(starting_angle_theta_ > 180 * CLHEP::deg) {
+            }
+            if(starting_angle_theta_ > 180 * CLHEP::deg) {
                 throw InvalidValueError(
                     config_, "starting_angle_theta", "starting_angle_theta exceeds the maximum value of 180 degrees");
-            } else if(starting_angle_theta_ + arc_length_theta_ > 180 * CLHEP::deg) {
+            }
+            if(starting_angle_theta_ + arc_length_theta_ > 180 * CLHEP::deg) {
                 LOG(WARNING) << "starting_angle_theta and arc_length_theta combined cannot be larger than 180 degrees for '"
                              << name << "'. arc_length_theta will be set to 180deg - starting_angle_theta = "
                              << Units::display(180 * CLHEP::deg - starting_angle_theta_, "deg");

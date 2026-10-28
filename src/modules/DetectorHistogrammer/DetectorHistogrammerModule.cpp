@@ -781,12 +781,9 @@ std::vector<Cluster> DetectorHistogrammerModule::do_clustering(std::shared_ptr<P
         LOG(TRACE) << "Creating new cluster with seed: " << pixel_hit->getPixel().getIndex();
 
         auto touching = [&](const PixelHit* pixel) {
-            for(const auto& cluster_pixel : cluster.getPixelHits()) {
-                if(detector_->getModel()->areNeighbors(cluster_pixel->getIndex(), pixel->getIndex(), 1)) {
-                    return true;
-                }
-            }
-            return false;
+            return std::ranges::any_of(cluster.getPixelHits(), [&](const auto& cluster_pixel) {
+                return detector_->getModel()->areNeighbors(cluster_pixel->getIndex(), pixel->getIndex(), 1);
+            });
         };
 
         // Keep adding pixels to the cluster:

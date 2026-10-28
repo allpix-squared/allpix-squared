@@ -276,12 +276,12 @@ std::pair<FieldFunction<ROOT::Math::XYZVector>, FieldType> ElectricFieldReaderMo
                                                  z->Eval(pos.x(), pos.y(), pos.z()));
                 },
                 FieldType::CUSTOM};
-    } else {
-        throw InvalidValueError(config_,
-                                "field_function",
-                                "field function either needs one component (z) or three components (x,y,z) but " +
-                                    std::to_string(field_functions.size()) + " were given");
     }
+
+    throw InvalidValueError(config_,
+                            "field_function",
+                            "field function either needs one component (z) or three components (x,y,z) but " +
+                                std::to_string(field_functions.size()) + " were given");
 }
 
 /**

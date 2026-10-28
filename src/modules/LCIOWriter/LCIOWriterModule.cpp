@@ -11,6 +11,8 @@
 
 #include "LCIOWriterModule.hpp"
 
+#include <array>
+#include <cstdint>
 #include <fstream>
 #include <string>
 #include <utility>

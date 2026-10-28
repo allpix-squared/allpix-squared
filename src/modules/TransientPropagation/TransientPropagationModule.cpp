@@ -16,6 +16,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TProfile.h>
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <functional>

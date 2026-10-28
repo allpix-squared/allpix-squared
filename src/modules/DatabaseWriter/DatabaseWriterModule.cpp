@@ -353,5 +353,5 @@ void DatabaseWriterModule::finalizeThread() {
 }
 
 void DatabaseWriterModule::finalize() {
-    LOG(STATUS) << "Wrote " << write_cnt_ << " objects from " << msg_cnt_ << " messages to database" << std::endl;
+    LOG(STATUS) << "Wrote " << write_cnt_ << " objects from " << msg_cnt_ << " messages to database";
 }
