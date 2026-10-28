@@ -23,5 +23,6 @@ namespace allpix {
     /**
      * @brief Tuple containing all objects
      */
-    using OBJECTS = std::tuple<MCTrack, MCParticle, DepositedCharge, PropagatedCharge, CarrierPath, PixelCharge, PixelHit, PixelPulse>;
+    using OBJECTS =
+        std::tuple<MCTrack, MCParticle, DepositedCharge, PropagatedCharge, CarrierPath, PixelCharge, PixelHit, PixelPulse>;
 } // namespace allpix
