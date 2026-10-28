@@ -22,10 +22,8 @@
 #include <future>
 #include <iostream>
 #include <limits>
-#include <math.h>
 #include <memory>
 #include <ostream>
-#include <signal.h>
 #include <stdexcept>
 #include <string>
 #include <thread>

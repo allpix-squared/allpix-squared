@@ -20,7 +20,6 @@
 #include <iostream>
 #include <memory>
 #include <ostream>
-#include <signal.h>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -47,10 +46,11 @@
 using namespace allpix;
 using namespace std::chrono_literals;
 
-std::unique_ptr<Allpix> apx;
-
 // Global variable for signal handler
 namespace {
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+    std::unique_ptr<Allpix> apx;
+
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
     volatile std::sig_atomic_t signal_v{0};
 } // namespace
