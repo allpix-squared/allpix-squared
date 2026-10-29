@@ -48,7 +48,7 @@ namespace allpix {
             length_ = config_.get<double>("length");
             starting_angle_ = config_.get<double>("starting_angle", 0);
             arc_length_ = config_.get<double>("arc_length", 360 * CLHEP::deg);
-            std::string name = config_.getName();
+            const std::string name = config_.getName();
 
             // Limit the values that can be given
             if(inner_radius_ >= outer_radius_) {

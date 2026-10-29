@@ -33,7 +33,7 @@ namespace allpix {
          * @param parent_track_id The custom id of parent track
          * @param aTrack The Geant4 track
          */
-        TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track* const aTrack);
+        TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track* aTrack);
 
         /**
          * @brief Getter for custom id of track
@@ -51,7 +51,7 @@ namespace allpix {
          * @brief Update track info from the G4Track
          * @param aTrack A pointer to a G4Track instance which represents this track's final state
          */
-        void finalizeInfo(const G4Track* const aTrack);
+        void finalizeInfo(const G4Track* aTrack);
 
         /**
          * @brief Get the point where the track originated in global coordinates

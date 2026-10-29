@@ -183,10 +183,10 @@ void Module::set_histogram_manager(HistogramManager* histogram_manager) {
 }
 
 void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) { delegates_.emplace_back(messenger, delegate); }
-bool Module::check_delegates(Messenger* messenger, Event* event) {
+bool Module::check_delegates(Messenger* /*messenger*/, Event* event) {
     // Return false if any delegate is not satisfied
-    return std::ranges::all_of(delegates_, [messenger, event](const auto& delegate) {
-        return !delegate.second->isRequired() || messenger->isSatisfied(delegate.second, event);
+    return std::ranges::all_of(delegates_, [event](const auto& delegate) {
+        return !delegate.second->isRequired() || Messenger::isSatisfied(delegate.second, event);
     });
 }
 

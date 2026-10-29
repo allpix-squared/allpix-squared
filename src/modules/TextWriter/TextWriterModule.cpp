@@ -81,8 +81,8 @@ bool TextWriterModule::filter(const std::shared_ptr<BaseMessage>& message, const
             const std::string class_name = allpix::demangle(typeid(first_object).name());
 
             // Check if this message should be kept
-            if((!include_.empty() && include_.find(class_name) == include_.end()) ||
-               (!exclude_.empty() && exclude_.find(class_name) != exclude_.end())) {
+            if((!include_.empty() && !include_.contains(class_name)) ||
+               (!exclude_.empty() && exclude_.contains(class_name))) {
                 LOG(TRACE) << "Text writer ignored message with object " << allpix::demangle(typeid(*inst).name())
                            << " because it has been excluded or not explicitly included";
                 return false;
@@ -101,7 +101,7 @@ bool TextWriterModule::filter(const std::shared_ptr<BaseMessage>& message, const
 }
 
 void TextWriterModule::run(Event* event) {
-    auto messages = messenger_->fetchFilteredMessages(this, event);
+    auto messages = Messenger::fetchFilteredMessages(this, event);
     LOG(TRACE) << "Writing new objects to text file";
 
     // Print the current event:

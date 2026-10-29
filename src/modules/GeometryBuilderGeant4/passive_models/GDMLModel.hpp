@@ -96,7 +96,7 @@ namespace allpix {
                 name_list.push_back(gdml_daughter_name);
 
                 // Add offset and rotation to current daughter location
-                G4ThreeVector position_vector = toG4Vector(position_);
+                const G4ThreeVector position_vector = toG4Vector(position_);
                 auto* daughter_rotation = gdml_daughter->GetRotation();
                 // It seems that in the case of a trivial rotation the daughter_rotation can be a nullptr
                 auto* rotation_matrix =
@@ -151,10 +151,13 @@ namespace allpix {
          * @param  value Color representation as string
          * @return Color value as G4COlor
          */
-        G4Colour get_color(std::string value) {
+        static G4Colour get_color(std::string value) {
             std::ranges::transform(value, value.begin(), ::tolower);
 
-            int r = 256, g = 256, b = 256, a = 256;
+            int r = 256;
+            int g = 256;
+            int b = 256;
+            int a = 256;
             if(value.size() >= 6) {
                 // Value contains RGBA color
                 value.erase(std::ranges::remove(value, '#').begin(), value.end());

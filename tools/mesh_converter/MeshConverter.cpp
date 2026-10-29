@@ -22,7 +22,6 @@
 #include <future>
 #include <iostream>
 #include <memory>
-#include <signal.h>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -54,16 +53,16 @@ using allpix::Log;
 using allpix::ThreadPool;
 using allpix::Units;
 
-void interrupt_handler(int /*unused*/);
-
-/**
- * @brief Handle termination request (CTRL+C)
- */
-void interrupt_handler(int /*unused*/) {
-    LOG(STATUS) << "Interrupted! Aborting conversion...";
-    Log::finish();
-    std::quick_exit(0);
-}
+namespace {
+    /**
+     * @brief Handle termination request (CTRL+C)
+     */
+    void interrupt_handler(int /*unused*/) {
+        LOG(STATUS) << "Interrupted! Aborting conversion...";
+        Log::finish();
+        std::quick_exit(0);
+    }
+} // namespace
 
 int main(int argc, char** argv) {
     using XYZVectorUInt = DisplacementVector3D<Cartesian3D<unsigned int>>;
@@ -195,7 +194,12 @@ int main(int argc, char** argv) {
         // Output file format:
         auto format = config.get<std::string>("model", "apf");
         std::ranges::transform(format, format.begin(), ::tolower);
-        const FileType file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
+        FileType file_type = FileType::UNKNOWN;
+        if(format == "init") {
+            file_type = FileType::INIT;
+        } else if(format == "apf") {
+            file_type = FileType::APF;
+        }
         if(file_type == FileType::UNKNOWN) {
             throw allpix::InvalidValueError(config, "model", "only models 'apf' and 'init' are currently supported");
         }

@@ -56,7 +56,7 @@ WorkerRunManager::WorkerRunManager() {
 }
 
 WorkerRunManager::~WorkerRunManager() {
-    G4MTRunManager* master_run_manager = G4MTRunManager::GetMasterRunManager();
+    const G4MTRunManager* master_run_manager = G4MTRunManager::GetMasterRunManager();
 
     // Step-6: Terminate worker thread
     if(master_run_manager->GetUserWorkerInitialization() != nullptr) {
@@ -87,7 +87,7 @@ void WorkerRunManager::InitializeGeometry() {
     }
 
     // Step1: Get pointer to the physiWorld (note: needs to get the "super pointer, i.e. the one shared by all threads"
-    G4RunManagerKernel* masterKernel = G4MTRunManager::GetMasterRunManagerKernel();
+    const G4RunManagerKernel* masterKernel = G4MTRunManager::GetMasterRunManagerKernel();
     G4VPhysicalVolume* worldVol = masterKernel->GetCurrentWorld();
     // Step2:, Call a new "WorkerDefineWorldVolume( pointer from 2-, false);
     kernel->WorkerDefineWorldVolume(worldVol, false);

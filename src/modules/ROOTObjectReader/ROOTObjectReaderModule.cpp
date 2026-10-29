@@ -65,7 +65,7 @@ ROOTObjectReaderModule::~ROOTObjectReaderModule() {
  * object from its typeid.
  */
 template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCreatorMap& map) {
-    map[typeid(T)] = [&](std::vector<Object*> objects, std::shared_ptr<Detector> detector) {
+    map[typeid(T)] = [&](std::vector<Object*> objects, const std::shared_ptr<Detector>& detector) {
         std::vector<T> data;
         data.reserve(objects.size());
 
@@ -140,7 +140,7 @@ void ROOTObjectReaderModule::initialize() {
     input_file_ = std::make_unique<TFile>(input_file_name.c_str());
 
     // Read all the trees in the file
-    TList* keys = input_file_->GetListOfKeys();
+    const TList* keys = input_file_->GetListOfKeys();
     std::set<std::string> tree_names;
 
     for(auto&& object : *keys) {
@@ -155,7 +155,7 @@ void ROOTObjectReaderModule::initialize() {
             }
 
             // Check if a version of this tree has already been read
-            if(tree_names.find(tree->GetName()) != tree_names.end()) {
+            if(tree_names.contains(tree->GetName())) {
                 LOG(TRACE) << "Skipping copy of tree with name " << tree->GetName()
                            << " because one with identical name has already been processed";
                 continue;
@@ -164,8 +164,8 @@ void ROOTObjectReaderModule::initialize() {
             tree_names.insert(tree->GetName());
 
             // Check if this tree should be used
-            if((!include_.empty() && include_.find(tree->GetName()) == include_.end()) ||
-               (!exclude_.empty() && exclude_.find(tree->GetName()) != exclude_.end())) {
+            if((!include_.empty() && !include_.contains(tree->GetName())) ||
+               (!exclude_.empty() && exclude_.contains(tree->GetName()))) {
                 LOG(TRACE) << "Ignoring tree with " << tree->GetName()
                            << " objects because it has been excluded or not explicitly included";
                 continue;
@@ -222,7 +222,7 @@ void ROOTObjectReaderModule::initialize() {
     // Loop over all found trees
     for(auto& tree : trees_) {
         // Loop over the list of branches and create the set of receiver objects
-        TObjArray* branches = tree->GetListOfBranches();
+        const TObjArray* branches = tree->GetListOfBranches();
         for(int i = 0; i < branches->GetEntries(); i++) {
             auto* branch = dynamic_cast<TBranch*>(branches->At(i));
 

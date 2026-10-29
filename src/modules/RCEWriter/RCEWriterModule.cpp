@@ -20,7 +20,6 @@
 #include <iomanip>
 #include <ios>
 #include <limits>
-#include <math.h>
 #include <memory>
 #include <ostream>
 #include <string>

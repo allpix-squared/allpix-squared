@@ -48,8 +48,8 @@ namespace allpix {
         /**
          * @brief Implement correct copy behaviour
          */
-        ConfigStack(const ConfigStack&);
-        ConfigStack& operator=(const ConfigStack&);
+        ConfigStack(const ConfigStack& other);
+        ConfigStack& operator=(const ConfigStack& other);
         /// @}
 
         /// @{

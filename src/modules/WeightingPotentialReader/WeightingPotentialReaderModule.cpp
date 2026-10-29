@@ -16,7 +16,6 @@
 #include <cmath>
 #include <cstddef>
 #include <limits>
-#include <math.h>
 #include <memory>
 #include <new>
 #include <ostream>

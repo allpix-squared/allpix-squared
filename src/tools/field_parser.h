@@ -283,7 +283,7 @@ namespace allpix {
 
             // Parse the file with cereal, scope ensures flushing:
             try {
-                cereal::PortableBinaryInputArchive archive(file);
+                cereal::PortableBinaryInputArchive archive(file); // NOLINT(misc-const-correctness)
                 archive(field_data);
             } catch(cereal::Exception& e) {
                 throw std::runtime_error(e.what());
@@ -484,7 +484,7 @@ namespace allpix {
 
             // Write the file with cereal:
             try {
-                cereal::PortableBinaryOutputArchive archive(file);
+                cereal::PortableBinaryOutputArchive archive(file); // NOLINT(misc-const-correctness)
                 archive(field_data);
             } catch(cereal::Exception& e) {
                 throw std::runtime_error(e.what());

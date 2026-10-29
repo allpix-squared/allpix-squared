@@ -142,7 +142,7 @@ namespace mesh_converter {
          */
         template <class It> bool operator()(It begin, It end) {
             // Dimensionality is number of iterator elements minus one:
-            size_t dimensions = static_cast<size_t>(end - begin) - 1;
+            const size_t dimensions = static_cast<size_t>(end - begin) - 1;
             size_t idx = 0;
 
             LOG(TRACE) << "Constructing " << dimensions << "D element at " << reference_ << " with mesh points:";

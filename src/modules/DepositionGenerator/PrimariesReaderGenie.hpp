@@ -40,7 +40,7 @@ namespace allpix {
     private:
         // Helper to create and check tree branches
         template <typename T> void create_tree_reader(std::shared_ptr<T>& branch_ptr, const std::string& name);
-        template <typename T> void check_tree_reader(const Configuration& config, std::shared_ptr<T> branch_ptr);
+        template <typename T> void check_tree_reader(const Configuration& config, const std::shared_ptr<T>& branch_ptr);
 
         std::unique_ptr<TFile> input_file_;
 

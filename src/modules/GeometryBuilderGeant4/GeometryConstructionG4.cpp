@@ -86,18 +86,9 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Calculate and apply margins to world size
     auto margin_percentage = config_.get<double>("world_margin_percentage", 0.1);
     auto minimum_margin = config_.get<ROOT::Math::XYZPoint>("world_minimum_margin", {0, 0, 0});
-    double add_x = half_world_size.x() * margin_percentage;
-    if(add_x < minimum_margin.x()) {
-        add_x = minimum_margin.x();
-    }
-    double add_y = half_world_size.y() * margin_percentage;
-    if(add_y < minimum_margin.y()) {
-        add_y = minimum_margin.y();
-    }
-    double add_z = half_world_size.z() * margin_percentage;
-    if(add_z < minimum_margin.z()) {
-        add_z = minimum_margin.z();
-    }
+    const double add_x = std::max(half_world_size.x() * margin_percentage, minimum_margin.x());
+    const double add_y = std::max(half_world_size.y() * margin_percentage, minimum_margin.y());
+    const double add_z = std::max(half_world_size.z() * margin_percentage, minimum_margin.z());
     half_world_size.SetX(half_world_size.x() + add_x);
     half_world_size.SetY(half_world_size.y() + add_y);
     half_world_size.SetZ(half_world_size.z() + add_z);
@@ -132,7 +123,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 }
 
 void GeometryConstructionG4::check_overlaps() {
-    G4PhysicalVolumeStore* phys_volume_store = G4PhysicalVolumeStore::GetInstance();
+    const G4PhysicalVolumeStore* phys_volume_store = G4PhysicalVolumeStore::GetInstance();
     LOG(TRACE) << "Checking overlaps";
     bool overlapFlag = false;
 

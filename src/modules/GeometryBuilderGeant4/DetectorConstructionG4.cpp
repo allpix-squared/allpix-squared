@@ -14,7 +14,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <math.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -66,7 +65,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
     const std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
     LOG(TRACE) << "Building " << detectors.size() << " device(s)";
 
-    for(auto& detector : detectors) {
+    for(const auto& detector : detectors) {
         // Material budget:
         double total_material_budget = 0;
 
@@ -153,8 +152,8 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         geo_manager_->setExternalObject(name, "rotation_matrix", rotWrapper);
         const G4Transform3D transform_phys(*rotWrapper, posWrapper);
 
-        G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
-        G4LogicalVolume* world_log_volume = log_volume_store->GetVolume("world_log");
+        const G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
+        const G4LogicalVolume* world_log_volume = log_volume_store->GetVolume("world_log");
 
         if(world_log_volume == nullptr) {
             throw ModuleError("Cannot find world volume");
@@ -241,7 +240,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         geo_manager_->setExternalObject(name, "pixel_log", pixel_log);
 
         // Create the parameterization for the pixel grid
-        std::shared_ptr<G4VPVParameterisation> pixel_param =
+        const std::shared_ptr<G4VPVParameterisation> pixel_param =
             std::make_shared<Parameterization2DG4>(model->getNPixels().x(),
                                                    model->getPixelSize().x(),
                                                    model->getPixelSize().y(),
@@ -249,7 +248,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                                                    -model->getMatrixSize().x() / 2.0,
                                                    -model->getMatrixSize().y() / 2.0,
                                                    0);
-        geo_manager_->setExternalObject(name, "pixel_param", std::move(pixel_param));
+        geo_manager_->setExternalObject(name, "pixel_param", pixel_param);
         // WARNING: do not place the actual parameterization, only use it if we need it
 
         /**
@@ -435,7 +434,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                 0);
             geo_manager_->setExternalObject(name, "bumps_param", bumps_param);
 
-            std::shared_ptr<G4PVParameterised> bumps_param_phys =
+            const std::shared_ptr<G4PVParameterised> bumps_param_phys =
                 std::make_shared<ParameterisedG4>("bumps_" + name + "_phys",
                                                   bumps_cell_log.get(),
                                                   bumps_wrapper_log.get(),
@@ -443,7 +442,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                                                   model->getNPixels().x() * model->getNPixels().y(),
                                                   bumps_param.get(),
                                                   false);
-            geo_manager_->setExternalObject(name, "bumps_param_phys", std::move(bumps_param_phys));
+            geo_manager_->setExternalObject(name, "bumps_param_phys", bumps_param_phys);
         }
 
         // Store the total material budget:

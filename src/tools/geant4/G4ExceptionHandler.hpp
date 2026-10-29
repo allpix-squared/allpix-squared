@@ -32,7 +32,7 @@ namespace allpix {
                       const char* code,
                       G4ExceptionSeverity severity,
                       const char* description) override {
-            std::string message = "Caught Geant4 exception " + std::string(code) + ": " + std::string(description);
+            const std::string message = "Caught Geant4 exception " + std::string(code) + ": " + std::string(description);
             if(severity == G4ExceptionSeverity::JustWarning && std::string(code) != "pl0003") {
                 LOG(WARNING) << message;
             } else if(severity == G4ExceptionSeverity::EventMustBeAborted) {

@@ -142,7 +142,7 @@ DetectorModel::DetectorModel(std::string type,
         auto offset = implant_config.get<XYVector>("offset", {0, 0});
         auto orientation = implant_config.get<double>("orientation", 0.);
 
-        add_implant(imtype, shape, std::move(size), offset, orientation, implant_config);
+        add_implant(imtype, shape, size, offset, orientation, implant_config);
 
         auto unused_keys = implant_config.getUnusedKeys();
         if(!unused_keys.empty()) {
@@ -175,14 +175,8 @@ DetectorModel::DetectorModel(std::string type,
         std::ranges::transform(hole_type, hole_type.begin(), ::tolower);
         auto hole_size = support_config.get<XYVector>("hole_size", {0, 0});
         auto hole_offset = support_config.get<XYVector>("hole_offset", {0, 0});
-        add_support_layer(size,
-                          thickness,
-                          std::move(offset),
-                          std::move(material),
-                          std::move(hole_type),
-                          location,
-                          hole_size,
-                          std::move(hole_offset));
+        add_support_layer(
+            size, thickness, offset, std::move(material), std::move(hole_type), location, hole_size, hole_offset);
 
         auto unused_keys = support_config.getUnusedKeys();
         if(!unused_keys.empty()) {
@@ -205,8 +199,7 @@ void DetectorModel::add_implant(const Implant::Type& type,
     // Calculate offset from sensor center - sign of the shift depends on whether it's on front- or backside:
     auto offset_z = (getSensorSize().z() - size.z()) / 2. * (type == Implant::Type::FRONTSIDE ? 1 : -1);
     ROOT::Math::XYZVector full_offset(offset.x(), offset.y(), offset_z);
-    implants_.push_back(
-        Implant(type, shape, std::move(size), std::move(full_offset), ROOT::Math::RotationZ(orientation), config));
+    implants_.push_back(Implant(type, shape, size, full_offset, ROOT::Math::RotationZ(orientation), config));
 }
 
 void DetectorModel::validate() {
@@ -417,9 +410,9 @@ std::optional<ROOT::Math::XYZPoint> DetectorModel::Implant::intersect(const ROOT
         };
 
         // Calculate quadratic parameters with semimajor/minor axes (half-diameter) and discriminant.
-        double A = 4 * dir.x() * dir.x() / size_.x() / size_.x() + 4 * dir.y() * dir.y() / size_.y() / size_.y();
-        double B = 8 * pos.x() * dir.x() / size_.x() / size_.x() + 8 * pos.y() * dir.y() / size_.y() / size_.y();
-        double C = 4 * pos.x() * pos.x() / size_.x() / size_.x() + 4 * pos.y() * pos.y() / size_.y() / size_.y() - 1;
+        const double A = 4 * dir.x() * dir.x() / size_.x() / size_.x() + 4 * dir.y() * dir.y() / size_.y() / size_.y();
+        const double B = 8 * pos.x() * dir.x() / size_.x() / size_.x() + 8 * pos.y() * dir.y() / size_.y() / size_.y();
+        const double C = 4 * pos.x() * pos.x() / size_.x() / size_.x() + 4 * pos.y() * pos.y() / size_.y() / size_.y() - 1;
         auto discriminant = B * B - 4 * A * C;
 
         // No intersection with negative discriminant:

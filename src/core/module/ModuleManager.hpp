@@ -154,7 +154,8 @@ namespace allpix {
          * @param geo_manager Pointer to the geometry manager
          * @return An unique module together with its identifier
          */
-        std::pair<ModuleIdentifier, Module*> create_unique_modules(void*, Configuration&, Messenger*, GeometryManager*);
+        std::pair<ModuleIdentifier, Module*>
+        create_unique_modules(void* library, Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
          * @brief Create detector modules
@@ -165,7 +166,7 @@ namespace allpix {
          * @return A list of all created detector modules and their identifiers
          */
         std::vector<std::pair<ModuleIdentifier, Module*>>
-        create_detector_modules(void*, Configuration&, Messenger*, GeometryManager*);
+        create_detector_modules(void* library, Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
 

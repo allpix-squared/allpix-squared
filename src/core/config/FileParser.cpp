@@ -54,7 +54,7 @@ std::pair<std::string, std::string> FileParser::parseKeyValue(std::string line) 
 
         // Check if key contains only alphanumeric or underscores
         bool valid_key = true;
-        for(auto& ch : key) {
+        for(const auto& ch : key) {
             if(isalnum(ch) == 0 && ch != '_' && ch != '.' && ch != ':') {
                 valid_key = false;
                 break;

@@ -54,7 +54,7 @@ void ConfigStack::clear() {
 
 bool ConfigStack::hasConfiguration(std::string name) const {
     std::ranges::transform(name, name.begin(), ::tolower);
-    return conf_map_.find(name) != conf_map_.end();
+    return conf_map_.contains(name);
 }
 
 unsigned int ConfigStack::countConfigurations(std::string name) const {

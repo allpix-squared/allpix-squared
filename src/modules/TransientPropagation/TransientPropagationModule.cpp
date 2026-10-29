@@ -16,6 +16,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TProfile.h>
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <functional>
@@ -470,9 +471,7 @@ void TransientPropagationModule::run(Event* event) {
         }
         while(charges_remaining > 0) {
             // Define number of charges to be propagated and remove charges of this step from the total
-            if(charge_per_step > charges_remaining) {
-                charge_per_step = charges_remaining;
-            }
+            charge_per_step = std::min(charge_per_step, charges_remaining);
             charges_remaining -= charge_per_step;
 
             // Get position and propagate through sensor

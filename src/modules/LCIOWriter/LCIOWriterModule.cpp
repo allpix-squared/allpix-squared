@@ -11,6 +11,8 @@
 
 #include "LCIOWriterModule.hpp"
 
+#include <array>
+#include <cstdint>
 #include <fstream>
 #include <string>
 #include <utility>
@@ -41,19 +43,26 @@ namespace eutelescope {
     static const std::string gTrackerPulseEncoding = "sensorID:7,xSeed:12,ySeed:12,xCluSize:5,yCluSize:5,type:5,quality:5";
     static const std::string gTrackerDataEncoding = "sensorID:7,sparsePixelType:5";
 
-    enum HitProperties { kHitInGlobalCoord = 1L << 0, kFittedHit = 1L << 1, kSimulatedHit = 1L << 2, kDeltaHit = 1L << 3 };
-    enum ClusterType {
-        kEUTelFFClusterImpl = 0,
-        kEUTelSparseClusterImpl = 1,
-        kEUTelDFFClusterImpl = 2,
-        kEUTelBrickedClusterImpl = 3,
-        kEUTelGenericSparseClusterImpl = 4,
-        kUnknown = 31
-    };
+    namespace {
+        enum class HitProperties : std::uint8_t {
+            kHitInGlobalCoord = 1U << 0U,
+            kFittedHit = 1U << 1U,
+            kSimulatedHit = 1U << 2U,
+            kDeltaHit = 1U << 3U
+        };
+        enum class ClusterType : std::uint8_t {
+            kEUTelFFClusterImpl = 0,
+            kEUTelSparseClusterImpl = 1,
+            kEUTelDFFClusterImpl = 2,
+            kEUTelBrickedClusterImpl = 3,
+            kEUTelGenericSparseClusterImpl = 4,
+            kUnknown = 31
+        };
+    } // namespace
 
 } // namespace eutelescope
 
-inline std::array<long double, 3> getRotationAnglesFromMatrix(const ROOT::Math::Rotation3D& rot_mat) {
+static std::array<long double, 3> getRotationAnglesFromMatrix(const ROOT::Math::Rotation3D& rot_mat) {
     double r00 = 0;
     double r01 = 0;
     double r02 = 0;
@@ -124,7 +133,8 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
                                       {"output_collection_name", "detector_assignment"},
                                       "Provide either a \"output_collection_name\" or a \"detector_assignment\" "
                                       "configuration parameter. They are mutually exclusive!");
-    } else if(!has_short_config && !has_long_config) {
+    }
+    if(!has_short_config && !has_long_config) {
         config_.setDefault("output_collection_name", "zsdata_m26");
         has_short_config = true;
     }
@@ -407,9 +417,10 @@ void LCIOWriterModule::run(Event* event) {
             mc_tracker_hit->setType(1); // corresponds to kEUTelGenericSparseClusterImpl
             (*mc_hit_encoder)["sensorID"] = mcp_to_det_id[mc_particle];
 
-            int hit_properties = eutelescope::HitProperties::kHitInGlobalCoord + eutelescope::HitProperties::kSimulatedHit;
+            int hit_properties = static_cast<int>(eutelescope::HitProperties::kHitInGlobalCoord) +
+                                 static_cast<int>(eutelescope::HitProperties::kSimulatedHit);
             if(mc_particle->getTrack()->getParent() != nullptr) {
-                hit_properties += eutelescope::HitProperties::kDeltaHit;
+                hit_properties += static_cast<int>(eutelescope::HitProperties::kDeltaHit);
             }
             (*mc_hit_encoder)["properties"] = hit_properties;
 
@@ -478,8 +489,8 @@ void LCIOWriterModule::finalize() {
 
         geometry_file << "  <global detectorName=\"" << detector_name_ << "\"/>\n";
         if(geo_mgr_->getMagneticFieldType() == MagneticFieldType::CONSTANT) {
-            ROOT::Math::XYZVector b_field = geo_mgr_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
-            geometry_file << "  <BField type=\"ConstantBField\" x=\"" << Units::convert(b_field.x(), "T") << "\" y=\""
+            const ROOT::Math::XYZVector b_field = geo_mgr_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
+            geometry_file << R"(  <BField type="ConstantBField" x=")" << Units::convert(b_field.x(), "T") << "\" y=\""
                           << Units::convert(b_field.y(), "T") << "\" z=\"" << Units::convert(b_field.z(), "T") << "\"/>\n";
         } else if(geo_mgr_->getMagneticFieldType() == MagneticFieldType::NONE) {
             geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>\n";

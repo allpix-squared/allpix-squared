@@ -155,7 +155,7 @@ void ROOTObjectWriterModule::run(Event* event) {
     auto object_count = TProcessID::GetObjectCount();
 
     // Fetch filtered messages
-    auto messages = messenger_->fetchFilteredMessages(this, event);
+    auto messages = Messenger::fetchFilteredMessages(this, event);
 
     // Mark objects to be stored:
     for(auto& pair : messages) {

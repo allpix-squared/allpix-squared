@@ -38,7 +38,7 @@ namespace allpix {
                 : deposition_time_(deposition_time), charge_(total_charge), type_(type), state_(state) {}
 
             void updateState(CarrierState state) { state_ = state; }
-            void addPoint(ROOT::Math::XYZPoint position, double time) { points_.emplace_back(std::move(position), time); }
+            void addPoint(ROOT::Math::XYZPoint position, double time) { points_.emplace_back(position, time); }
 
             double getDepositionTime() const { return deposition_time_; }
             unsigned int getCharge() const { return charge_; }

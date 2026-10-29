@@ -25,6 +25,7 @@
 
 namespace allpix {
 
+    // NOLINTNEXTLINE(readability-identifier-naming)
     template <typename T> requires std::derived_from<T, TH1> std::shared_ptr<T> ThreadedHistogram<T>::Get() {
         auto idx = ThreadPool::threadNum();
         auto& object = objects_[idx];

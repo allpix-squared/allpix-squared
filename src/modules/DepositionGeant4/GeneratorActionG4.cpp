@@ -345,7 +345,7 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
                 particle = G4IonTable::GetIonTable()->GetIon(
                     allpix::from_string<int>(ion[1]), allpix::from_string<int>(ion[2]), allpix::from_string<double>(ion[4]));
                 single_source->SetParticleCharge(allpix::from_string<int>(ion[3]));
-                LOG(WARNING) << "Using \"ion/Z/A/Q/E\" is deprecated and superseded by \"ion/Z/A/Q/E/D\".";
+                LOG(WARNING) << R"(Using "ion/Z/A/Q/E" is deprecated and superseded by "ion/Z/A/Q/E/D".)";
             } else {
                 throw InvalidValueError(config_, "particle_type", "cannot parse parameters for ion.");
             }

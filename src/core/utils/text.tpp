@@ -42,7 +42,7 @@ namespace allpix {
         // Generate list of available values for the exception:
         auto v = enum_names<T>();
         std::string vstr = std::accumulate(v.begin(), v.end(), std::string(), [](const auto& a, const auto& s) {
-            return a + (a.empty() ? "" : ", ") + std::string(s.data());
+            return a + (a.empty() ? "" : ", ") + std::string(s);
         });
         std::ranges::transform(vstr, vstr.begin(), ::tolower);
         throw std::invalid_argument("invalid value, possible values are: " + vstr);
@@ -92,15 +92,13 @@ namespace allpix {
         return to_string_impl(inp, empty_tag());
     }
 
-    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool>>
-    std::string to_string_impl(T inp, empty_tag /*unused*/) {
+    template <typename T> requires std::is_arithmetic_v<T> std::string to_string_impl(T inp, empty_tag /*unused*/) {
         std::ostringstream out;
         out << inp;
         return out.str();
     }
 
-    template <typename T, std::enable_if_t<std::is_enum_v<T>, bool>>
-    std::string to_string_impl(T inp, empty_tag /*unused*/) {
+    template <typename T> requires std::is_enum_v<T> std::string to_string_impl(T inp, empty_tag /*unused*/) {
         return allpix::transform(enum_name(inp), ::tolower);
     }
 
@@ -140,8 +138,8 @@ namespace allpix {
     /**
      * Defined here rather than in unit.tpp to avoid a circular include between text.h and unit.h
      */
-    template <typename T> std::string Units::display(T inp, std::initializer_list<std::string> units) {
-        auto split = allpix::split<Units::UnitType>(allpix::to_string(std::move(inp)));
+    template <typename T> std::string Units::display(const T& inp, std::initializer_list<std::string> units) {
+        auto split = allpix::split<Units::UnitType>(allpix::to_string(inp));
 
         std::string ret_str;
         if(split.size() > 1) {

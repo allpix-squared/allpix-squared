@@ -58,7 +58,12 @@ namespace allpix {
      */
     class None : virtual public RecombinationModel {
     public:
-        bool operator()(const CarrierType&, double, double, double) const override { return false; };
+        bool operator()(const CarrierType& /*type*/,
+                        double /*doping*/,
+                        double /*survival_prob*/,
+                        double /*timestep*/) const override {
+            return false;
+        };
     };
 
     /**
@@ -125,7 +130,9 @@ namespace allpix {
         };
 
     protected:
-        double lifetime(const CarrierType&, double doping) const { return 1. / (auger_coefficient_ * doping * doping); }
+        double lifetime(const CarrierType& /*type*/, double doping) const {
+            return 1. / (auger_coefficient_ * doping * doping);
+        }
 
     private:
         double auger_coefficient_;
@@ -145,12 +152,12 @@ namespace allpix {
             if(minorityType != type) {
                 // Auger only applies to minority charge carriers, if we have a majority carrier just return SRH lifetime:
                 return ShockleyReadHall::operator()(type, doping, survival_prob, timestep); // NOLINT
-            } else {
-                // If we have a minority charge carrier, combine the lifetimes:
-                auto combined_lifetime =
-                    1. / (1. / ShockleyReadHall::lifetime(type, doping) + 1. / Auger::lifetime(type, doping));
-                return survival_prob < (1 - std::exp(-1. * timestep / combined_lifetime));
             }
+
+            // If we have a minority charge carrier, combine the lifetimes:
+            auto combined_lifetime =
+                1. / (1. / ShockleyReadHall::lifetime(type, doping) + 1. / Auger::lifetime(type, doping));
+            return survival_prob < (1 - std::exp(-1. * timestep / combined_lifetime));
         };
     };
 
@@ -163,7 +170,7 @@ namespace allpix {
         ConstantLifetime(double electron_lifetime, double hole_lifetime)
             : electron_lifetime_(electron_lifetime), hole_lifetime_(hole_lifetime) {}
 
-        bool operator()(const CarrierType& type, double, double survival_prob, double timestep) const override {
+        bool operator()(const CarrierType& type, double /*doping*/, double survival_prob, double timestep) const override {
             return survival_prob <
                    (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? electron_lifetime_ : hole_lifetime_)));
         };
@@ -194,8 +201,9 @@ namespace allpix {
         std::unique_ptr<TFormula> electron_lifetime_;
         std::unique_ptr<TFormula> hole_lifetime_;
 
-        std::unique_ptr<TFormula> configure_lifetime(const Configuration& config, const CarrierType type, bool doping) {
-            std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
+        static std::unique_ptr<TFormula>
+        configure_lifetime(const Configuration& config, const CarrierType type, bool doping) {
+            const std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
             auto function = config.get<std::string>("lifetime_function_" + name);
             auto parameters = config.getArray<double>("lifetime_parameters_" + name, {});
 

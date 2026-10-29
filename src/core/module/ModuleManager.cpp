@@ -385,7 +385,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
     std::set<std::string> module_names;
     if(config.has("name")) {
         const std::vector<std::string> names = config.getArray<std::string>("name");
-        for(auto& name : names) {
+        for(const auto& name : names) {
             auto det = geo_manager->getDetector(name);
             instantiations.emplace_back(det, ModuleIdentifier(config, det->getName(), 0));
 
@@ -398,12 +398,12 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
     // Then create all types that are not yet name instantiated
     if(config.has("type")) {
         const std::vector<std::string> types = config.getArray<std::string>("type");
-        for(auto& type : types) {
+        for(const auto& type : types) {
             auto detectors = geo_manager->getDetectorsByType(type);
 
             for(auto& det : detectors) {
                 // Skip all that were already added by name
-                if(module_names.find(det->getName()) != module_names.end()) {
+                if(module_names.contains(det->getName())) {
                     continue;
                 }
 

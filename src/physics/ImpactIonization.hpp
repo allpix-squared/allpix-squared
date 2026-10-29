@@ -316,7 +316,7 @@ namespace allpix {
         std::unique_ptr<TFormula> electron_gain_;
         std::unique_ptr<TFormula> hole_gain_;
 
-        std::unique_ptr<TFormula> configure_gain(const Configuration& config, const CarrierType type) {
+        static std::unique_ptr<TFormula> configure_gain(const Configuration& config, const CarrierType type) {
             const std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
             auto function = config.get<std::string>("multiplication_function_" + name);
             auto parameters = config.getArray<double>("multiplication_parameters_" + name, {});

@@ -254,7 +254,7 @@ namespace allpix {
             }
         }
 
-        double operator()(const CarrierType& type, double, double doping) const override {
+        double operator()(const CarrierType& type, double /*efield_mag*/, double doping) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_mu0_ +
                        ((electron_mumax_ - electron_mu0_) /
@@ -298,7 +298,7 @@ namespace allpix {
               Masetti(material, temperature, doping, dopant_n) {}
 
         double operator()(const CarrierType& type, double efield_mag, double doping) const override {
-            double masetti = Masetti::operator()(type, efield_mag, doping);
+            const double masetti = Masetti::operator()(type, efield_mag, doping);
 
             if(type == CarrierType::ELECTRON) {
                 return masetti /
@@ -453,7 +453,7 @@ namespace allpix {
         };
 
     private:
-        double vsat(double vsat300, double a, double temperature) const {
+        static double vsat(double vsat300, double a, double temperature) {
             return vsat300 / ((1 - a) + a * (temperature / 300));
         };
 
@@ -553,8 +553,9 @@ namespace allpix {
         std::unique_ptr<TFormula> electron_mobility_;
         std::unique_ptr<TFormula> hole_mobility_;
 
-        std::unique_ptr<TFormula> configure_mobility(const Configuration& config, const CarrierType type, bool doping) {
-            std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
+        static std::unique_ptr<TFormula>
+        configure_mobility(const Configuration& config, const CarrierType type, bool doping) {
+            const std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
             auto function = config.get<std::string>("mobility_function_" + name);
             auto parameters = config.getArray<double>("mobility_parameters_" + name, {});
 

@@ -11,6 +11,7 @@
 
 #include "ProjectionPropagationModule.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <limits>
@@ -231,9 +232,7 @@ void ProjectionPropagationModule::run(Event* event) {
                       << charge_per_step << " for this deposit.";
         }
         while(charges_remaining > 0) {
-            if(charge_per_step > charges_remaining) {
-                charge_per_step = charges_remaining;
-            }
+            charge_per_step = std::min(charge_per_step, charges_remaining);
             charges_remaining -= charge_per_step;
 
             auto position = initial_position;
@@ -436,7 +435,7 @@ void ProjectionPropagationModule::run(Event* event) {
     charge_lost = total_charge - total_projected_charge;
 
     LOG(INFO) << "Total charge: " << total_charge << " (lost: " << charge_lost << ", "
-              << (total_charge > 0 ? (charge_lost / total_charge * 100.) : 0) << "%)";
+              << (total_charge > 0 ? (static_cast<double>(charge_lost) / total_charge * 100.) : 0) << "%)";
 
     LOG(DEBUG) << "Total count of propagated charge carriers: " << propagated_charges.size();
 

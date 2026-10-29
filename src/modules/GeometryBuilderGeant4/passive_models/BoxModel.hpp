@@ -12,6 +12,7 @@
 #ifndef ALLPIX_PASSIVE_MATERIAL_BOX_H
 #define ALLPIX_PASSIVE_MATERIAL_BOX_H
 
+#include <algorithm>
 #include <string>
 
 #include <G4Box.hh>
@@ -49,7 +50,7 @@ namespace allpix {
                 inner_size_ = {outer_size_.x() - thickness, outer_size_.y() - thickness, outer_size_.z() - thickness};
             }
 
-            std::string name = config_.getName();
+            const std::string name = config_.getName();
             // Limit the values that can be given
             if(inner_size_.x() > outer_size_.x() || inner_size_.y() > outer_size_.y() || inner_size_.z() > outer_size_.z()) {
                 throw InvalidValueError(config_, "inner_size", "inner_size_ cannot be larger than the outer_size_");
@@ -83,7 +84,7 @@ namespace allpix {
                 solids_.push_back(inner_volume);
             }
             // Get the maximum of the size parameters
-            max_size_ = std::max(outer_size_.x(), std::max(outer_size_.y(), outer_size_.z()));
+            max_size_ = std::max({outer_size_.x(), outer_size_.y(), outer_size_.z()});
 
             LOG(DEBUG) << "Adding points for volume";
             add_points();
