@@ -567,6 +567,7 @@ void DetectorHistogrammerModule::run(Event* event) {
             total_hits_ += 1;
         }
     } catch(const MessageNotFoundException&) {
+        LOG(TRACE) << "No pixel hit message received";
     }
 
     // Perform a clustering
