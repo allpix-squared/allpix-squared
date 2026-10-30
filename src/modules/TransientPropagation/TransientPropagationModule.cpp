@@ -535,7 +535,6 @@ void TransientPropagationModule::run(Event* event) {
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
 std::tuple<unsigned int, unsigned int, unsigned int>
-// NOLINTNEXTLINE(misc-no-recursion)
 TransientPropagationModule::propagate(Event* event,
                                       const DepositedCharge& deposit,
                                       const ROOT::Math::XYZPoint& pos,
