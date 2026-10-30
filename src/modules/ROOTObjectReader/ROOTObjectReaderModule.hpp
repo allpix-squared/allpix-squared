@@ -82,7 +82,7 @@ namespace allpix {
          * @brief Internal object storing objects and information to construct a message from tree
          */
         struct message_info {
-            std::vector<Object*>* objects;
+            std::vector<Object*>* objects{nullptr};
             std::shared_ptr<Detector> detector;
             std::string name;
             std::shared_ptr<BaseMessage> message;
