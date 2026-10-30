@@ -46,7 +46,7 @@ namespace allpix {
      * deposits are specific for a detector. The module also returns the information of the real particle passage (the
      * MCParticle).
      */
-    class DepositionGeant4Module : public SequentialModule {
+    class DepositionGeant4Module : public UniqueModule {
         friend class SDAndFieldConstruction;
         friend class SetTrackInfoUserHookG4;
 
@@ -86,9 +86,6 @@ namespace allpix {
         void finalize() override;
 
     protected:
-        Messenger* messenger_;
-        GeometryManager* geo_manager_;
-
         // Pointer to the Geant4 manager (owned by GeometryBuilderGeant4)
         G4RunManager* run_manager_g4_{nullptr};
 

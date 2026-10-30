@@ -34,7 +34,7 @@ namespace allpix {
      * detector, building it from the internal detector model. The geometry that is eventually constructed is used to
      * simulate the charge deposition in the \ref DepositionGeant4Module.
      */
-    class GeometryBuilderGeant4Module : public Module {
+    class GeometryBuilderGeant4Module : public UniqueModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -44,6 +44,16 @@ namespace allpix {
          */
         GeometryBuilderGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
+        /// @{
+        /**
+         * @brief Copying and moving the module is not allowed
+         */
+        GeometryBuilderGeant4Module(const GeometryBuilderGeant4Module&) = delete;
+        GeometryBuilderGeant4Module& operator=(const GeometryBuilderGeant4Module&) = delete;
+        GeometryBuilderGeant4Module(GeometryBuilderGeant4Module&&) = delete;
+        GeometryBuilderGeant4Module& operator=(GeometryBuilderGeant4Module&&) = delete;
+        /// @}
+
         /**
          * @brief Initializes Geant4 and construct the Geant4 geometry from the internal geometry
          */
@@ -52,7 +62,6 @@ namespace allpix {
         virtual ~GeometryBuilderGeant4Module();
 
     private:
-        GeometryManager* geo_manager_;
         // Geant4 run manager is owned by this module
         GeometryConstructionG4* geometry_construction_;
         std::unique_ptr<G4RunManager> run_manager_g4_;

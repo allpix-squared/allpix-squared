@@ -36,7 +36,7 @@ namespace allpix {
      *
      * More detailed explanation of module
      */
-    class DepositionLaserModule : public Module {
+    class DepositionLaserModule : public UniqueModule {
 
         enum class BeamGeometry : std::uint8_t {
             CYLINDRICAL,
@@ -110,10 +110,6 @@ namespace allpix {
          */
         std::optional<PhotonHit>
         track(const ROOT::Math::XYZPoint& position, const ROOT::Math::XYZVector& direction, double penetration_depth) const;
-
-        // General module members
-        GeometryManager* geo_manager_;
-        Messenger* messenger_;
 
         // Laser parameters
         ROOT::Math::XYZPoint source_position_;

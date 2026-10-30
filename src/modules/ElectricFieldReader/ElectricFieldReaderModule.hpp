@@ -30,7 +30,7 @@ namespace allpix {
      * - For a linear field create a constant electric field to apply over the whole sensitive device
      * - For the INIT format, reads the specified file and add the electric field grid to the bound detectors
      */
-    class ElectricFieldReaderModule : public Module {
+    class ElectricFieldReaderModule : public DetectorModule {
         /**
          * @brief Different electric field types
          */
@@ -57,8 +57,6 @@ namespace allpix {
         void initialize() override;
 
     private:
-        std::shared_ptr<Detector> detector_;
-
         /**
          * @brief Create and apply a linear field
          * @param depletion_voltage Depletion voltage of the sensor for the given thickness domain

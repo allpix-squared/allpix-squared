@@ -41,7 +41,7 @@ namespace allpix {
      * Diffusion is added by approximating the drift time and drawing a random number from a 2D gaussian distribution of the
      * calculated width.
      */
-    class ProjectionPropagationModule : public Module {
+    class ProjectionPropagationModule : public DetectorModule {
     public:
         /**
          * @brief Constructor for this detector-specific module
@@ -68,8 +68,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Messenger* messenger_;
-        std::shared_ptr<const Detector> detector_;
         std::shared_ptr<const DetectorModel> model_;
 
         // Config parameters

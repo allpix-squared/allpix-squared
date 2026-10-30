@@ -32,7 +32,7 @@ namespace allpix {
      * Displays the geometry constructed in \ref GeometryBuilderGeant4Module. Allows passing a variety of options to
      * configure both the visualization viewer as well as the display of the various detector components and the beam.
      */
-    class VisualizationGeant4Module : public Module {
+    class VisualizationGeant4Module : public UniqueModule {
         /**
          * @brief Different viewing modes
          */
@@ -64,6 +64,16 @@ namespace allpix {
          */
         ~VisualizationGeant4Module() override;
 
+        /// @{
+        /**
+         * @brief Copying and moving the module is not allowed
+         */
+        VisualizationGeant4Module(const VisualizationGeant4Module&) = delete;
+        VisualizationGeant4Module& operator=(const VisualizationGeant4Module&) = delete;
+        VisualizationGeant4Module(VisualizationGeant4Module&&) = delete;
+        VisualizationGeant4Module& operator=(VisualizationGeant4Module&&) = delete;
+        /// @}
+
         /**
          * @brief Initializes visualization and apply configuration parameters
          */
@@ -80,8 +90,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        GeometryManager* geo_manager_;
-
         /**
          * @brief Set the visualization settings from the configuration
          */

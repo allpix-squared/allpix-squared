@@ -31,15 +31,15 @@ namespace allpix {
      * saves the data in those objects to tree for every event. The tree name is the class name of the object. A separate
      * branch is created for every combination of detector name and message name that outputs this object.
      */
-    class ROOTObjectWriterModule : public SequentialModule {
+    class ROOTObjectWriterModule : public UniqueModule {
     public:
         /**
          * @brief Constructor for this unique module
          * @param config Configuration object for this module as retrieved from the steering file
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
-         * @param geo_mgr Pointer to the geometry manager, containing the detectors
+         * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr);
+        ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
         /**
          * @brief Destructor deletes the internal objects used to build the ROOT Tree
          */
@@ -80,9 +80,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Messenger* messenger_;
-        GeometryManager* geo_mgr_;
-
         // Object names to include or exclude from writing
         std::set<std::string> include_;
         std::set<std::string> exclude_;

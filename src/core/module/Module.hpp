@@ -26,6 +26,7 @@
 #include "core/config/ConfigManager.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
+#include "core/geometry/GeometryManager.hpp"
 #include "core/histograms/HistogramManager.hpp"
 #include "core/log/Logger.hpp"
 #include "core/messenger/delegates.h"
@@ -60,19 +61,6 @@ namespace allpix {
 
     public:
         /**
-         * @brief Base constructor for unique modules
-         * @param config Configuration for this module
-         */
-        explicit Module(Configuration& config);
-        /**
-         * @brief Base constructor for detector modules
-         * @param config Configuration for this module
-         * @param detector Detector bound to this module
-         * @warning Detector modules should not forget to forward their detector to the base constructor. An
-         *          \ref InvalidModuleStateException will be raised if the module failed to so.
-         */
-        explicit Module(Configuration& config, std::shared_ptr<Detector> detector);
-        /**
          * @brief Essential virtual destructor.
          *
          * Also removes all delegates linked to this module
@@ -101,7 +89,7 @@ namespace allpix {
          *
          * Detector modules always have a linked detector and unique modules are guaranteed not to have one.
          */
-        std::shared_ptr<Detector> getDetector() const { return detector_; }
+        virtual std::shared_ptr<Detector> getDetector() const { return nullptr; }
 
         /**
          * @brief Get the unique name of this module
@@ -214,9 +202,20 @@ namespace allpix {
 
     protected:
         /**
+         * @brief Base constructor for modules
+         * @param config Configuration for this module
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         */
+        explicit Module(Configuration& config, Messenger* messenger);
+        /**
          * @brief Enable multithreading for this module
          */
         void allow_multithreading() { set_multithreading(true); }
+
+        /**
+         * @brief Sets the sequence requirement flag
+         */
+        void require_sequence(bool sequence_required) { sequence_required_ = sequence_required; }
 
         /**
          * @brief Get the module configuration for internal use
@@ -225,6 +224,8 @@ namespace allpix {
         Configuration& get_configuration() { return config_; }
         Configuration& config_;
         Logger& logger_;
+
+        Messenger* messenger_{};
 
     private:
         /**
@@ -281,8 +282,6 @@ namespace allpix {
 
         std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
 
-        std::shared_ptr<Detector> detector_;
-
         /**
          * @brief Sets the multithreading flag
          */
@@ -290,9 +289,12 @@ namespace allpix {
         bool multithreading_{false};
 
         /**
-         * @brief Checks if object is instance of SequentialModule class
+         * @brief Checks if this module needs to be executed in correct event sequence
+         *
+         * @return true if strict event sequence is required and false if any processing order is valid
          */
-        virtual bool require_sequence() const { return false; }
+        bool sequence_required() const { return sequence_required_; }
+        bool sequence_required_{false};
 
         /**
          * @brief Get this module identifier unique name directly from the instance configuration
@@ -310,34 +312,58 @@ namespace allpix {
         static Logger& generate_logger(const Configuration& config);
     };
 
-    /**
-     * @brief A Module that always ensure to execute events in the order of event numbers. It
-     * implements buffering out of the box so interested modules can directly use it
-     */
-    class SequentialModule : public Module {
+    class UniqueModule : public Module {
         friend class Event;
         friend class ModuleManager;
         friend class Messenger;
 
     public:
-        explicit SequentialModule(Configuration& config) : Module(config) {}
-        explicit SequentialModule(Configuration& config, std::shared_ptr<Detector> detector)
-            : Module(config, std::move(detector)) {}
-
-    protected:
         /**
-         * @brief Release strict sequence processing requirement
+         * @brief Base constructor for unique modules
+         * @param config Configuration for this module
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        void waive_sequence_requirement(bool waive = true);
+        explicit UniqueModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+            : Module(config, messenger), geo_manager_(geo_manager) {};
+
+        /**
+         * @brief Get the geometry manager
+         * @return Pointer to geometry manager
+         */
+        GeometryManager* getGeometryManager() const { return geo_manager_; }
 
     private:
+        GeometryManager* geo_manager_{};
+    };
+
+    class DetectorModule : public Module {
+        friend class Event;
+        friend class ModuleManager;
+        friend class Messenger;
+
+    public:
         /**
-         * @brief Checks if this module needs to be executed in correct event sequence
-         *
-         * @return true if strict event sequence is required and false if any processing order is valid
+         * @brief Base constructor for detector modules
+         * @param config Configuration for this module
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         * @param detector Detector bound to this module
+         * @warning Detector modules should not forget to forward their detector to the base constructor. An
+         *          \ref InvalidModuleStateException will be raised if the module failed to so.
          */
-        bool require_sequence() const override { return sequence_required_; }
-        bool sequence_required_{true};
+        explicit DetectorModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
+            : Module(config, messenger), detector_(std::move(detector)) {};
+
+        /**
+         * @brief Get the detector linked to this module
+         * @return Linked detector or a null pointer if this is an unique module
+         *
+         * Detector modules always have a linked detector and unique modules are guaranteed not to have one.
+         */
+        std::shared_ptr<Detector> getDetector() const override { return detector_; }
+
+    private:
+        std::shared_ptr<Detector> detector_;
     };
 
 } // namespace allpix

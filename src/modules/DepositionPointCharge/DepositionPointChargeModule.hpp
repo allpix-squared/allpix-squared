@@ -22,7 +22,7 @@ namespace allpix {
      *
      * This module can deposit charge carriers at defined positions inside the sensitive volume of the detector
      */
-    class DepositionPointChargeModule : public Module {
+    class DepositionPointChargeModule : public DetectorModule {
         /**
          * @brief Types of deposition
          */
@@ -85,9 +85,6 @@ namespace allpix {
         std::tuple<ROOT::Math::XYZPoint, ROOT::Math::XYZPoint>
         sensor_intersection(const ROOT::Math::XYZPoint& line_origin) const;
 
-        Messenger* messenger_;
-
-        std::shared_ptr<Detector> detector_;
         std::shared_ptr<const DetectorModel> detector_model_;
 
         DepositionModel model_;

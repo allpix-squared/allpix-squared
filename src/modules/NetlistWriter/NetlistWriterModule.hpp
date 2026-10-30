@@ -27,7 +27,7 @@ namespace allpix {
      * @ingroup Modules
      * @brief Module which generates netlists to be fed to SPICE simulators
      */
-    class NetlistWriterModule : public Module {
+    class NetlistWriterModule : public DetectorModule {
     public:
         enum class Target : std::uint8_t {
             SPICE,
@@ -60,8 +60,6 @@ namespace allpix {
 
     private:
         // Pointers to the central geometry manager and the messenger for interaction with the framework core:
-        std::shared_ptr<Detector> detector_;
-        Messenger* messenger_;
 
         // Module parameters
         std::filesystem::path netlist_path_;

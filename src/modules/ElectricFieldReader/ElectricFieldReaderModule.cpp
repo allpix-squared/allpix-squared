@@ -39,9 +39,9 @@
 using namespace allpix;
 
 ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config,
-                                                     Messenger* /*unused*/,
+                                                     Messenger* messenger,
                                                      std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)) {
+    : DetectorModule(config, messenger, std::move(detector)) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
@@ -71,7 +71,7 @@ void ElectricFieldReaderModule::initialize() {
     }
 
     // Set depletion depth to full sensor:
-    auto model = detector_->getModel();
+    auto model = getDetector()->getModel();
     auto depletion_depth = config_.get<double>("depletion_depth", model->getSensorSize().z());
     if(depletion_depth - model->getSensorSize().z() > 1e-9) {
         throw InvalidValueError(config_, "depletion_depth", "depletion depth can not be larger than the sensor thickness");
@@ -109,13 +109,13 @@ void ElectricFieldReaderModule::initialize() {
         }
         LOG(DEBUG) << "Electric field has offset of " << offset << " fractions of the field size";
 
-        detector_->setElectricFieldGrid(field_data.getData(),
-                                        field_data.getDimensions(),
-                                        field_data.getSize(),
-                                        field_mapping,
-                                        field_scale,
-                                        {{offset.x(), offset.y()}},
-                                        thickness_domain);
+        getDetector()->setElectricFieldGrid(field_data.getData(),
+                                            field_data.getDimensions(),
+                                            field_data.getSize(),
+                                            field_mapping,
+                                            field_scale,
+                                            {{offset.x(), offset.y()}},
+                                            thickness_domain);
     } else if(field_model == ElectricField::CONSTANT) {
         LOG(TRACE) << "Adding constant electric field";
         auto field_z = config_.get<double>("bias_voltage") / getDetector()->getModel()->getSensorSize().z();
@@ -123,7 +123,7 @@ void ElectricFieldReaderModule::initialize() {
         FieldFunction<ROOT::Math::XYZVector> function = [field_z](const ROOT::Math::XYZPoint&) {
             return ROOT::Math::XYZVector(0, 0, field_z);
         };
-        detector_->setElectricFieldFunction(std::move(function), thickness_domain, FieldType::CONSTANT);
+        getDetector()->setElectricFieldFunction(std::move(function), thickness_domain, FieldType::CONSTANT);
     } else if(field_model == ElectricField::LINEAR) {
         LOG(TRACE) << "Adding linear electric field";
 
@@ -132,7 +132,7 @@ void ElectricFieldReaderModule::initialize() {
 
         LOG(INFO) << "Setting linear electric field from " << Units::display(config_.get<double>("bias_voltage"), "V")
                   << " bias voltage and " << Units::display(depletion_voltage, "V") << " depletion voltage";
-        detector_->setElectricFieldFunction(
+        getDetector()->setElectricFieldFunction(
             get_linear_field_function(depletion_voltage, thickness_domain), thickness_domain, FieldType::LINEAR);
     } else if(field_model == ElectricField::PARABOLIC) {
         LOG(TRACE) << "Adding parabolic electric field";
@@ -140,12 +140,12 @@ void ElectricFieldReaderModule::initialize() {
                   << Units::display(config_.get<double>("minimum_field"), "V/cm") << " at position "
                   << Units::display(config_.get<double>("minimum_position"), {"um", "mm"}) << " and maximum field "
                   << Units::display(config_.get<double>("maximum_field"), "V/cm") << " at electrode";
-        detector_->setElectricFieldFunction(
+        getDetector()->setElectricFieldFunction(
             get_parabolic_field_function(thickness_domain), thickness_domain, FieldType::CUSTOM1D);
     } else if(field_model == ElectricField::CUSTOM) {
         LOG(TRACE) << "Adding custom electric field";
         auto [field_function, field_type] = get_custom_field_function();
-        detector_->setElectricFieldFunction(field_function, thickness_domain, field_type);
+        getDetector()->setElectricFieldFunction(field_function, thickness_domain, field_type);
     }
 
     // Produce histograms if needed
@@ -329,7 +329,7 @@ void ElectricFieldReaderModule::create_output_plots() {
         throw InvalidValueError(config_, "output_plots_project", "can only project on x, y or z axis");
     }
 
-    auto model = detector_->getModel();
+    auto model = getDetector()->getModel();
 
     // If we need to plot a single pixel, we use size and position of the pixel at the origin
     auto single_pixel = config_.get<bool>("output_plots_single_pixel", true);
@@ -458,7 +458,7 @@ void ElectricFieldReaderModule::create_output_plots() {
             }
 
             // Get field strength from detector - directly convert to double to fill root histograms
-            auto field = detector_->getElectricField(ROOT::Math::XYZPoint(x, y, z));
+            auto field = getDetector()->getElectricField(ROOT::Math::XYZPoint(x, y, z));
             auto field_strength = static_cast<double>(Units::convert(std::sqrt(field.Mag2()), "V/cm"));
             auto field_x_strength = static_cast<double>(Units::convert(field.x(), "V/cm"));
             auto field_y_strength = static_cast<double>(Units::convert(field.y(), "V/cm"));

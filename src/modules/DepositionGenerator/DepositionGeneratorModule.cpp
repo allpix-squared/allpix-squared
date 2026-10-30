@@ -41,7 +41,7 @@ DepositionGeneratorModule::DepositionGeneratorModule(Configuration& config,
     allow_multithreading();
 
     // Do *not* waive sequence requirement - we're reading from file and this should happen sequentially
-    waive_sequence_requirement(false);
+    require_sequence(true);
 
     file_model_ = config_.get<PrimariesReader::FileModel>("model");
 
@@ -53,7 +53,7 @@ DepositionGeneratorModule::DepositionGeneratorModule(Configuration& config,
     config_.set("number_of_particles", 1);
 
     // Add the particle source position to the geometry
-    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
+    getGeometryManager()->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
 }
 
 void DepositionGeneratorModule::initialize() {

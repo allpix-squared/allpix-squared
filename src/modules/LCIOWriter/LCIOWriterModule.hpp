@@ -30,7 +30,7 @@ namespace allpix {
      *
      * Create LCIO file, compatible to EUTelescope analysis framework.
      */
-    class LCIOWriterModule : public SequentialModule {
+    class LCIOWriterModule : public UniqueModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -56,8 +56,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Messenger* messenger_;
-        GeometryManager* geo_mgr_{};
         std::shared_ptr<IO::LCWriter> lc_writer_;
 
         std::vector<std::string> collection_names_vector_;

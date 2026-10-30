@@ -27,7 +27,7 @@ namespace allpix {
      * @brief Module to construct a GDML Output of the geometry
 
      */
-    class GDMLOutputWriterModule : public Module {
+    class GDMLOutputWriterModule : public UniqueModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -37,6 +37,16 @@ namespace allpix {
          */
         GDMLOutputWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
         ~GDMLOutputWriterModule() override = default;
+
+        /// @{
+        /**
+         * @brief Copying and moving the module is not allowed
+         */
+        GDMLOutputWriterModule(const GDMLOutputWriterModule&) = delete;
+        GDMLOutputWriterModule& operator=(const GDMLOutputWriterModule&) = delete;
+        GDMLOutputWriterModule(GDMLOutputWriterModule&&) = delete;
+        GDMLOutputWriterModule& operator=(GDMLOutputWriterModule&&) = delete;
+        /// @}
 
         /**
          * @brief Initializes Geant4 and construct the GDML output file from the internal geometry

@@ -49,7 +49,7 @@
 using namespace allpix;
 
 PulseTransferModule::PulseTransferModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    : DetectorModule(config, messenger, std::move(detector)) {
 
     // Set default value for config variables
     config_.setDefault("max_depth_distance", Units::get(5.0, "um"));
@@ -141,7 +141,7 @@ void PulseTransferModule::run(Event* event) {
         if(pulses.empty()) {
             LOG_ONCE(INFO) << "No pulse information available - producing pseudo-pulse from arrival time of charge carriers";
 
-            auto model = detector_->getModel();
+            auto model = getDetector()->getModel();
             auto position = propagated_charge.getLocalPosition();
 
             if(collect_from_implant_) {
@@ -152,7 +152,7 @@ void PulseTransferModule::run(Event* event) {
                             "collect_from_implant",
                             "Detector model does not have implants defined, but collection requested from implants");
                     }
-                    if(detector_->getElectricFieldType() == FieldType::LINEAR) {
+                    if(getDetector()->getElectricFieldType() == FieldType::LINEAR) {
                         throw ModuleError(
                             "Charge collection from implant region should not be used with linear electric fields.");
                     }
@@ -178,7 +178,7 @@ void PulseTransferModule::run(Event* event) {
             auto [xpixel, ypixel] = model->getPixelIndex(position);
 
             // Ignore if out of pixel grid
-            if(!detector_->getModel()->isWithinMatrix(xpixel, ypixel)) {
+            if(!getDetector()->getModel()->isWithinMatrix(xpixel, ypixel)) {
                 LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                            << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                            << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the grid";
@@ -251,12 +251,12 @@ void PulseTransferModule::run(Event* event) {
         const std::vector<const PropagatedCharge*> pixel_charge_vec(pixel_charge_map[index].begin(),
                                                                     pixel_charge_map[index].end());
         LOG(DEBUG) << "Charge on pixel " << index << " has " << pixel_charge_vec.size() << " ancestors";
-        pixel_charges.emplace_back(detector_->getPixel(index), std::move(pulse), pixel_charge_vec);
+        pixel_charges.emplace_back(getDetector()->getPixel(index), std::move(pulse), pixel_charge_vec);
     }
 
     if(output_pulsegraphs_) {
         const std::string name = "chargemap_ev" + std::to_string(event->number);
-        auto size = detector_->getModel()->getNPixels();
+        auto size = getDetector()->getModel()->getNPixels();
         const std::string title =
             "Map of accumulated induced charge in event " + std::to_string(event->number) + ";x (pixels);y (pixels);charge";
         auto* charge_map = new TH2D(name.c_str(),
@@ -275,7 +275,7 @@ void PulseTransferModule::run(Event* event) {
     }
 
     // Create a new message with pixel pulses and dispatch:
-    auto pixel_charge_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
+    auto pixel_charge_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), getDetector());
     messenger_->dispatchMessage(this, pixel_charge_message, event);
 
     // Fill pixel charge histogram

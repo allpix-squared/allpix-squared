@@ -43,7 +43,7 @@ namespace allpix {
      * The cross hit created in the neighboring pixels keeps the history, saving from where the original charge came from.
      */
 
-    class CapacitiveTransferModule : public Module {
+    class CapacitiveTransferModule : public DetectorModule {
     public:
         /**
          * @brief Constructor for this detector-specific module
@@ -71,8 +71,6 @@ namespace allpix {
 
     private:
         // Configuration config_;
-        Messenger* messenger_;
-        std::shared_ptr<Detector> detector_;
         std::shared_ptr<const DetectorModel> model_;
 
         // Statistical information

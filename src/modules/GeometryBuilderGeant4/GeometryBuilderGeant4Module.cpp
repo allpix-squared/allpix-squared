@@ -43,9 +43,9 @@ using namespace allpix;
 using namespace ROOT;
 
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config,
-                                                         Messenger* /*unused*/,
+                                                         Messenger* messenger,
                                                          GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
+    : UniqueModule(config, messenger, geo_manager), run_manager_g4_(nullptr) {
 
     // Register an exception handler for Geant4:
     G4StateManager::GetStateManager()->SetExceptionHandler(new G4ExceptionHandler());
@@ -75,7 +75,8 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config,
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
     ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
 
-    geometry_construction_ = new GeometryConstructionG4(geo_manager_, config_);
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
+    geometry_construction_ = new GeometryConstructionG4(getGeometryManager(), config_);
 }
 
 /**

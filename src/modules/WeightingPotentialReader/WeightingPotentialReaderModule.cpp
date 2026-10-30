@@ -43,9 +43,9 @@
 using namespace allpix;
 
 WeightingPotentialReaderModule::WeightingPotentialReaderModule(Configuration& config,
-                                                               Messenger* /*unused*/,
+                                                               Messenger* messenger,
                                                                std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)) {
+    : DetectorModule(config, messenger, std::move(detector)) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 }
@@ -55,7 +55,7 @@ void WeightingPotentialReaderModule::initialize() {
     auto field_model = config_.get<WeightingPotential>("model");
 
     // Calculate thickness domain
-    auto model = detector_->getModel();
+    auto model = getDetector()->getModel();
     auto potential_depth = config_.get<double>("potential_depth", model->getSensorSize().z());
     if(potential_depth - model->getSensorSize().z() > std::numeric_limits<double>::epsilon()) {
         throw InvalidValueError(
@@ -88,13 +88,13 @@ void WeightingPotentialReaderModule::initialize() {
         }
 
         // Set the field grid, provide scale factors as fraction of the pixel pitch for correct scaling:
-        detector_->setWeightingPotentialGrid(field_data.getData(),
-                                             field_data.getDimensions(),
-                                             field_data.getSize(),
-                                             field_mapping,
-                                             field_scale,
-                                             {0.0, 0.0},
-                                             thickness_domain);
+        getDetector()->setWeightingPotentialGrid(field_data.getData(),
+                                                 field_data.getDimensions(),
+                                                 field_data.getSize(),
+                                                 field_mapping,
+                                                 field_scale,
+                                                 {0.0, 0.0},
+                                                 thickness_domain);
     } else if(field_model == WeightingPotential::PAD) {
         LOG(TRACE) << "Adding weighting potential from pad in plane condenser";
 
@@ -113,7 +113,7 @@ void WeightingPotentialReaderModule::initialize() {
         }
 
         auto function = get_pad_potential_function({implant.x(), implant.y()}, thickness_domain);
-        detector_->setWeightingPotentialFunction(function, thickness_domain, FieldType::CUSTOM);
+        getDetector()->setWeightingPotentialFunction(function, thickness_domain, FieldType::CUSTOM);
     }
 
     // Produce histograms if needed
@@ -166,7 +166,7 @@ WeightingPotentialReaderModule::get_pad_potential_function(const ROOT::Math::XYV
 void WeightingPotentialReaderModule::create_output_plots() {
     LOG(TRACE) << "Creating output plots";
 
-    auto model = detector_->getModel();
+    auto model = getDetector()->getModel();
 
     auto center = model->getPixelCenter(1, 1);
     auto size =
@@ -192,7 +192,7 @@ void WeightingPotentialReaderModule::create_output_plots() {
         auto pos = ROOT::Math::XYZPoint(position.x(), position.y(), z);
 
         // Get potential from detector and fill the histogram
-        auto potential = detector_->getWeightingPotential(pos, Pixel::Index(1, 1));
+        auto potential = getDetector()->getWeightingPotential(pos, Pixel::Index(1, 1));
         histogram->Fill(z, potential);
     }
 
@@ -242,8 +242,10 @@ void WeightingPotentialReaderModule::create_output_plots() {
                 center.y() - size.y() / 2.0 + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.y();
 
             // Get potential from detector and fill histogram. We calculate relative to pixel (1,1) so we need to shift:
-            auto potential_x = detector_->getWeightingPotential(ROOT::Math::XYZPoint(x, center.y(), z), Pixel::Index(1, 1));
-            auto potential_y = detector_->getWeightingPotential(ROOT::Math::XYZPoint(center.x(), y, z), Pixel::Index(1, 1));
+            auto potential_x =
+                getDetector()->getWeightingPotential(ROOT::Math::XYZPoint(x, center.y(), z), Pixel::Index(1, 1));
+            auto potential_y =
+                getDetector()->getWeightingPotential(ROOT::Math::XYZPoint(center.x(), y, z), Pixel::Index(1, 1));
 
             histogram2Dx->Fill(x, z, potential_x);
             histogram2Dy->Fill(y, z, potential_y);
@@ -258,7 +260,7 @@ void WeightingPotentialReaderModule::create_output_plots() {
         for(size_t k = 0; k < steps; ++k) {
             const double y =
                 center.y() - size.y() / 2.0 + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.y();
-            auto potential_z = detector_->getWeightingPotential(ROOT::Math::XYZPoint(x, y, zcut), Pixel::Index(1, 1));
+            auto potential_z = getDetector()->getWeightingPotential(ROOT::Math::XYZPoint(x, y, zcut), Pixel::Index(1, 1));
             histogram2Dz->Fill(x, y, potential_z);
         }
     }

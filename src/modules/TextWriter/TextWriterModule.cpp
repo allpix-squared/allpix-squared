@@ -30,10 +30,13 @@
 
 using namespace allpix;
 
-TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager* /*unused*/)
-    : SequentialModule(config), messenger_(messenger) {
+TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+    : UniqueModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
+
+    // Require sequential event processing
+    require_sequence(true);
 
     // Bind to all messages with filter
     messenger_->registerFilter(this, &TextWriterModule::filter);

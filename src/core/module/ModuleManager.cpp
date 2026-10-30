@@ -375,7 +375,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
     }
     // Convert to correct generator function
     auto module_generator =
-        reinterpret_cast<Module* (*)(Configuration&, Messenger*, std::shared_ptr<Detector>)>(generator); // NOLINT
+        reinterpret_cast<DetectorModule* (*)(Configuration&, Messenger*, std::shared_ptr<Detector>)>(generator); // NOLINT
 
     // Handle empty type and name arrays:
     bool instances_created = false;
@@ -701,7 +701,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
 
                 log_context::acquire(module->getLogger(), 'R', event->number);
                 try {
-                    if(module->require_sequence() && event_num != thread_pool_->minimumUncompleted()) {
+                    if(module->sequence_required() && event_num != thread_pool_->minimumUncompleted()) {
                         stop = true;
                     } else {
                         module->run(event.get());

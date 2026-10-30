@@ -58,10 +58,10 @@ using namespace ROOT::Math;
 TransientPropagationModule::TransientPropagationModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    : DetectorModule(config, messenger, std::move(detector)) {
 
     // Save detector model
-    model_ = detector_->getModel();
+    model_ = getDetector()->getModel();
 
     // Require deposits message for single detector:
     messenger_->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
@@ -145,23 +145,23 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
 void TransientPropagationModule::initialize() {
 
     // Check for electric field
-    if(!detector_->hasElectricField()) {
+    if(!getDetector()->hasElectricField()) {
         LOG(WARNING) << "This detector does not have an electric field.";
     }
 
-    if(!detector_->hasWeightingPotential()) {
+    if(!getDetector()->hasWeightingPotential()) {
         throw ModuleError("This module requires a weighting potential.");
     }
 
-    if(detector_->getElectricFieldType() == FieldType::LINEAR) {
+    if(getDetector()->getElectricFieldType() == FieldType::LINEAR) {
         LOG(ERROR) << "This module will likely produce unphysical results when applying linear electric fields.";
     }
 
     // Prepare mobility model
-    mobility_ = Mobility(config_, model_->getSensorMaterial(), detector_->hasDopingProfile());
+    mobility_ = Mobility(config_, model_->getSensorMaterial(), getDetector()->hasDopingProfile());
 
     // Prepare recombination model
-    recombination_ = Recombination(config_, detector_->hasDopingProfile());
+    recombination_ = Recombination(config_, getDetector()->hasDopingProfile());
 
     // Prepare trapping model
     trapping_ = Trapping(config_, model_->getSensorSize().z());
@@ -179,7 +179,7 @@ void TransientPropagationModule::initialize() {
     }
 
     // Check for magnetic field
-    has_magnetic_field_ = detector_->hasMagneticField();
+    has_magnetic_field_ = getDetector()->hasMagneticField();
     if(has_magnetic_field_) {
         if(config_.get<bool>("ignore_magnetic_field")) {
             has_magnetic_field_ = false;
@@ -523,7 +523,7 @@ void TransientPropagationModule::run(Event* event) {
     }
 
     // Create a new message with propagated charges
-    auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
+    auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), getDetector());
 
     // Dispatch the message with propagated charges
     messenger_->dispatchMessage(this, std::move(propagated_charge_message), event);
@@ -588,23 +588,23 @@ TransientPropagationModule::propagate(Event* event,
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
     const std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
         [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
-        auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+        auto raw_field = getDetector()->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         const Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
-        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+        auto doping = getDetector()->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
 
         return static_cast<int>(type) * mobility_(type, efield.norm(), doping) * efield;
     };
 
     const std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_withB =
         [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
-        auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+        auto raw_field = getDetector()->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         const Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
-        auto magnetic_field = detector_->getMagneticField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+        auto magnetic_field = getDetector()->getMagneticField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         const Eigen::Vector3d bfield(magnetic_field.x(), magnetic_field.y(), magnetic_field.z());
 
-        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+        auto doping = getDetector()->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
 
         auto mob = mobility_(type, efield.norm(), doping);
         auto exb = efield.cross(bfield);
@@ -628,7 +628,7 @@ TransientPropagationModule::propagate(Event* event,
     ROOT::Math::XYZVector efield{};
     ROOT::Math::XYZVector last_efield{};
     // Initialize last_efield for first pass through the while loop
-    last_efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(last_position));
+    last_efield = getDetector()->getElectricField(static_cast<ROOT::Math::XYZPoint>(last_position));
     size_t next_idx = 0;
     auto state = CarrierState::MOTION;
     while(state == CarrierState::MOTION && (initial_time_local + runge_kutta.getTime()) < integration_time_) {
@@ -643,8 +643,8 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         // Get electric field at current (pre-step) position
-        efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
-        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
+        efield = getDetector()->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
+        auto doping = getDetector()->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
 
         // Execute a Runge-Kutta step
         auto step = runge_kutta.step();
@@ -828,8 +828,9 @@ TransientPropagationModule::propagate(Event* event,
                    << Units::display(initial_time_local + runge_kutta.getTime(), "ns");
 
         for(const auto& pixel_index : neighbors) {
-            auto ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(position), pixel_index);
-            auto last_ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
+            auto ramo = getDetector()->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(position), pixel_index);
+            auto last_ramo =
+                getDetector()->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
 
             // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
             auto induced = charge * (ramo - last_ramo) * static_cast<std::underlying_type_t<CarrierType>>(type);
@@ -929,7 +930,7 @@ TransientPropagationModule::propagate(Event* event,
 
     // Create a new propagated charge and add it to the list
     auto local_position = static_cast<ROOT::Math::XYZPoint>(position);
-    auto global_position = detector_->getGlobalPosition(local_position);
+    auto global_position = getDetector()->getGlobalPosition(local_position);
     PropagatedCharge propagated_charge(local_position,
                                        global_position,
                                        type,

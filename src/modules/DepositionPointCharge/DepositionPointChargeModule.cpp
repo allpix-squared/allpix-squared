@@ -42,7 +42,7 @@ using namespace allpix;
 DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
                                                          Messenger* messenger,
                                                          std::shared_ptr<Detector> detector)
-    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    : DetectorModule(config, messenger, std::move(detector)) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
@@ -77,7 +77,7 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
 
 void DepositionPointChargeModule::initialize() {
 
-    detector_model_ = detector_->getModel();
+    detector_model_ = getDetector()->getModel();
     output_plots_ = config_.get<bool>("output_plots");
     output_plots_bins_per_um_ = config_.get<int>("output_plots_bins_per_um");
 
@@ -319,25 +319,25 @@ void DepositionPointChargeModule::deposit_point(Event* event, const ROOT::Math::
         return;
     }
 
-    auto position_global = detector_->getGlobalPosition(position);
+    auto position_global = getDetector()->getGlobalPosition(position);
 
     // Start and stop position is the same for the MCParticle
     mcparticles.emplace_back(position, position_global, position, position_global, -1, 0., 0.);
     LOG(DEBUG) << "Generated MCParticle at global position " << Units::display(position_global, {"um", "mm"})
-               << " in detector " << detector_->getName();
+               << " in detector " << getDetector()->getName();
     // Count electrons and holes:
     mcparticles.back().setTotalDepositedCharge(2 * carriers_);
 
     charges.emplace_back(position, position_global, CarrierType::ELECTRON, carriers_, 0., 0., &(mcparticles.back()));
     charges.emplace_back(position, position_global, CarrierType::HOLE, carriers_, 0., 0., &(mcparticles.back()));
     LOG(DEBUG) << "Deposited " << carriers_ << " charge carriers of both types at global position "
-               << Units::display(position_global, {"um", "mm"}) << " in detector " << detector_->getName();
+               << Units::display(position_global, {"um", "mm"}) << " in detector " << getDetector()->getName();
 
     // Dispatch the messages to the framework
-    auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
+    auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), getDetector());
     messenger_->dispatchMessage(this, std::move(mcparticle_message), event);
 
-    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
+    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), getDetector());
     messenger_->dispatchMessage(this, std::move(deposit_message), event);
 }
 
@@ -356,15 +356,15 @@ void DepositionPointChargeModule::deposit_line(Event* event, const ROOT::Math::X
     // End point is the intersection along the line to the box. Start position is also that, but in the other direction.
     // The given position is a point the line intersects. Need to extrapolate to surfaces using this
     auto [start_local, end_local] = sensor_intersection(position);
-    const ROOT::Math::XYZPoint start_global = detector_->getGlobalPosition(start_local);
-    const ROOT::Math::XYZPoint end_global = detector_->getGlobalPosition(end_local);
+    const ROOT::Math::XYZPoint start_global = getDetector()->getGlobalPosition(start_local);
+    const ROOT::Math::XYZPoint end_global = getDetector()->getGlobalPosition(end_local);
 
     // Total number of carriers will be:
     auto charge = static_cast<unsigned int>(carriers_ * sqrt((end_local - start_local).Mag2()) / step_size_);
     // Create MCParticle:
     mcparticles.emplace_back(start_local, start_global, end_local, end_global, -1, 0., 0.);
     LOG(DEBUG) << "Generated MCParticle with start " << Units::display(start_global, {"um", "mm"}) << " and end "
-               << Units::display(end_global, {"um", "mm"}) << " in detector " << detector_->getName();
+               << Units::display(end_global, {"um", "mm"}) << " in detector " << getDetector()->getName();
     // Count electrons and holes:
     mcparticles.back().setTotalDepositedCharge(2 * charge);
     LOG(DEBUG) << "Total charge of " << 2 * charge << " deposited over a line length of "
@@ -374,13 +374,13 @@ void DepositionPointChargeModule::deposit_line(Event* event, const ROOT::Math::X
     auto position_local = start_local;
     while(position_local.x() <= end_local.x() && position_local.y() <= end_local.y() &&
           position_local.z() <= end_local.z()) {
-        auto position_global = detector_->getGlobalPosition(position_local);
+        auto position_global = getDetector()->getGlobalPosition(position_local);
 
         charges.emplace_back(
             position_local, position_global, CarrierType::ELECTRON, carriers_, 0., 0., &(mcparticles.back()));
         charges.emplace_back(position_local, position_global, CarrierType::HOLE, carriers_, 0., 0., &(mcparticles.back()));
         LOG(TRACE) << "Deposited " << carriers_ << " charge carriers of both types at global position "
-                   << Units::display(position_global, {"um", "mm"}) << " in detector " << detector_->getName();
+                   << Units::display(position_global, {"um", "mm"}) << " in detector " << getDetector()->getName();
 
         if(output_plots_) {
             auto [xpixel, ypixel] = detector_model_->getPixelIndex(position_local);
@@ -397,10 +397,10 @@ void DepositionPointChargeModule::deposit_line(Event* event, const ROOT::Math::X
     }
 
     // Dispatch the messages to the framework
-    auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
+    auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), getDetector());
     messenger_->dispatchMessage(this, std::move(mcparticle_message), event);
 
-    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
+    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), getDetector());
     messenger_->dispatchMessage(this, std::move(deposit_message), event);
 }
 

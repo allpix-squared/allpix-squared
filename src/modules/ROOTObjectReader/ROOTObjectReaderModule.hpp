@@ -33,7 +33,7 @@ namespace allpix {
      * Reads the tree of objects in the data format of the \ref ROOTObjectWriterModule. Converts all the stored objects that
      * are supported back to messages containing those objects and dispatches those messages.
      */
-    class ROOTObjectReaderModule : public Module {
+    class ROOTObjectReaderModule : public UniqueModule {
     public:
         using MessageCreatorMap =
             std::map<std::type_index,
@@ -43,9 +43,9 @@ namespace allpix {
          * @brief Constructor for this unique module
          * @param config Configuration object for this module as retrieved from the steering file
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
-         * @param geo_mgr Pointer to the geometry manager, containing the detectors
+         * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        ROOTObjectReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr);
+        ROOTObjectReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
         /**
          * @brief Destructor deletes the internal objects read from ROOT Tree
          */
@@ -78,9 +78,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Messenger* messenger_;
-        GeometryManager* geo_mgr_;
-
         /**
          * @brief Internal object storing objects and information to construct a message from tree
          */

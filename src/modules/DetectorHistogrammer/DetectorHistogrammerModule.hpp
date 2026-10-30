@@ -39,7 +39,7 @@ namespace allpix {
      *
      * Generates a hitmap of all the produced pixel hits, together with a histogram of the cluster size
      */
-    class DetectorHistogrammerModule : public Module {
+    class DetectorHistogrammerModule : public DetectorModule {
     public:
         /**
          * @brief Constructor for this detector-specific module
@@ -76,10 +76,6 @@ namespace allpix {
          * a parent). This might be several particles.
          */
         static std::vector<const MCParticle*> get_primary_particles(std::shared_ptr<MCParticleMessage>& mcparticle_message);
-
-        Messenger* messenger_;
-
-        std::shared_ptr<Detector> detector_;
 
         // Statistics
         std::atomic<unsigned long> total_hits_;

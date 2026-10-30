@@ -45,8 +45,8 @@
 
 using namespace allpix;
 
-ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : Module(config), messenger_(messenger), geo_mgr_(geo_mgr) {
+ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+    : UniqueModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 }
@@ -271,7 +271,7 @@ void ROOTObjectReaderModule::initialize() {
             }
             if(det_idx != INT_MAX) {
                 if(split[det_idx] != "global") {
-                    message_info_array_.back().detector = geo_mgr_->getDetector(split[det_idx]);
+                    message_info_array_.back().detector = getGeometryManager()->getDetector(split[det_idx]);
                 }
             }
         }

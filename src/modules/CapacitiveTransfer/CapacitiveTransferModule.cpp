@@ -52,11 +52,11 @@ using namespace allpix;
 CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
                                                    Messenger* messenger,
                                                    std::shared_ptr<Detector> detector)
-    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    : DetectorModule(config, messenger, std::move(detector)) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
-    model_ = detector_->getModel();
+    model_ = getDetector()->getModel();
     config_.setDefault("output_plots", 0);
     config_.setDefault("cross_coupling", true);
     config_.setDefault("flip_odd_rows", false);
@@ -79,20 +79,20 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
 
 void CapacitiveTransferModule::initialize() {
 
-    auto model = detector_->getModel();
+    auto model = getDetector()->getModel();
     if(collect_from_implant_) {
         if(model->getImplants().empty()) {
             throw InvalidValueError(config_,
                                     "collect_from_implant",
                                     "Detector model does not have implants defined, but collection requested from implants");
         }
-        if(detector_->getElectricFieldType() == FieldType::LINEAR) {
+        if(getDetector()->getElectricFieldType() == FieldType::LINEAR) {
             throw ModuleError("Charge collection from implant region should not be used with linear electric fields.");
         }
         LOG(INFO) << "Collecting charges from implants";
     } else if(!model->getImplants().empty()) {
         LOG(WARNING)
-            << "Detector " << detector_->getName() << " of type " << model->getType()
+            << "Detector " << getDetector()->getName() << " of type " << model->getType()
             << " has implants defined but collecting charge carriers from full sensor surface, with a max depth distance of "
             << max_depth_distance_;
     } else {
@@ -367,7 +367,7 @@ void CapacitiveTransferModule::run(Event* event) {
                 auto ycoord = ypixel + static_cast<int>(row_to_use - static_cast<size_t>(std::floor(matrix_rows_ / 2)));
 
                 // Ignore if out of pixel grid
-                if(!detector_->getModel()->isWithinMatrix(xcoord, ycoord)) {
+                if(!getDetector()->getModel()->isWithinMatrix(xcoord, ycoord)) {
                     LOG(DEBUG) << "Skipping set of propagated charges at " << propagated_charge.getLocalPosition()
                                << " because their nearest pixel (" << xpixel << "," << ypixel
                                << ") is outside the pixel matrix";
@@ -426,7 +426,7 @@ void CapacitiveTransferModule::run(Event* event) {
         const double charge = pixel_index_charge.second.first;
 
         // Get pixel object from detector
-        auto pixel = detector_->getPixel(pixel_index_charge.first.x(), pixel_index_charge.first.y());
+        auto pixel = getDetector()->getPixel(pixel_index_charge.first.x(), pixel_index_charge.first.y());
         pixel_charges.emplace_back(pixel, charge, pixel_index_charge.second.second);
         LOG(DEBUG) << "Set of " << charge << " charges combined at " << pixel.getIndex();
     }
@@ -436,7 +436,7 @@ void CapacitiveTransferModule::run(Event* event) {
     total_transferred_charges_ += transferred_charges_count;
 
     // Dispatch message of pixel charges
-    auto pixel_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
+    auto pixel_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), getDetector());
     messenger_->dispatchMessage(this, pixel_message, event);
 }
 

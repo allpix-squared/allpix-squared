@@ -68,7 +68,7 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
     config_.set("source_position", ROOT::Math::XYZPoint());
 
     // Add the particle source position to the geometry
-    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
+    getGeometryManager()->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
 
     // Register lookup path for CRY data files:
     if(config_.has("data_path")) {
@@ -125,7 +125,7 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
 
     // Get G4 world size to check the subbox size
     double min_world_size_meters{0};
-    auto world_log_volume = geo_manager_->getExternalObject<G4LogicalVolume>("", "world_log");
+    auto world_log_volume = getGeometryManager()->getExternalObject<G4LogicalVolume>("", "world_log");
     if(world_log_volume != nullptr) {
         auto* world_box = dynamic_cast<G4Box*>(world_log_volume->GetSolid());
         min_world_size_meters = 2e-3 * std::min(world_box->GetXHalfLength(), world_box->GetYHalfLength());
@@ -135,8 +135,8 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
         // Calculate subbox length required from the maximum coordinates of the setup:
         // Use maximum coordinate instead of setup size to make sure that off-center setups are fully covered
         LOG(DEBUG) << "Calculating subbox length from setup size";
-        auto min = geo_manager_->getMinimumCoordinate();
-        auto max = geo_manager_->getMaximumCoordinate();
+        auto min = getGeometryManager()->getMinimumCoordinate();
+        auto max = getGeometryManager()->getMaximumCoordinate();
         std::vector<double> max_candidates = {
             std::fabs(max.x()), std::fabs(max.y()), std::fabs(min.x()), std::fabs(min.y())};
         auto max_abs_coord = *std::ranges::max_element(max_candidates);

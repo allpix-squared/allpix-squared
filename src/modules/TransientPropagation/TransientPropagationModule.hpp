@@ -46,7 +46,7 @@ namespace allpix {
      * step is calculated and the induced charge on neighboring pixels is deduced at every timestep in order to form a
      * transient current pulse.
      */
-    class TransientPropagationModule : public Module {
+    class TransientPropagationModule : public DetectorModule {
     public:
         /**
          * @brief Constructor for this detector-specific module
@@ -73,10 +73,7 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Messenger* messenger_;
-
         // General module members
-        std::shared_ptr<const Detector> detector_;
         std::shared_ptr<const DetectorModel> model_;
 
         /**

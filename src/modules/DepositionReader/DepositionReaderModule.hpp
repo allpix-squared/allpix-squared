@@ -38,7 +38,7 @@ namespace allpix {
      * individual events with a list of energy deposits at specific position given in local coordinates of the respective
      * detector.
      */
-    class DepositionReaderModule : public SequentialModule {
+    class DepositionReaderModule : public UniqueModule {
 
         /**
          * @brief Different implemented file models
@@ -70,8 +70,6 @@ namespace allpix {
 
     private:
         // General module members
-        GeometryManager* geo_manager_;
-        Messenger* messenger_;
 
         // File containing the input data
         std::unique_ptr<std::ifstream> input_file_;

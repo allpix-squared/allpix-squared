@@ -171,17 +171,17 @@ in the header and defined in the source file in order to keep the interface clea
 
 ## Module structure
 
-All modules must inherit from the `Module` base class, which can be found in `src/core/module/Module.hpp`. The module base
-class provides two base constructors, a few convenient methods and several methods which the user is required to override.
-Each module should provide a constructor using the fixed set of arguments defined by the framework; this particular
-constructor is always called during by the module instantiation logic. These arguments for the constructor differ for unique
-and detector modules.
+All modules must inherit from either the `DetectorModule` or the `UniqueModule` classes, which are both derived from the
+`Module` base class and can be found in `src/core/module/Module.hpp`. The module base class provides the required constructors,
+a few convenient methods and several methods which the user is required to override. Each module should provide a constructor
+using the fixed set of arguments defined by the framework; this particular constructor is always called during by the module
+instantiation logic. These arguments for the constructor differ for unique and detector modules.
 
 For unique modules, the constructor for a `TestModule` should be:
 
 ```cpp
 TestModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config) {}
+    : UniqueModule(config, messenger, geo_manager) {}
 ```
 
 For detector modules, the first two arguments are the same, but the last argument is a `std::shared_ptr` to the linked
@@ -190,7 +190,7 @@ constructor of a detector module is:
 
 ```cpp
 TestModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : Module(config, std::move(detector)) {}
+    : DetectorModule(config, messenger, std::move(detector)) {}
 ```
 
 The pointer to a Messenger can be used to bind variables to either receive or dispatch messages as explained in
@@ -226,9 +226,9 @@ other module instances or other modules in the framework using the `getConfigMan
 e.g. store the configuration actually used for the simulation alongside the data.
 
 If a module should be run using multithreading but requires to execute its run method in the order of event numbers, for
-example a module that writes to an output file, then the module can inherit from the `SequentialModule` class, without
-implementing additional functionality. This will ensure that the run method will receive events one-by-one and in the correct
-sequence.
+example a module that writes to an output file, then the module must indicate this by using the base class method
+`require_sequence(true)` in the constructor. This will ensure that the run method will receive events one-by-one and in the
+correct sequence.
 
 
 [@ap2-doxygen]: https://allpix-squared.docs.cern.ch/reference/

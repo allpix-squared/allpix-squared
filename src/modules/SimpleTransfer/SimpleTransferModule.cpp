@@ -40,7 +40,7 @@
 using namespace allpix;
 
 SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    : DetectorModule(config, messenger, std::move(detector)) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
@@ -56,7 +56,7 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
     config_.setDefault<double>("output_plots_range", Units::get(100, "ns"));
 
     // Save detector model
-    model_ = detector_->getModel();
+    model_ = getDetector()->getModel();
 
     // Cache config parameters:
     max_depth_distance_ = config_.get<double>("max_depth_distance");
@@ -71,19 +71,19 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
 
 void SimpleTransferModule::initialize() {
 
-    auto model = detector_->getModel();
+    auto model = getDetector()->getModel();
     if(collect_from_implant_) {
         if(model->getImplants().empty()) {
             throw InvalidValueError(config_,
                                     "collect_from_implant",
                                     "Detector model does not have implants defined, but collection requested from implants");
         }
-        if(detector_->getElectricFieldType() == FieldType::LINEAR) {
+        if(getDetector()->getElectricFieldType() == FieldType::LINEAR) {
             throw ModuleError("Charge collection from implant region should not be used with linear electric fields.");
         }
         LOG(INFO) << "Collecting charges from implants";
     } else if(!model->getImplants().empty()) {
-        LOG(WARNING) << "Detector " << detector_->getName() << " of type " << model->getType()
+        LOG(WARNING) << "Detector " << getDetector()->getName() << " of type " << model->getType()
                      << " has implants defined but collecting charge carriers from full sensor surface";
     }
 
@@ -171,7 +171,7 @@ void SimpleTransferModule::run(Event* event) {
         }
 
         // Get pixel object from detector
-        auto pixel = detector_->getPixel(index.x(), index.y());
+        auto pixel = getDetector()->getPixel(index.x(), index.y());
 
         pixel_charges.emplace_back(pixel, charge, std::move(pulse));
         LOG(DEBUG) << "Set of " << charge << " charges combined at " << pixel.getIndex();
@@ -182,7 +182,7 @@ void SimpleTransferModule::run(Event* event) {
     total_transferred_charges_ += transferred_charges_count;
 
     // Dispatch message of pixel charges
-    auto pixel_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
+    auto pixel_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), getDetector());
     messenger_->dispatchMessage(this, pixel_message, event);
 }
 

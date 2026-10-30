@@ -12,7 +12,6 @@
 #include <atomic>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include <Math/Point3D.h>
@@ -50,7 +49,7 @@ namespace allpix {
      * Propagation continues until the charge deposits 'leave' the sensitive device. Sets of charges do not interact with
      * each other and are treated fully separate, allowing for a speed-up by propagating the charges in multiple threads.
      */
-    class GenericPropagationModule : public Module {
+    class GenericPropagationModule : public DetectorModule {
     public:
         /**
          * @brief Constructor for this detector-specific module
@@ -77,8 +76,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Messenger* messenger_;
-        std::shared_ptr<const Detector> detector_;
         std::shared_ptr<const DetectorModel> model_;
 
         /**

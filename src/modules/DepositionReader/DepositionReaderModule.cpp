@@ -48,9 +48,12 @@
 using namespace allpix;
 
 DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : SequentialModule(config), geo_manager_(geo_manager), messenger_(messenger) {
+    : UniqueModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
+
+    // Require sequential event processing
+    require_sequence(true);
 
     config_.setDefault<size_t>("detector_name_chars", 0);
     config_.setDefault<std::string>("unit_length", "mm");
@@ -195,7 +198,7 @@ void DepositionReaderModule::initialize() {
     // If requested, prepare output plots
     if(output_plots_) {
         LOG(TRACE) << "Creating output plots";
-        for(auto& detector : geo_manager_->getDetectors()) {
+        for(auto& detector : getGeometryManager()->getDetectors()) {
 
             // Plot axis are in kilo electrons - convert from framework units!
             const int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
@@ -209,7 +212,7 @@ void DepositionReaderModule::initialize() {
     }
 
     // Calculate ionization energies and Fano factors:
-    for(auto& detector : geo_manager_->getDetectors()) {
+    for(auto& detector : getGeometryManager()->getDetectors()) {
         auto model = detector->getModel();
         charge_creation_energy_[detector] =
             (config_.has("charge_creation_energy") ? config_.get<double>("charge_creation_energy")
@@ -289,7 +292,7 @@ void DepositionReaderModule::run(Event* event) {
             LOG(TRACE) << "Truncated detector name: " << volume;
         }
 
-        auto detectors = geo_manager_->getDetectors();
+        auto detectors = getGeometryManager()->getDetectors();
         auto pos = std::ranges::find_if(
             detectors, [volume](const std::shared_ptr<Detector>& d) noexcept { return d->getName() == volume; });
         if(pos == detectors.end()) {
@@ -354,7 +357,7 @@ void DepositionReaderModule::run(Event* event) {
     double time_reference = 0;
 
     // Loop over all known detectors and dispatch messages for them
-    for(const auto& detector : geo_manager_->getDetectors()) {
+    for(const auto& detector : getGeometryManager()->getDetectors()) {
 
         if(!mc_particle_time[detector].empty()) {
             time_reference = *std::min_element(mc_particle_time[detector].begin(), mc_particle_time[detector].end());

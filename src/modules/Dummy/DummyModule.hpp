@@ -32,7 +32,7 @@ namespace allpix {
      * methods, the messenger and event interfaces. It also serves as wireframe for new modules, which can take the structure
      * for a quicker start.
      */
-    class DummyModule : public Module {
+    class DummyModule : public UniqueModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -88,8 +88,6 @@ namespace allpix {
 
     private:
         // Pointers to the central geometry manager and the messenger for interaction with the framework core:
-        GeometryManager* geo_manager_;
-        Messenger* messenger_;
 
         // A local module member variable which is set on the constructor and only read during runtime:
         int setting_{};

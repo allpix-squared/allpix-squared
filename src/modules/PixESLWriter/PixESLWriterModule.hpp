@@ -28,7 +28,7 @@ namespace allpix {
      * @ingroup Modules
      * @brief Module which writes out data for the PixESL framework
      */
-    class PixESLWriterModule : public SequentialModule {
+    class PixESLWriterModule : public DetectorModule {
     public:
         /**
          * @brief Constructor
@@ -59,8 +59,7 @@ namespace allpix {
 
     private:
         // Pointers to the central geometry manager and the messenger for interaction with the framework core:
-        std::shared_ptr<Detector> detector_;
-        Messenger* messenger_;
+
         bool message_pixelcharge_{};
 
         std::filesystem::path output_file_;

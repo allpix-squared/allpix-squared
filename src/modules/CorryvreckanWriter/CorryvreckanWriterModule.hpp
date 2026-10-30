@@ -36,7 +36,7 @@ namespace allpix {
      * More detailed explanation of module
      */
 
-    class CorryvreckanWriterModule : public SequentialModule {
+    class CorryvreckanWriterModule : public UniqueModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -62,10 +62,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        // General module members
-        Messenger* messenger_;
-        GeometryManager* geometry_manager_;
-
         // Parameters for output writing
         std::string file_name_;              // Output filename
         std::string geometry_file_name_;     // Output geometry filename

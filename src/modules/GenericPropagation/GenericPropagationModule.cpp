@@ -54,9 +54,9 @@ using namespace allpix;
 GenericPropagationModule::GenericPropagationModule(Configuration& config,
                                                    Messenger* messenger,
                                                    std::shared_ptr<Detector> detector)
-    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    : DetectorModule(config, messenger, std::move(detector)) {
     // Save detector model
-    model_ = detector_->getModel();
+    model_ = getDetector()->getModel();
 
     // Require deposits message for single detector
     messenger_->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
@@ -154,18 +154,18 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
 void GenericPropagationModule::initialize() {
 
     // Check for electric field and output warning for slow propagation if not defined
-    if(!detector_->hasElectricField()) {
+    if(!getDetector()->hasElectricField()) {
         LOG(WARNING) << "This detector does not have an electric field.";
     }
 
     // For linear fields we can in addition check if the correct carriers are propagated
-    if(detector_->getElectricFieldType() == FieldType::LINEAR) {
+    if(getDetector()->getElectricFieldType() == FieldType::LINEAR) {
         auto probe_point = ROOT::Math::XYZPoint(model_->getSensorCenter().x(),
                                                 model_->getSensorCenter().y(),
                                                 model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.01);
 
         // Get the field close to the implants and check its sign:
-        auto efield = detector_->getElectricField(probe_point);
+        auto efield = getDetector()->getElectricField(probe_point);
         auto direction = std::signbit(efield.z());
         // Compare with propagated carrier type:
         if(direction && !propagate_electrons_) {
@@ -177,7 +177,7 @@ void GenericPropagationModule::initialize() {
     }
 
     // Check for magnetic field
-    has_magnetic_field_ = detector_->hasMagneticField();
+    has_magnetic_field_ = getDetector()->hasMagneticField();
     if(has_magnetic_field_) {
         if(config_.get<bool>("ignore_magnetic_field")) {
             has_magnetic_field_ = false;
@@ -319,10 +319,10 @@ void GenericPropagationModule::initialize() {
     }
 
     // Prepare mobility model
-    mobility_ = Mobility(config_, model_->getSensorMaterial(), detector_->hasDopingProfile());
+    mobility_ = Mobility(config_, model_->getSensorMaterial(), getDetector()->hasDopingProfile());
 
     // Prepare recombination model
-    recombination_ = Recombination(config_, detector_->hasDopingProfile());
+    recombination_ = Recombination(config_, getDetector()->hasDopingProfile());
 
     // Impact ionization model
     multiplication_ = ImpactIonization(config_);
@@ -457,7 +457,7 @@ void GenericPropagationModule::run(Event* event) {
     }
 
     // Create a new message with propagated charges
-    auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
+    auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), getDetector());
 
     // Dispatch the message with propagated charges
     messenger_->dispatchMessage(this, std::move(propagated_charge_message), event);
@@ -523,22 +523,22 @@ GenericPropagationModule::propagate(Event* event,
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
     const std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
         [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
-        auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+        auto raw_field = getDetector()->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         const Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
-        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+        auto doping = getDetector()->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
 
         return static_cast<int>(type) * mobility_(type, efield.norm(), doping) * efield;
     };
 
     const std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_withB =
         [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
-        auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+        auto raw_field = getDetector()->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         const Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
-        auto magnetic_field = detector_->getMagneticField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+        auto magnetic_field = getDetector()->getMagneticField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         const Eigen::Vector3d bfield(magnetic_field.x(), magnetic_field.y(), magnetic_field.z());
 
-        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+        auto doping = getDetector()->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
 
         auto mob = mobility_(type, efield.norm(), doping);
         auto exb = efield.cross(bfield);
@@ -563,7 +563,7 @@ GenericPropagationModule::propagate(Event* event,
     ROOT::Math::XYZVector efield{};
     ROOT::Math::XYZVector last_efield{};
     // Initialize last_efield for first pass through the while loop
-    last_efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(last_position));
+    last_efield = getDetector()->getElectricField(static_cast<ROOT::Math::XYZPoint>(last_position));
     double last_time = 0;
     size_t next_idx = 0;
     auto state = CarrierState::MOTION;
@@ -583,8 +583,8 @@ GenericPropagationModule::propagate(Event* event,
         last_time = runge_kutta.getTime();
 
         // Get electric field at current (pre-step) position
-        efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
-        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
+        efield = getDetector()->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
+        auto doping = getDetector()->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
 
         // Execute a Runge-Kutta step
         auto step = runge_kutta.step();
@@ -611,7 +611,7 @@ GenericPropagationModule::propagate(Event* event,
         // Check if charge carrier is still alive:
         if(state == CarrierState::MOTION &&
            recombination_(type,
-                          detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
+                          getDetector()->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
                           uniform_distribution(event->getRandomEngine()),
                           timestep)) {
             state = CarrierState::RECOMBINED;
@@ -821,7 +821,7 @@ GenericPropagationModule::propagate(Event* event,
                << Units::display(time, "ns") << " time, gain " << gain << ", final state: " << allpix::to_string(state);
 
     // Create a new propagated charge and add it to the list
-    auto global_position = detector_->getGlobalPosition(local_position);
+    auto global_position = getDetector()->getGlobalPosition(local_position);
     PropagatedCharge propagated_charge(local_position,
                                        global_position,
                                        deposit.getType(),

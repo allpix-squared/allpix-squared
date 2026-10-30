@@ -21,13 +21,23 @@ select yn in "unique" "detector"; do
     esac
 done
 
-# Ask for module type:
+# Ask for event order requirement:
 echo -e "Event order requirements?\n"
 sequence=0
-select yn in "Module" "SequentialModule"; do
+select yn in "Yes" "No"; do
     case $yn in
-        Module ) sequence=0; break;;
-        SequentialModule ) sequence=1; break;;
+        No ) sequence=0; break;;
+        Yes ) sequence=1; break;;
+    esac
+done
+
+# Ask for multithreading capability:
+echo -e "Allow for multithreading?\n"
+multithreading=0
+select yn in "Yes" "No"; do
+    case $yn in
+        Yes ) multithreading=1; break;;
+        No ) multithreading=0; break;;
     esac
 done
 
@@ -105,6 +115,7 @@ if [ "$type" = 2 ]; then
     eval $command
     # Change header file
     command="sed ${opt} \
+        -e 's/UniqueModule/DetectorModule/g' \
         -e 's/ unique / detector-specific /g' \
         -e 's/param geo_manager.*/param detector Pointer to the detector for this module instance/g' \
         -e 's/GeometryManager\* geo\_manager/std::shared\_ptr\<Detector\> detector/g' \
@@ -114,13 +125,12 @@ if [ "$type" = 2 ]; then
     # Change implementation file
     command="sed ${opt} \
         -e 's/GeometryManager\* geo_manager/std::shared\_ptr\<Detector\> detector/g' \
-        -e 's/Module(config)/Module\(config\, detector\)/g' \
-        -e 's/geo_manager_(geo_manager)/detector_(std::move(detector))/g' \
+        -e 's/UniqueModule(config\, messenger, geo_manager)/DetectorModule\(config\, messenger\, std::move(detector)\)/g' \
         -e 's/bindMulti/bindSingle/g' \
         -e '/for(auto/d' \
         -e 's/\s\{8\}/\ \ \ \ /' \
-        -e '/geo_manager_/d' \
-        -e 's/detector->get/detector_->get/g' \
+        -e '/getGeometryManager()/d' \
+        -e 's/detector->get/getDetector()->get/g' \
         -e '/    }/d' \
         -e '/Loop/d' \
         -e 's/auto messages/auto message/g' \
@@ -129,16 +139,20 @@ if [ "$type" = 2 ]; then
     eval $command
 fi
 
-# Change to SequentialModule if required
+# Enable sequence requirement if applicable
 if [ "$sequence" = 1 ]; then
-    # Change header file
-    command="sed ${opt} \
-        -e 's/public Module/public SequentialModule/g' \
-        $MODDIR/$MODNAME/${MODNAME}Module.hpp"
-    eval $command
     # Change implementation file
     command="sed ${opt} \
-        -e 's/ Module/ SequentialModule/g' \
+        -e 's/ \/\/ require_sequence(true);/ require_sequence(true);/g' \
+        $MODDIR/$MODNAME/${MODNAME}Module.cpp"
+    eval $command
+fi
+
+# Enable multithreading if allowed
+if [ "$multithreading" = 1 ]; then
+    # Change implementation file
+    command="sed ${opt} \
+        -e 's/ \/\/ allow_multithreading();/ allow_multithreading();/g' \
         $MODDIR/$MODNAME/${MODNAME}Module.cpp"
     eval $command
 fi

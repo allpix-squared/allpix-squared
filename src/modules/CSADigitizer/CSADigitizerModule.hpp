@@ -36,7 +36,7 @@ namespace allpix {
      * with Krummenacher feedack circuit while adding electronics
      * noise and simulating the threshold as well as accounting for threshold dispersion and ADC noise.
      */
-    class CSADigitizerModule : public Module {
+    class CSADigitizerModule : public DetectorModule {
 
         /**
          * @brief Different implemented digitization models
@@ -71,7 +71,7 @@ namespace allpix {
         // Control of module output settings
         bool output_plots_{}, output_pulsegraphs_{};
         bool store_tot_{false}, store_toa_{false}, sync_event_time_{false}, ignore_polarity_{};
-        Messenger* messenger_;
+
         DigitizerType model_;
 
         // Function to calculate impulse response

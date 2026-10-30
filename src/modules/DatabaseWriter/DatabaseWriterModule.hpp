@@ -29,15 +29,15 @@ namespace allpix {
      * Listens to all objects dispatched in the framework and stores a representation of every object to the specified
      * database.
      */
-    class DatabaseWriterModule : public SequentialModule {
+    class DatabaseWriterModule : public UniqueModule {
     public:
         /**
          * @brief Constructor for this unique module
          * @param config Configuration object for this module as retrieved from the steering file
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
-         * @param geo_mgr Pointer to the geometry manager, containing the detectors
+         * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr);
+        DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
          * @brief Receive a single message containing objects of arbitrary type
@@ -68,8 +68,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Messenger* messenger_;
-
         /**
          * @brief Submit "prepared statements" to the database connection(s)
          * @param connection  Database connection to be used

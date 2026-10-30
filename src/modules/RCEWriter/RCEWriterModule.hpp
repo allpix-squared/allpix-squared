@@ -34,19 +34,15 @@ namespace allpix {
      * sub-directory, it creates a Hits tree. Upon receiving the Pixel Hit messages, it writes the information to
      * the respective trees.
      */
-    class RCEWriterModule : public SequentialModule {
+    class RCEWriterModule : public UniqueModule {
     public:
         /**
          * @brief Constructor for this unique module
          * @param config Configuration object for this module as retrieved from the steering file
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
-         * @param geo_mgr Pointer to the geometry manager, containing the detectors
+         * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr);
-        /**
-         * @brief Destructor deletes the internal objects used to build the ROOT Tree
-         */
-        ~RCEWriterModule() override = default;
+        RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
          * @brief Opens the file to write the objects to, and initializes the trees
@@ -64,9 +60,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Messenger* messenger_;
-        GeometryManager* geo_mgr_;
-
         // Struct to store tree and information for each detector
         struct sensor_data {
             static constexpr int kMaxHits = (1 << 14);

@@ -34,7 +34,7 @@ namespace allpix {
      * @ingroup Modules
      * @brief Module to generate and write pre-calculated propagation maps relating deposition position & assigned pixel
      */
-    class PropagationMapWriterModule : public Module {
+    class PropagationMapWriterModule : public DetectorModule {
     public:
         /**
          * @brief Constructor
@@ -66,10 +66,7 @@ namespace allpix {
 
     private:
         // Pointers to the central geometry manager and the messenger for interaction with the framework core:
-        std::shared_ptr<Detector> detector_;
         std::shared_ptr<const DetectorModel> model_;
-
-        Messenger* messenger_;
 
         std::array<double, 3> size_{};
         std::array<size_t, 3> bins_{};

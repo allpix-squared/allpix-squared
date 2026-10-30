@@ -31,7 +31,7 @@ namespace allpix {
      * This module requires a weighting potential and only works properly of both electrons and holes are present among the
      * propagated charge carriers.
      */
-    class InducedTransferModule : public Module {
+    class InducedTransferModule : public DetectorModule {
     public:
         /**
          * @brief Constructor for the InducedTransfer module
@@ -53,9 +53,6 @@ namespace allpix {
         void run(Event* event) override;
 
     private:
-        Messenger* messenger_;
-
-        std::shared_ptr<Detector> detector_;
         std::shared_ptr<const DetectorModel> model_;
 
         // Distance of pixels taken into account for induction

@@ -34,9 +34,9 @@
 
 using namespace allpix;
 
-Module::Module(Configuration& config) : Module(config, nullptr) {}
-Module::Module(Configuration& config, std::shared_ptr<Detector> detector)
-    : config_(config), logger_(generate_logger(config)), detector_(std::move(detector)) {}
+Module::Module(Configuration& config, Messenger* messenger)
+    : config_(config), logger_(generate_logger(config)), messenger_(messenger) {}
+
 /**
  * @note The remove_delegate can throw in theory, but this should never happen in practice
  */
@@ -210,5 +210,3 @@ Logger& Module::generate_logger(const Configuration& config) {
 
     return manager.getLogger(module_unique_name(config), level);
 }
-
-void SequentialModule::waive_sequence_requirement(bool waive) { sequence_required_ = !waive; }

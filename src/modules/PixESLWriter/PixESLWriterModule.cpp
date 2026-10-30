@@ -23,10 +23,13 @@
 using namespace allpix;
 
 PixESLWriterModule::PixESLWriterModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : SequentialModule(config, detector), detector_(std::move(detector)), messenger_(messenger) {
+    : DetectorModule(config, messenger, std::move(detector)) {
 
     // This is a sequential module and therefore thread-safe
     allow_multithreading();
+
+    // Require sequential event processing
+    require_sequence(true);
 
     message_pixelcharge_ = config_.get<bool>("write_pixelcharge", false);
     if(message_pixelcharge_) {
@@ -51,7 +54,7 @@ void PixESLWriterModule::initialize() {
     const auto number_of_events = global_config.get<uint64_t>("number_of_events");
 
     // Calculate the active matrix area
-    auto model = detector_->getModel();
+    auto model = getDetector()->getModel();
     LOG(DEBUG) << "Calculating rate for active matrix size of " << Units::display(model->getMatrixSize(), {"mm"});
     const auto matrix_area = model->getMatrixSize().x() * model->getMatrixSize().y();
     LOG(INFO) << "Active matrix area : " << matrix_area << " mm^2";
@@ -73,8 +76,8 @@ void PixESLWriterModule::initialize() {
 
     // Set up file writer:
     writer_ = std::make_unique<apx::Writer>(output_file_,
-                                            detector_->getName(),
-                                            detector_->getType(),
+                                            getDetector()->getName(),
+                                            getDetector()->getType(),
                                             properties,
                                             number_of_events,
                                             "Allpix Squared",

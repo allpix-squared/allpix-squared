@@ -25,10 +25,13 @@
 using namespace allpix;
 
 DummyModule::DummyModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), messenger_(messenger) {
+    : UniqueModule(config, messenger, geo_manager) {
 
     // Allow multithreading of the simulation. Only enabled if this module is thread-safe. See manual for more details.
     // allow_multithreading();
+
+    // Require sequential event processing. See manual for more details
+    // require_sequence(true);
 
     // Set a default for a configuration parameter, this will be used if no user configuration is provided:
     config_.setDefault<int>("setting", 13);
@@ -43,7 +46,7 @@ DummyModule::DummyModule(Configuration& config, Messenger* messenger, GeometryMa
 void DummyModule::initialize() {
 
     // Loop over detectors and perform some initialization or similar:
-    for(auto& detector : geo_manager_->getDetectors()) {
+    for(auto& detector : getGeometryManager()->getDetectors()) {
         // In this simple case we just print the name of this detector:
         LOG(DEBUG) << "Detector with name " << detector->getName();
     }

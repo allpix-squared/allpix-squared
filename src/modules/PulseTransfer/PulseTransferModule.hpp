@@ -32,7 +32,7 @@ namespace allpix {
      * This modules takes pulses created by the TransientPropagation module and compines the individual induced charges from
      * each of the PropagatedCharges at every pixel into PixelCharges.
      */
-    class PulseTransferModule : public Module {
+    class PulseTransferModule : public DetectorModule {
     public:
         /**
          * @brief Constructor for the PulseTransfer module
@@ -57,13 +57,9 @@ namespace allpix {
         bool output_plots_{}, output_pulsegraphs_{};
         double timestep_{};
 
-        Messenger* messenger_;
-
         void create_pulsegraphs(uint64_t event_num, const Pixel::Index& index, const Pulse& pulse) const;
 
         // General module members
-        std::shared_ptr<Detector> detector_;
-
         double max_depth_distance_{};
         bool collect_from_implant_{};
         std::once_flag first_event_flag_;

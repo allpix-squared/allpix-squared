@@ -58,7 +58,7 @@ This declaration is done by placing the following call in the constructor of the
 
 ```cpp
 MyParallelModule::MyParallelModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : Module(std::move(config), std::move(detector)) {
+    : DetectorModule(config, messenger, std::move(detector)) {
     // This module is thread-safe and can be called from different threads simultaneously:
     allow_multithreading();
 }

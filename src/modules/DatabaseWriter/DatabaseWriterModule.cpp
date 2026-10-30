@@ -29,15 +29,19 @@ using namespace allpix;
 
 thread_local std::shared_ptr<pqxx::connection> DatabaseWriterModule::conn_ = nullptr;
 
-DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager* /*geo_manager*/)
-    : SequentialModule(config), messenger_(messenger) {
+DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+    : UniqueModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
+
+    // Require sequential event processing
+    config_.setDefault("require_sequence", false);
+    require_sequence(config_.get<bool>("require_sequence"));
+
     // Bind to all messages with filter
     messenger_->registerFilter(this, &DatabaseWriterModule::filter);
 
     config_.setDefault("global_timing", false);
-    config_.setDefault("require_sequence", false);
 
     config_.setDefault("run_id", "none");
 
@@ -51,11 +55,6 @@ DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* mes
 
     // Select pixel hit timing information to be saved:
     timing_global_ = config_.get<bool>("global_timing");
-
-    // Waive sequence requirement if requested by user
-    if(!config_.get<bool>("require_sequence")) {
-        waive_sequence_requirement();
-    }
 }
 
 void DatabaseWriterModule::prepare_statements(const std::shared_ptr<pqxx::connection>& connection) {

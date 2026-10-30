@@ -42,19 +42,17 @@
 
 using namespace allpix;
 
-ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : SequentialModule(config), messenger_(messenger), geo_mgr_(geo_mgr) {
+ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+    : UniqueModule(config, messenger, geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
-    // Bind to all messages with filter
-    messenger_->registerFilter(this, &ROOTObjectWriterModule::filter);
-
     // Waive sequence requirement if requested by user
     config_.setDefault("require_sequence", true);
-    if(!config_.get<bool>("require_sequence")) {
-        waive_sequence_requirement();
-    }
+    require_sequence(config_.get<bool>("require_sequence"));
+
+    // Bind to all messages with filter
+    messenger_->registerFilter(this, &ROOTObjectWriterModule::filter);
 }
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
@@ -312,7 +310,7 @@ void ROOTObjectWriterModule::finalize() {
     // Save the detectors to the output file
     auto* detectors_dir = output_file_->mkdir("detectors");
     auto* models_dir = output_file_->mkdir("models");
-    for(auto& detector : geo_mgr_->getDetectors()) {
+    for(auto& detector : getGeometryManager()->getDetectors()) {
         detectors_dir->cd();
         LOG(TRACE) << "Writing detector configuration for: " << detector->getName();
         auto* detector_dir = detectors_dir->mkdir(detector->getName().c_str());
