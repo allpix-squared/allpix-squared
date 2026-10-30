@@ -167,8 +167,8 @@ std::set<Pixel::Index> PixelDetectorModel::getNeighbors(const Pixel::Index& idx,
 }
 
 bool PixelDetectorModel::areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const {
-    return (std::cmp_less_equal(std::abs(seed.x() - entrant.x()), distance) &&
-            std::cmp_less_equal(std::abs(seed.y() - entrant.y()), distance));
+    return (static_cast<size_t>(std::abs(seed.x() - entrant.x())) <= distance &&
+            static_cast<size_t>(std::abs(seed.y() - entrant.y())) <= distance);
 }
 
 ROOT::Math::XYZPoint PixelDetectorModel::getSensorIntercept(const ROOT::Math::XYZPoint& inside,
