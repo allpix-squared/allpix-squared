@@ -89,8 +89,9 @@ int main(int argc, char** argv) {
         allpix::register_units();
 
         // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
-        std::signal(SIGQUIT, interrupt_handler);
-        std::signal(SIGINT, interrupt_handler);
+        if(std::signal(SIGQUIT, interrupt_handler) == SIG_ERR || std::signal(SIGINT, interrupt_handler) == SIG_ERR) {
+            LOG(WARNING) << "Could not install signal handlers";
+        }
 
         std::string output_file_prefix = "model";
 

@@ -25,8 +25,9 @@ namespace allpix {
     public:
         /**
          * @brief Default constructor
+         * @note The framework always re-seeds every generator via seed() before use
          */
-        RandomNumberGenerator() = default;
+        RandomNumberGenerator() : std::mt19937_64(std::random_device{}()) {}
 
         /**
          * @brief Default destructor

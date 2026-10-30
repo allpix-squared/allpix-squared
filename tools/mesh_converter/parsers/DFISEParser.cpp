@@ -73,7 +73,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
         }
 
         // Check if line with begin of section
-        if(line.find('{') != std::string::npos) {
+        if(line.find('{') != std::string::npos) { // NOLINT(readability-container-contains)
             // Search for new simple headers
             auto base_regex = std::regex("([a-zA-Z]+) \\{");
             std::smatch base_match;
@@ -131,7 +131,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
         }
 
         // Look for close of section
-        if(line.find('}') != std::string::npos) {
+        if(line.find('}') != std::string::npos) { // NOLINT(readability-container-contains)
             switch(main_section) {
             case DFSection::VERTICES:
                 if(vertices.size() != data_count) {
@@ -172,7 +172,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
         }
 
         // Look for key data pairs
-        if(line.find('=') != std::string::npos) {
+        if(line.find('=') != std::string::npos) { // NOLINT(readability-container-contains)
             auto base_regex = std::regex(R"(([a-zA-Z]+)\s+=\s+([\S ]+))");
             std::smatch base_match;
             if(std::regex_match(line, base_match, base_regex) && base_match.ready()) {
@@ -244,7 +244,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
                     swap = true;
                 }
 
-                if(edge_idx >= static_cast<long>(edges.size())) {
+                if(std::cmp_greater_equal(edge_idx, edges.size())) {
                     throw std::runtime_error("edge index is higher than number of edges");
                 }
 
@@ -290,14 +290,10 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
                 size = 3;
                 break;
             case 3: /* rectangle */
-                size = 4;
-                break;
             case 5: /* tetrahedron */
                 size = 4;
                 break;
             case 6: /* pyramid */
-                size = 5;
-                break;
             case 7: /* prism */
                 size = 5;
                 break;
@@ -319,7 +315,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
                 }
 
                 if(size == 3 || size == 2) {
-                    if(element_idx >= static_cast<long>(edges.size())) {
+                    if(std::cmp_greater_equal(element_idx, edges.size())) {
                         throw std::runtime_error("edge index is higher than number of faces");
                     }
                     auto edge = edges[static_cast<size_t>(element_idx)];
@@ -330,7 +326,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
                     element.push_back(edge.second);
                 }
                 if(size == 4) {
-                    if(element_idx >= static_cast<long>(faces.size())) {
+                    if(std::cmp_greater_equal(element_idx, faces.size())) {
                         throw std::runtime_error("face index is higher than number of faces");
                     }
                     auto face = faces[static_cast<size_t>(element_idx)];
@@ -426,7 +422,7 @@ FieldMap DFISEParser::read_fields(const std::string& file_name, const std::strin
         }
 
         // Check if line with begin of section
-        if(line.find('{') != std::string::npos) {
+        if(line.find('{') != std::string::npos) { // NOLINT(readability-container-contains)
             // Search for new simple headers
             auto base_regex = std::regex("([a-zA-Z]+) \\{");
             std::smatch base_match;
@@ -489,7 +485,7 @@ FieldMap DFISEParser::read_fields(const std::string& file_name, const std::strin
         }
 
         // Look for key data pairs
-        if(line.find('=') != std::string::npos) {
+        if(line.find('=') != std::string::npos) { // NOLINT(readability-container-contains)
             auto base_regex = std::regex(R"(([a-zA-Z]+)\s+=\s+([\S ]+))");
             std::smatch base_match;
             if(std::regex_match(line, base_match, base_regex) && base_match.ready()) {
@@ -600,7 +596,7 @@ FieldMap DFISEParser::read_fields(const std::string& file_name, const std::strin
         }
 
         // Look for close of section
-        if(line.find('}') != std::string::npos) {
+        if(line.find('}') != std::string::npos) { // NOLINT(readability-container-contains)
 
             if(main_section == DFSection::ELECTROSTATIC_POTENTIAL && sub_section == DFSection::VALUES) {
                 if(data_count != region_electric_field_num.size()) {

@@ -245,6 +245,7 @@ void DefaultDigitizerModule::run(Event* event) {
     try {
         pixel_message = messenger_->fetchMessage<PixelChargeMessage>(this, event);
     } catch(const MessageNotFoundException&) {
+        LOG(TRACE) << "No pixel charge message received";
     }
 
     // Ensure to not copy the data but to obtain only a reference - both returns from ternary operator must be references!

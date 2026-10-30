@@ -10,7 +10,7 @@
  */
 
 #ifndef StepInfoUserHookG4_H
-#define StepInfoUserHookG4_H 1
+#define StepInfoUserHookG4_H
 
 #include "G4Step.hh"
 #include "G4UserSteppingAction.hh"

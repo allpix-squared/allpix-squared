@@ -11,7 +11,7 @@
  */
 
 #ifndef SetTrackInfoUserHookG4_H
-#define SetTrackInfoUserHookG4_H 1
+#define SetTrackInfoUserHookG4_H
 
 #include "G4Track.hh"
 #include "G4UserTrackingAction.hh"

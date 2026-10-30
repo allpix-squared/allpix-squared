@@ -123,8 +123,8 @@ ROOT::Math::XYZVector HexagonalPixelDetectorModel::getMatrixSize() const {
 std::set<Pixel::Index> HexagonalPixelDetectorModel::getPixels() const {
     std::set<Pixel::Index> pixels;
 
-    for(int x = -static_cast<int>(number_of_pixels_.y() / 2); x < static_cast<int>(number_of_pixels_.x()); x++) {
-        for(int y = -static_cast<int>(number_of_pixels_.x() / 2); y < static_cast<int>(number_of_pixels_.y()); y++) {
+    for(int x = -static_cast<int>(number_of_pixels_.y() / 2); std::cmp_less(x, number_of_pixels_.x()); x++) {
+        for(int y = -static_cast<int>(number_of_pixels_.x() / 2); std::cmp_less(y, number_of_pixels_.y()); y++) {
             if(isWithinMatrix(x, y)) {
                 pixels.insert({x, y});
             }

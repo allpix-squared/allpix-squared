@@ -204,7 +204,7 @@ void DatabaseWriterModule::run(Event* event) {
 
                 // Writing objects to corresponding database tables
                 if(class_name == "PixelHit") {
-                    auto hit = static_cast<PixelHit&>(object.get());
+                    const auto& hit = dynamic_cast<const PixelHit&>(object.get());
                     auto hit_row = transaction
                                        .exec(pqxx::prepped{"add_pixelhit"},
                                              pqxx::params{run_nr_,
@@ -219,7 +219,7 @@ void DatabaseWriterModule::run(Event* event) {
                                        .one_row();
                     LOG(TRACE) << "Inserted PixelHit with db id " << hit_row.front().as<int>();
                 } else if(class_name == "PixelCharge") {
-                    auto charge = static_cast<PixelCharge&>(object.get());
+                    const auto& charge = dynamic_cast<const PixelCharge&>(object.get());
                     auto charge_row = transaction
                                           .exec(pqxx::prepped{"add_pixelcharge"},
                                                 pqxx::params{run_nr_,
@@ -237,7 +237,7 @@ void DatabaseWriterModule::run(Event* event) {
                     pixelcharge_nr = charge_row.front().as<int>();
                     LOG(TRACE) << "Inserted PixelCharge  with db id " << pixelcharge_nr.value();
                 } else if(class_name == "PropagatedCharge") {
-                    const auto charge = static_cast<PropagatedCharge&>(object.get());
+                    const auto& charge = dynamic_cast<const PropagatedCharge&>(object.get());
                     auto prop_row = transaction
                                         .exec(pqxx::prepped{"add_propagatedcharge"},
                                               pqxx::params{run_nr_,
@@ -256,7 +256,7 @@ void DatabaseWriterModule::run(Event* event) {
                     propagatedcharge_nr = prop_row.front().as<int>();
                     LOG(TRACE) << "Inserted PropagatedCharge with db id " << propagatedcharge_nr.value();
                 } else if(class_name == "MCTrack") {
-                    auto track = static_cast<MCTrack&>(object.get());
+                    const auto& track = dynamic_cast<const MCTrack&>(object.get());
                     auto mctrack_row = transaction
                                            .exec(pqxx::prepped{"add_mctrack"},
                                                  pqxx::params{run_nr_,
@@ -281,7 +281,7 @@ void DatabaseWriterModule::run(Event* event) {
                     mctrack_nr = mctrack_row.front().as<int>();
                     LOG(TRACE) << "Inserted MCTrack with db id " << mctrack_nr.value();
                 } else if(class_name == "DepositedCharge") {
-                    auto charge = static_cast<DepositedCharge&>(object.get());
+                    const auto& charge = dynamic_cast<const DepositedCharge&>(object.get());
                     auto depos_row = transaction
                                          .exec(pqxx::prepped{"add_depositedcharge"},
                                                pqxx::params{run_nr_,
@@ -300,7 +300,7 @@ void DatabaseWriterModule::run(Event* event) {
                     depositedcharge_nr = depos_row.front().as<int>();
                     LOG(TRACE) << "Inserted DepositedCharge with db id " << depositedcharge_nr.value();
                 } else if(class_name == "MCParticle") {
-                    auto particle = static_cast<MCParticle&>(object.get());
+                    const auto& particle = dynamic_cast<const MCParticle&>(object.get());
                     auto mcp_row = transaction
                                        .exec(pqxx::prepped{"add_mcparticle"},
                                              pqxx::params{run_nr_,

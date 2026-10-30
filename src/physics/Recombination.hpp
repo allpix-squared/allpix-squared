@@ -143,6 +143,7 @@ namespace allpix {
      * @brief Auger recombination of charge carriers in silicon
      *
      */
+    // NOLINTNEXTLINE(misc-multiple-inheritance)
     class ShockleyReadHallAuger : public ShockleyReadHall, public Auger {
     public:
         ShockleyReadHallAuger(double temperature, bool doping) : ShockleyReadHall(temperature, doping), Auger(doping) {}

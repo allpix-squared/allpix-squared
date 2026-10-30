@@ -259,19 +259,19 @@ void PulseTransferModule::run(Event* event) {
         auto size = getDetector()->getModel()->getNPixels();
         const std::string title =
             "Map of accumulated induced charge in event " + std::to_string(event->number) + ";x (pixels);y (pixels);charge";
-        auto* charge_map = new TH2D(name.c_str(),
-                                    title.c_str(),
-                                    static_cast<int>(size.x()),
-                                    -0.5,
-                                    static_cast<int>(size.x()) - 0.5,
-                                    static_cast<int>(size.y()),
-                                    -0.5,
-                                    static_cast<int>(size.y()) - 0.5);
+        TH2D charge_map(name.c_str(),
+                        title.c_str(),
+                        static_cast<int>(size.x()),
+                        -0.5,
+                        static_cast<int>(size.x()) - 0.5,
+                        static_cast<int>(size.y()),
+                        -0.5,
+                        static_cast<int>(size.y()) - 0.5);
 
         for(auto& [index, pulse] : pixel_pulse_map) {
-            charge_map->Fill(index.x(), index.y(), pulse.getCharge());
+            charge_map.Fill(index.x(), index.y(), pulse.getCharge());
         }
-        getROOTDirectory()->WriteTObject(charge_map, name.c_str());
+        getROOTDirectory()->WriteTObject(&charge_map, name.c_str());
     }
 
     // Create a new message with pixel pulses and dispatch:
@@ -299,27 +299,27 @@ void PulseTransferModule::create_pulsegraphs(uint64_t event_num, const Pixel::In
 
     std::string name =
         "pulse_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" + std::to_string(index.y());
-    auto* pulse_graph = new TGraph(static_cast<int>(pulse.size()), time.data(), pulse.data());
-    pulse_graph->GetXaxis()->SetTitle("t [ns]");
-    pulse_graph->GetYaxis()->SetTitle("Q_{ind} [e]");
-    pulse_graph->SetTitle(("Induced charge per unit step time in pixel (" + std::to_string(index.x()) + "," +
-                           std::to_string(index.y()) + "), Q_{tot} = " + Units::display(pulse.getCharge(), {"e", "ke"}) +
-                           " (" + Units::display(pulse.getCharge(), "fC") + ")")
-                              .c_str());
-    getROOTDirectory()->WriteTObject(pulse_graph, name.c_str());
+    TGraph pulse_graph(static_cast<int>(pulse.size()), time.data(), pulse.data());
+    pulse_graph.GetXaxis()->SetTitle("t [ns]");
+    pulse_graph.GetYaxis()->SetTitle("Q_{ind} [e]");
+    pulse_graph.SetTitle(("Induced charge per unit step time in pixel (" + std::to_string(index.x()) + "," +
+                          std::to_string(index.y()) + "), Q_{tot} = " + Units::display(pulse.getCharge(), {"e", "ke"}) +
+                          " (" + Units::display(pulse.getCharge(), "fC") + ")")
+                             .c_str());
+    getROOTDirectory()->WriteTObject(&pulse_graph, name.c_str());
 
     auto abs_vec = pulse;
     std::ranges::for_each(abs_vec, [](auto& bin) noexcept { bin = std::fabs(bin); });
     name = "pulse_abs_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" + std::to_string(index.y());
-    auto* pulse_abs_graph = new TGraph(static_cast<int>(abs_vec.size()), time.data(), abs_vec.data());
-    pulse_abs_graph->GetXaxis()->SetTitle("t [ns]");
-    pulse_abs_graph->GetYaxis()->SetTitle("|Q_{ind}| [e]");
-    pulse_abs_graph->SetTitle(("Absolute induced charge per unit step time in pixel (" + std::to_string(index.x()) + "," +
-                               std::to_string(index.y()) +
-                               "), |Q_{tot}| = " + Units::display(pulse.getCharge(), {"e", "ke"}) + " (" +
-                               Units::display(pulse.getCharge(), "fC") + ")")
-                                  .c_str());
-    getROOTDirectory()->WriteTObject(pulse_abs_graph, name.c_str());
+    TGraph pulse_abs_graph(static_cast<int>(abs_vec.size()), time.data(), abs_vec.data());
+    pulse_abs_graph.GetXaxis()->SetTitle("t [ns]");
+    pulse_abs_graph.GetYaxis()->SetTitle("|Q_{ind}| [e]");
+    pulse_abs_graph.SetTitle(("Absolute induced charge per unit step time in pixel (" + std::to_string(index.x()) + "," +
+                              std::to_string(index.y()) +
+                              "), |Q_{tot}| = " + Units::display(pulse.getCharge(), {"e", "ke"}) + " (" +
+                              Units::display(pulse.getCharge(), "fC") + ")")
+                                 .c_str());
+    getROOTDirectory()->WriteTObject(&pulse_abs_graph, name.c_str());
 
     auto current_vec = pulse;
     // Convert charge bins to current in uA
@@ -329,14 +329,14 @@ void PulseTransferModule::create_pulsegraphs(uint64_t event_num, const Pixel::In
 
     // Generate graphs of induced current over time:
     name = "current_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" + std::to_string(index.y());
-    auto* current_graph = new TGraph(static_cast<int>(current_vec.size()), time.data(), current_vec.data());
-    current_graph->GetXaxis()->SetTitle("t [ns]");
-    current_graph->GetYaxis()->SetTitle("I_{ind} [uA]");
-    current_graph->SetTitle(("Induced current in pixel (" + std::to_string(index.x()) + "," + std::to_string(index.y()) +
-                             "), Q_{tot} = " + Units::display(pulse.getCharge(), {"e", "ke"}) + " (" +
-                             Units::display(pulse.getCharge(), "fC") + ")")
-                                .c_str());
-    getROOTDirectory()->WriteTObject(current_graph, name.c_str());
+    TGraph current_graph(static_cast<int>(current_vec.size()), time.data(), current_vec.data());
+    current_graph.GetXaxis()->SetTitle("t [ns]");
+    current_graph.GetYaxis()->SetTitle("I_{ind} [uA]");
+    current_graph.SetTitle(("Induced current in pixel (" + std::to_string(index.x()) + "," + std::to_string(index.y()) +
+                            "), Q_{tot} = " + Units::display(pulse.getCharge(), {"e", "ke"}) + " (" +
+                            Units::display(pulse.getCharge(), "fC") + ")")
+                               .c_str());
+    getROOTDirectory()->WriteTObject(&current_graph, name.c_str());
 
     // Generate graphs of integrated charge over time:
     std::vector<double> charge_vec;
@@ -347,12 +347,12 @@ void PulseTransferModule::create_pulsegraphs(uint64_t event_num, const Pixel::In
     }
 
     name = "charge_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" + std::to_string(index.y());
-    auto* charge_graph = new TGraph(static_cast<int>(charge_vec.size()), time.data(), charge_vec.data());
-    charge_graph->GetXaxis()->SetTitle("t [ns]");
-    charge_graph->GetYaxis()->SetTitle("Q_{tot} [e]");
-    charge_graph->SetTitle(("Accumulated induced charge in pixel (" + std::to_string(index.x()) + "," +
-                            std::to_string(index.y()) + "), Q_{tot} = " + Units::display(pulse.getCharge(), {"e", "ke"}) +
-                            " (" + Units::display(pulse.getCharge(), "fC") + ")")
-                               .c_str());
-    getROOTDirectory()->WriteTObject(charge_graph, name.c_str());
+    TGraph charge_graph(static_cast<int>(charge_vec.size()), time.data(), charge_vec.data());
+    charge_graph.GetXaxis()->SetTitle("t [ns]");
+    charge_graph.GetYaxis()->SetTitle("Q_{tot} [e]");
+    charge_graph.SetTitle(("Accumulated induced charge in pixel (" + std::to_string(index.x()) + "," +
+                           std::to_string(index.y()) + "), Q_{tot} = " + Units::display(pulse.getCharge(), {"e", "ke"}) +
+                           " (" + Units::display(pulse.getCharge(), "fC") + ")")
+                              .c_str());
+    getROOTDirectory()->WriteTObject(&charge_graph, name.c_str());
 }

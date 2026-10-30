@@ -108,7 +108,7 @@ bool PixelDetectorModel::isWithinMatrix(const Pixel::Index& pixel_index) const {
  * The definition of the pixel grid size is determined by the detector model
  */
 bool PixelDetectorModel::isWithinMatrix(const int x, const int y) const {
-    return x >= 0 && x < static_cast<int>(number_of_pixels_.x()) && y >= 0 && y < static_cast<int>(number_of_pixels_.y());
+    return x >= 0 && std::cmp_less(x, number_of_pixels_.x()) && y >= 0 && std::cmp_less(y, number_of_pixels_.y());
 }
 
 /**
@@ -140,8 +140,8 @@ std::pair<int, int> PixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint
 
 std::set<Pixel::Index> PixelDetectorModel::getPixels() const {
     std::set<Pixel::Index> pixels;
-    for(int x = 0; x < static_cast<int>(number_of_pixels_.x()); x++) {
-        for(int y = 0; y < static_cast<int>(number_of_pixels_.y()); y++) {
+    for(int x = 0; std::cmp_less(x, number_of_pixels_.x()); x++) {
+        for(int y = 0; std::cmp_less(y, number_of_pixels_.y()); y++) {
             pixels.insert({x, y});
         }
     }

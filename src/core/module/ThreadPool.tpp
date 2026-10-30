@@ -179,11 +179,13 @@ namespace allpix {
     template <typename Func, typename... Args> auto ThreadPool::submit(uint64_t n, Func&& func, Args&&... args) {
         assert(n == UINT64_MAX || with_buffered_);
         // Bind the arguments to the tasks
-        auto bound_task = std::bind(std::forward<Func>(func), std::forward<Args>(args)...);
+        auto bound_task = [func = std::forward<Func>(func), ... args = std::forward<Args>(args)]() mutable {
+            return std::invoke(func, args...);
+        };
 
         // Construct packaged task with correct return type
         using PackagedTask = std::packaged_task<decltype(bound_task())()>;
-        PackagedTask task(bound_task);
+        PackagedTask task(std::move(bound_task));
 
         // Get future and wrapper to add to vector
         auto future = task.get_future().share();

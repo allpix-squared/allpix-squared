@@ -92,7 +92,7 @@ void CorryvreckanWriterModule::initialize() {
     // Create trees:
     LOG(TRACE) << "Booking event tree";
     event_tree_ = std::make_unique<TTree>("Event", (std::string("Tree of Events").c_str()));
-    event_tree_->Bronch("global", "corryvreckan::Event", &event_);
+    event_tree_->Bronch("global", "corryvreckan::Event", static_cast<void*>(&event_));
 
     LOG(TRACE) << "Booking pixel tree";
     pixel_tree_ = std::make_unique<TTree>("Pixel", (std::string("Tree of Pixels").c_str()));
@@ -144,7 +144,7 @@ void CorryvreckanWriterModule::run(Event* event) {
             write_list_px_[detector_name] = new std::vector<corryvreckan::Pixel*>();
             pixel_tree_->Bronch(detector_name.c_str(),
                                 std::string("std::vector<corryvreckan::Pixel*>").c_str(),
-                                &write_list_px_[detector_name]);
+                                static_cast<void*>(&write_list_px_[detector_name]));
 
             if(event_id > 0) {
                 LOG(DEBUG) << "Pre-filling new branch " << detector_name << " of corryvreckan::Pixel with " << event_id
@@ -160,7 +160,7 @@ void CorryvreckanWriterModule::run(Event* event) {
             write_list_mcp_[detector_name] = new std::vector<corryvreckan::MCParticle*>();
             mcparticle_tree_->Bronch(detector_name.c_str(),
                                      std::string("std::vector<corryvreckan::MCParticle*>").c_str(),
-                                     &write_list_mcp_[detector_name]);
+                                     static_cast<void*>(&write_list_mcp_[detector_name]));
 
             if(event_id > 0) {
 

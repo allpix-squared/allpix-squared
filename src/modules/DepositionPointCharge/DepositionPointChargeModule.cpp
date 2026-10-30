@@ -425,9 +425,15 @@ DepositionPointChargeModule::sensor_intersection(const ROOT::Math::XYZPoint& lin
         intersection_end_point = intersection_end_point ? intersection_end_point : translation_local.Inverse()(line_origin);
     }
 
-    if(!intersection_start_point || !intersection_end_point || (intersection_start_point == intersection_end_point)) {
+    // Make sure we have values - this should always be the case
+    if(!intersection_start_point || !intersection_end_point) {
         LOG(ERROR) << "The requested line with origin " << line_origin << " and direction " << mip_direction_
                    << " does not intersect with the sensor.";
+        throw ModuleError("Line does not intersect with sensor");
+    }
+    if(intersection_start_point == intersection_end_point) {
+        LOG(ERROR) << "The requested line with origin " << line_origin << " and direction " << mip_direction_
+                   << " only touches the sensor in a single point.";
     }
     LOG(DEBUG) << "Lower intersect position: " << Units::display(intersection_start_point.value(), {"um", "mm"})
                << ", upper intersect position: " << Units::display(intersection_end_point.value(), {"um", "mm"});

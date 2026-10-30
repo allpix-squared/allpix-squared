@@ -43,6 +43,21 @@ namespace allpix {
          */
         void GeneratePrimaries(G4Event* event) override;
 
+        /**
+         * @brief Default destructor
+         */
+        ~CosmicsGeneratorActionG4() override = default;
+
+        /// @{
+        /**
+         * @brief Copying or moving is not allowed, the configuration is held by reference
+         */
+        CosmicsGeneratorActionG4(const CosmicsGeneratorActionG4&) = delete;
+        CosmicsGeneratorActionG4& operator=(const CosmicsGeneratorActionG4&) = delete;
+        CosmicsGeneratorActionG4(CosmicsGeneratorActionG4&&) = delete;
+        CosmicsGeneratorActionG4& operator=(CosmicsGeneratorActionG4&&) = delete;
+        /// @}
+
     private:
         std::unique_ptr<G4ParticleGun> particle_gun_;
         std::unique_ptr<CRYGenerator> cry_generator_;

@@ -49,6 +49,21 @@ namespace allpix {
             SetUserAction(new StepInfoUserHookG4());
         };
 
+        /**
+         * @brief Default destructor
+         */
+        ~ActionInitializationPrimaries() override = default;
+
+        /// @{
+        /**
+         * @brief Copying or moving is not allowed, the configuration is held by reference
+         */
+        ActionInitializationPrimaries(const ActionInitializationPrimaries&) = delete;
+        ActionInitializationPrimaries& operator=(const ActionInitializationPrimaries&) = delete;
+        ActionInitializationPrimaries(ActionInitializationPrimaries&&) = delete;
+        ActionInitializationPrimaries& operator=(ActionInitializationPrimaries&&) = delete;
+        /// @}
+
     private:
         const Configuration& config_;
         std::shared_ptr<PrimariesReader> reader_;

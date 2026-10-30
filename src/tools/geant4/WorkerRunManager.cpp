@@ -11,6 +11,7 @@
 
 #include "WorkerRunManager.hpp"
 
+#include <array>
 #include <atomic>
 #include <vector>
 
@@ -149,8 +150,8 @@ G4Event* WorkerRunManager::GenerateEvent(G4int /*i_event*/) {
             seedsQueue.pop();
 
             // Seed RNG for this run only once
-            long seeds[3] = {s1, s2, 0}; // NOLINT
-            G4Random::setTheSeeds(seeds, -1);
+            std::array<long, 3> seeds{s1, s2, 0};
+            G4Random::setTheSeeds(seeds.data(), -1);
             runIsSeeded = true;
         }
 

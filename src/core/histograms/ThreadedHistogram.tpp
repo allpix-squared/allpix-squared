@@ -52,6 +52,7 @@ namespace allpix {
 #endif
 
         const auto ctxt = TDirectory::TContext(directories_[0]);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         model_.reset(ROOT::Internal::TThreadedObjectUtils::Detacher<T>::Detach(new T(std::forward<ARGS>(args)...)));
 
         // initialize at least the base object

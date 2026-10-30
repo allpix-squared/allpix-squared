@@ -81,8 +81,9 @@ int main(int argc, char** argv) {
         std::cout, no_color.has_value() ? allpix::SinkStyle::PLAIN : allpix::SinkStyle::COLOR);
 
     // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
-    std::signal(SIGQUIT, interrupt_handler);
-    std::signal(SIGINT, interrupt_handler);
+    if(std::signal(SIGQUIT, interrupt_handler) == SIG_ERR || std::signal(SIGINT, interrupt_handler) == SIG_ERR) {
+        LOG(WARNING) << "Could not install signal handlers";
+    }
 
     // If no arguments are provided, print the help:
     bool print_help = false;
@@ -334,21 +335,21 @@ int main(int argc, char** argv) {
                     << "New mesh grid points: " << static_cast<ROOT::Math::XYZVector>(divisions) << " (" << mesh_points_total
                     << " total)";
 
-        if(rot.at(0).find('-') != std::string::npos) {
+        if(rot.at(0).find('-') != std::string::npos) { // NOLINT(readability-container-contains)
             LOG(WARNING) << "Inverting coordinate X. This might change the right-handness of the coordinate system!";
             for(size_t i = 0; i < points.size(); ++i) {
                 points[i].x = maxx - (points[i].x - minx);
                 field[i].x = -field[i].x;
             }
         }
-        if(rot.at(1).find('-') != std::string::npos) {
+        if(rot.at(1).find('-') != std::string::npos) { // NOLINT(readability-container-contains)
             LOG(WARNING) << "Inverting coordinate Y. This might change the right-handness of the coordinate system!";
             for(size_t i = 0; i < points.size(); ++i) {
                 points[i].y = maxy - (points[i].y - miny);
                 field[i].y = -field[i].y;
             }
         }
-        if(rot.at(2).find('-') != std::string::npos) {
+        if(rot.at(2).find('-') != std::string::npos) { // NOLINT(readability-container-contains)
             LOG(WARNING) << "Inverting coordinate Z. This might change the right-handness of the coordinate system!";
             for(size_t i = 0; i < points.size(); ++i) {
                 points[i].z = maxz - (points[i].z - minz);

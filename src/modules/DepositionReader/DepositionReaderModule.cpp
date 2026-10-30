@@ -216,9 +216,9 @@ void DepositionReaderModule::initialize() {
         auto model = detector->getModel();
         charge_creation_energy_[detector] =
             (config_.has("charge_creation_energy") ? config_.get<double>("charge_creation_energy")
-                                                   : allpix::ionization_energies[model->getSensorMaterial()]);
+                                                   : allpix::ionization_energies.at(model->getSensorMaterial()));
         fano_factor_[detector] = (config_.has("fano_factor") ? config_.get<double>("fano_factor")
-                                                             : allpix::fano_factors[model->getSensorMaterial()]);
+                                                             : allpix::fano_factors.at(model->getSensorMaterial()));
         LOG(DEBUG) << "Detector " << detector->getName() << " uses charge creation energy "
                    << Units::display(charge_creation_energy_[detector], "eV") << " and Fano factor "
                    << fano_factor_[detector];

@@ -89,7 +89,7 @@ namespace allpix {
      */
     template <typename T> std::string to_string(const T& inp) {
         // Use tag dispatch to select the correct implementation
-        return to_string_impl(inp, empty_tag());
+        return to_string_impl(inp, empty_tag()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
     }
 
     template <typename T> requires std::is_arithmetic_v<T> std::string to_string_impl(T inp, empty_tag /*unused*/) {

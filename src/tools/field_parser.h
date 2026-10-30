@@ -188,7 +188,7 @@ namespace allpix {
          * @param quantity Quantity of individual field points, vector (three values per point) or scalar (one value per
          * point)
          */
-        explicit FieldParser(const FieldQuantity quantity)
+        explicit FieldParser(const FieldQuantity quantity) noexcept
             : n_(static_cast<std::underlying_type_t<FieldQuantity>>(quantity)) {};
 
         /**

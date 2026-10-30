@@ -112,6 +112,7 @@ namespace allpix {
      * This model uses a pre-calculated lookup table for the required power calculations in the range relevant for
      * the simulation. This provides a significant speedup while having a good accuracy.
      */
+    // NOLINTNEXTLINE(misc-multiple-inheritance)
     class CanaliFast : virtual public Canali {
     public:
         explicit CanaliFast(SensorMaterial material, double temperature)
@@ -291,6 +292,7 @@ namespace allpix {
      *
      * Based on the combination of the models as implemented in Synopsys Sentaurus TCAD
      */
+    // NOLINTNEXTLINE(misc-multiple-inheritance)
     class MasettiCanali : public Canali, public Masetti {
     public:
         MasettiCanali(SensorMaterial material, double temperature, bool doping, Dopant dopant_n)

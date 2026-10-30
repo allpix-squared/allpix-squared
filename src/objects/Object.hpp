@@ -196,8 +196,10 @@ namespace allpix {
 
             /**
              * @brief Explicit move constructor to avoid copying std::once_flag
+             * @note Only the base class part of rhs is moved, loaded_ is still valid to read afterwards
              */
-            PointerWrapper(PointerWrapper&& rhs) noexcept : BaseWrapper<T>(std::move(rhs)), loaded_(rhs.loaded_.load()) {};
+            PointerWrapper(PointerWrapper&& rhs) noexcept
+                : BaseWrapper<T>(std::move(static_cast<BaseWrapper<T>&>(rhs))), loaded_(rhs.loaded_.load()) {};
 
             /**
              * @brief Explicit move assignment to avoid copying std::once_flag
