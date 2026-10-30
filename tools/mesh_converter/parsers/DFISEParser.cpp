@@ -290,14 +290,10 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
                 size = 3;
                 break;
             case 3: /* rectangle */
-                size = 4;
-                break;
             case 5: /* tetrahedron */
                 size = 4;
                 break;
             case 6: /* pyramid */
-                size = 5;
-                break;
             case 7: /* prism */
                 size = 5;
                 break;
