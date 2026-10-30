@@ -526,7 +526,7 @@ void TransientPropagationModule::run(Event* event) {
 
     if(store_full_propagation_history_) {
         // Create a new message with propagated charges
-        auto carrier_path_message = std::make_shared<CarrierPathMessage>(std::move(carrier_paths), detector_);
+        auto carrier_path_message = std::make_shared<CarrierPathMessage>(std::move(carrier_paths), getDetector());
 
         // Dispatch the message with propagated charges
         messenger_->dispatchMessage(this, std::move(carrier_path_message), event);
