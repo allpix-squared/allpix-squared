@@ -61,6 +61,16 @@ namespace allpix {
 
         virtual ~GeometryBuilderGeant4Module();
 
+        /// @{
+        /**
+         * @brief Copying or moving the module is not allowed
+         */
+        GeometryBuilderGeant4Module(const GeometryBuilderGeant4Module&) = delete;
+        GeometryBuilderGeant4Module& operator=(const GeometryBuilderGeant4Module&) = delete;
+        GeometryBuilderGeant4Module(GeometryBuilderGeant4Module&&) = delete;
+        GeometryBuilderGeant4Module& operator=(GeometryBuilderGeant4Module&&) = delete;
+        /// @}
+
     private:
         // Geant4 run manager is owned by this module
         GeometryConstructionG4* geometry_construction_;
