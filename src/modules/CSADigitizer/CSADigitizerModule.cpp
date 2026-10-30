@@ -300,12 +300,12 @@ void CSADigitizerModule::run(Event* event) {
                 std::ranges::generate(time, [n = 0.0, timestep]() mutable noexcept {  auto now = n; n += timestep; return now; });
                 // clang-format on
 
-                auto* response_graph = new TGraph(
+                TGraph response_graph(
                     static_cast<int>(impulse_response_function_.size()), time.data(), impulse_response_function_.data());
-                response_graph->GetXaxis()->SetTitle("t [ns]");
-                response_graph->GetYaxis()->SetTitle("amp. response");
-                response_graph->SetTitle("Amplifier response function");
-                getROOTDirectory()->WriteTObject(response_graph, "response_function");
+                response_graph.GetXaxis()->SetTitle("t [ns]");
+                response_graph.GetYaxis()->SetTitle("amp. response");
+                response_graph.SetTitle("Amplifier response function");
+                getROOTDirectory()->WriteTObject(&response_graph, "response_function");
                 getROOTDirectory()->WriteTObject(graph_impulse_response_.get(), "graph_impulse_response");
             }
 
@@ -487,9 +487,9 @@ void CSADigitizerModule::create_output_pulsegraphs(const std::string& s_event_nu
     std::ranges::transform(plot_pulse_vec, pulse_in_mV.begin(), [](auto& c) { return Units::convert(c, "mV"); });
 
     const std::string name = s_name + "_ev" + s_event_num + "_px" + s_pixel_index;
-    auto* csa_pulse_graph = new TGraph(static_cast<int>(pulse_in_mV.size()), amptime.data(), pulse_in_mV.data());
-    csa_pulse_graph->GetXaxis()->SetTitle("t [ns]");
-    csa_pulse_graph->GetYaxis()->SetTitle("CSA output [mV]");
-    csa_pulse_graph->SetTitle((s_title + " in pixel (" + s_pixel_index + ")").c_str());
-    getROOTDirectory()->WriteTObject(csa_pulse_graph, name.c_str());
+    TGraph csa_pulse_graph(static_cast<int>(pulse_in_mV.size()), amptime.data(), pulse_in_mV.data());
+    csa_pulse_graph.GetXaxis()->SetTitle("t [ns]");
+    csa_pulse_graph.GetYaxis()->SetTitle("CSA output [mV]");
+    csa_pulse_graph.SetTitle((s_title + " in pixel (" + s_pixel_index + ")").c_str());
+    getROOTDirectory()->WriteTObject(&csa_pulse_graph, name.c_str());
 }

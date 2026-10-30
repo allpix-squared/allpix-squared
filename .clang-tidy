@@ -10,7 +10,7 @@ Checks: [
   'bugprone-*','-bugprone-easily-swappable-parameters','-bugprone-lambda-function-name',
   'cert-*',
   'concurrency-*',
-  'cppcoreguidelines-*','-cppcoreguidelines-pro-bounds-pointer-arithmetic',
+  'cppcoreguidelines-*','-cppcoreguidelines-pro-bounds-pointer-arithmetic','-cppcoreguidelines-owning-memory',
   'google-*','-google-build-using-namespace','-google-explicit-constructor','-google-runtime-int',
   'hicpp-*',
   'llvm-*','-llvm-header-guard','-llvm-include-order','-llvm-prefer-static-over-anonymous-namespace',
