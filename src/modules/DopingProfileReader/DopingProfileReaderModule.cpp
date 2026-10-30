@@ -263,18 +263,14 @@ void DopingProfileReaderModule::create_output_plots() {
     for(size_t j = 0; j < steps; ++j) {
         if(project == 'x') {
             y = center.y() - size.y() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.y();
-        } else if(project == 'y') {
-            x = center.x() - size.x() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.x();
         } else {
             x = center.x() - size.x() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.x();
         }
         for(size_t k = 0; k < steps; ++k) {
-            if(project == 'x') {
-                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.z();
-            } else if(project == 'y') {
-                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.z();
-            } else {
+            if(project == 'z') {
                 y = center.y() - size.y() / 2.0 + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.y();
+            } else {
+                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.z();
             }
 
             // Get doping concentration from detector - directly convert to double
