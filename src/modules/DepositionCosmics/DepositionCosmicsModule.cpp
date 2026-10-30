@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
-#include <cstring>
 #include <filesystem>
 #include <mutex>
 #include <sstream>
@@ -33,6 +32,7 @@
 #include "core/log/log.h"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/exceptions.h"
+#include "core/utils/env.h"
 #include "core/utils/text.h"
 #include "core/utils/unit.h"
 #include "tools/geant4/MTRunManager.hpp"
@@ -82,8 +82,8 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
             config_.set<std::string>("data_path", ALLPIX_CRY_DATA_DIRECTORY);
             LOG(TRACE) << "Registered CRY data path from system: " << ALLPIX_CRY_DATA_DIRECTORY;
         } else {
-            const char* data_dirs_env = std::getenv("XDG_DATA_DIRS");
-            if(data_dirs_env == nullptr || strlen(data_dirs_env) == 0) {
+            auto data_dirs_env = allpix::getenv("XDG_DATA_DIRS").value_or("");
+            if(data_dirs_env.empty()) {
                 data_dirs_env = "/usr/local/share/:/usr/share/:";
             }
 

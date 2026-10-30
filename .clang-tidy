@@ -32,6 +32,7 @@ CheckOptions:
   misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: 'true'
   misc-include-cleaner.IgnoreHeaders: 'Eigen/*;Math/*;G4*;spdlog/*'
   modernize-use-override.IgnoreDestructors: 'true'
+  concurrency-mt-unsafe.FunctionSet: 'glibc'
   cppcoreguidelines-avoid-do-while.IgnoreMacros: 'true'
   cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor: 'true'
   misc-override-with-different-visibility.IgnoredFunctions: '::G4MTRunManager::.*;::G4WorkerRunManager::.*'
