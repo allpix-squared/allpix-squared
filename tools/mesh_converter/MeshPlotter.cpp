@@ -211,32 +211,26 @@ int main(int argc, char** argv) {
         }
 
         // Create and fill histogram
-        auto* efield_map = new TH2D(Form("%s", observable.c_str()),
-                                    Form("%s;%s", observable.c_str(), axis_titles.c_str()),
-                                    x_bin,
-                                    0,
-                                    x_bin,
-                                    y_bin,
-                                    0,
-                                    y_bin);
-        auto* exfield_map = new TH2D(Form("%s X component", observable.c_str()),
-                                     Form("%s X component;%s", observable.c_str(), axis_titles.c_str()),
+        auto* efield_map =
+            new TH2D(observable.c_str(), (observable + ";" + axis_titles).c_str(), x_bin, 0, x_bin, y_bin, 0, y_bin);
+        auto* exfield_map = new TH2D((observable + " X component").c_str(),
+                                     (observable + " X component;" + axis_titles).c_str(),
                                      x_bin,
                                      0,
                                      x_bin,
                                      y_bin,
                                      0,
                                      y_bin);
-        auto* eyfield_map = new TH2D(Form("%s Y component", observable.c_str()),
-                                     Form("%s Y component;%s", observable.c_str(), axis_titles.c_str()),
+        auto* eyfield_map = new TH2D((observable + " Y component").c_str(),
+                                     (observable + " Y component;" + axis_titles).c_str(),
                                      x_bin,
                                      0,
                                      x_bin,
                                      y_bin,
                                      0,
                                      y_bin);
-        auto* ezfield_map = new TH2D(Form("%s Z component", observable.c_str()),
-                                     Form("%s Z component;%s", observable.c_str(), axis_titles.c_str()),
+        auto* ezfield_map = new TH2D((observable + " Z component").c_str(),
+                                     (observable + " Z component;" + axis_titles).c_str(),
                                      x_bin,
                                      0,
                                      x_bin,
@@ -301,12 +295,12 @@ int main(int argc, char** argv) {
         auto* tf = new TFile(root_file_name.c_str(), "RECREATE");
 
         if(quantity == FieldQuantity::VECTOR) {
-            exfield_map->Write(Form("%s X component", observable.c_str()));
-            eyfield_map->Write(Form("%s Y component", observable.c_str()));
-            ezfield_map->Write(Form("%s Z component", observable.c_str()));
+            exfield_map->Write((observable + " X component").c_str());
+            eyfield_map->Write((observable + " Y component").c_str());
+            ezfield_map->Write((observable + " Z component").c_str());
         }
 
-        efield_map->Write(Form("%s Norm", observable.c_str()));
+        efield_map->Write((observable + " Norm").c_str());
         c1->cd();
         efield_map->Draw("colz");
         c1->SaveAs(output_file_name.c_str());
