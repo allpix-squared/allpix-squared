@@ -171,6 +171,7 @@ void ModuleManager::load(Messenger* messenger,
                            << "- Rerun library with the environmental variable LD_PRELOAD='" << problem_lib << "'" << '\n'
                            << "- Recompile the library " << problem_lib << " with tls-model=global-dynamic";
             } else if(lib_error != nullptr && std::strstr(lib_error, "cannot open shared object file") != nullptr &&
+                      // NOLINTNEXTLINE(readability-container-contains)
                       problem_lib.find(ALLPIX_MODULE_PREFIX) == std::string::npos) {
                 LOG(ERROR) << "Library could not be loaded: one of its dependencies is missing" << '\n'
                            << "The name of the missing library is " << problem_lib << '\n'

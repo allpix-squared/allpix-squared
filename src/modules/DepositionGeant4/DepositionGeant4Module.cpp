@@ -216,6 +216,7 @@ void DepositionGeant4Module::initialize() {
             modularPhysicsList->RegisterPhysics(new G4StepLimiterPhysics());
 
             // Register radioactive decay physics lists unless the list already has it registered:
+            // NOLINTNEXTLINE(readability-container-contains)
             if(physics_list_up.find("HP") == std::string::npos && physics_list.find("Shielding") == std::string::npos) {
                 LOG(DEBUG) << "Registering Geant4 radioactive decay physics list";
                 modularPhysicsList->RegisterPhysics(new G4RadioactiveDecayPhysics());
@@ -338,7 +339,7 @@ void DepositionGeant4Module::initialize() {
         std::string min_detector;
         for(auto& detector : getGeometryManager()->getDetectors()) {
             const double this_min_charge_creation_energy =
-                allpix::ionization_energies[detector->getModel()->getSensorMaterial()];
+                allpix::ionization_energies.at(detector->getModel()->getSensorMaterial());
             if(this_min_charge_creation_energy < min_charge_creation_energy) {
                 min_charge_creation_energy = this_min_charge_creation_energy;
                 min_detector = detector->getName();
@@ -546,9 +547,9 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
         auto model = detector->getModel();
         auto charge_creation_energy =
             (config_.has("charge_creation_energy") ? config_.get<double>("charge_creation_energy")
-                                                   : allpix::ionization_energies[model->getSensorMaterial()]);
+                                                   : allpix::ionization_energies.at(model->getSensorMaterial()));
         auto fano_factor = (config_.has("fano_factor") ? config_.get<double>("fano_factor")
-                                                       : allpix::fano_factors[model->getSensorMaterial()]);
+                                                       : allpix::fano_factors.at(model->getSensorMaterial()));
         LOG(DEBUG) << "Detector " << detector->getName() << " uses charge creation energy "
                    << Units::display(charge_creation_energy, "eV") << " and Fano factor " << fano_factor;
 

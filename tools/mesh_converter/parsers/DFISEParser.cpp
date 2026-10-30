@@ -73,7 +73,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
         }
 
         // Check if line with begin of section
-        if(line.find('{') != std::string::npos) {
+        if(line.find('{') != std::string::npos) { // NOLINT(readability-container-contains)
             // Search for new simple headers
             auto base_regex = std::regex("([a-zA-Z]+) \\{");
             std::smatch base_match;
@@ -131,7 +131,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
         }
 
         // Look for close of section
-        if(line.find('}') != std::string::npos) {
+        if(line.find('}') != std::string::npos) { // NOLINT(readability-container-contains)
             switch(main_section) {
             case DFSection::VERTICES:
                 if(vertices.size() != data_count) {
@@ -172,7 +172,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
         }
 
         // Look for key data pairs
-        if(line.find('=') != std::string::npos) {
+        if(line.find('=') != std::string::npos) { // NOLINT(readability-container-contains)
             auto base_regex = std::regex(R"(([a-zA-Z]+)\s+=\s+([\S ]+))");
             std::smatch base_match;
             if(std::regex_match(line, base_match, base_regex) && base_match.ready()) {
@@ -426,7 +426,7 @@ FieldMap DFISEParser::read_fields(const std::string& file_name, const std::strin
         }
 
         // Check if line with begin of section
-        if(line.find('{') != std::string::npos) {
+        if(line.find('{') != std::string::npos) { // NOLINT(readability-container-contains)
             // Search for new simple headers
             auto base_regex = std::regex("([a-zA-Z]+) \\{");
             std::smatch base_match;
@@ -489,7 +489,7 @@ FieldMap DFISEParser::read_fields(const std::string& file_name, const std::strin
         }
 
         // Look for key data pairs
-        if(line.find('=') != std::string::npos) {
+        if(line.find('=') != std::string::npos) { // NOLINT(readability-container-contains)
             auto base_regex = std::regex(R"(([a-zA-Z]+)\s+=\s+([\S ]+))");
             std::smatch base_match;
             if(std::regex_match(line, base_match, base_regex) && base_match.ready()) {
@@ -600,7 +600,7 @@ FieldMap DFISEParser::read_fields(const std::string& file_name, const std::strin
         }
 
         // Look for close of section
-        if(line.find('}') != std::string::npos) {
+        if(line.find('}') != std::string::npos) { // NOLINT(readability-container-contains)
 
             if(main_section == DFSection::ELECTROSTATIC_POTENTIAL && sub_section == DFSection::VALUES) {
                 if(data_count != region_electric_field_num.size()) {

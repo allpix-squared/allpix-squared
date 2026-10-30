@@ -246,7 +246,7 @@ void ROOTObjectReaderModule::initialize() {
                 det_idx = INT_MAX;
                 --name_idx;
             }
-            if(branch_name.find('_') == std::string::npos) {
+            if(branch_name.find('_') == std::string::npos) { // NOLINT(readability-container-contains)
                 --expected_size;
                 name_idx = INT_MAX;
             }
