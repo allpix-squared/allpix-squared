@@ -15,7 +15,7 @@ Checks: [
   'hicpp-*',
   'llvm-*','-llvm-header-guard','-llvm-include-order','-llvm-prefer-static-over-anonymous-namespace',
   'misc-*','-misc-include-cleaner','-misc-non-private-member-variables-in-classes','-misc-use-anonymous-namespace',
-  'modernize-*','-modernize-use-designated-initializers','-modernize-use-nodiscard','-modernize-use-trailing-return-type',
+  'modernize-*','-modernize-use-designated-initializers','-modernize-use-nodiscard','-modernize-use-trailing-return-type','-modernize-macro-to-enum',
   'performance-*',
   'portability-*','-portability-template-virtual-member-function',
   'readability-*','-readability-identifier-length','-readability-function-cognitive-complexity','-readability-magic-numbers','-readability-redundant-access-specifiers','-readability-math-missing-parentheses',
