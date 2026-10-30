@@ -118,6 +118,7 @@ namespace allpix {
      * the RD50 collaboration and the CERN EP R&D programme on technologies for future experiments. Values from Table 2 in
      * https://arxiv.org/abs/2211.16543
      */
+    // NOLINTNEXTLINE(misc-multiple-inheritance)
     class MasseyOptimized : virtual public Massey {
     public:
         MasseyOptimized(double temperature, double threshold)
@@ -185,6 +186,7 @@ namespace allpix {
      * In contrast to the original model from van Overstraeten de Man, this publication uses a parametrization without
      * differentiating between low and high field regions.
      */
+    // NOLINTNEXTLINE(misc-multiple-inheritance)
     class VanOverstraetenDeManOptimized : virtual public VanOverstraetenDeMan {
     public:
         VanOverstraetenDeManOptimized(double temperature, double threshold)
@@ -240,6 +242,7 @@ namespace allpix {
      * performed at CERN within the RD50 collaboration and the CERN EP R&D programme on technologies for future experiments.
      * Values from Table 4 in https://arxiv.org/abs/2211.16543
      */
+    // NOLINTNEXTLINE(misc-multiple-inheritance)
     class OkutoCrowellOptimized : virtual public OkutoCrowell {
     public:
         OkutoCrowellOptimized(double temperature, double threshold)
