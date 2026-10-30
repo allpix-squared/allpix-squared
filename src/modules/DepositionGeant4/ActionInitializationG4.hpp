@@ -58,6 +58,21 @@ namespace allpix {
             (void)generator;
         }
 
+        /**
+         * @brief Default destructor
+         */
+        ~ActionInitializationG4() override = default;
+
+        /// @{
+        /**
+         * @brief Copying or moving is not allowed, the configuration is held by reference
+         */
+        ActionInitializationG4(const ActionInitializationG4&) = delete;
+        ActionInitializationG4& operator=(const ActionInitializationG4&) = delete;
+        ActionInitializationG4(ActionInitializationG4&&) = delete;
+        ActionInitializationG4& operator=(ActionInitializationG4&&) = delete;
+        /// @}
+
     private:
         const Configuration& config_;
     };

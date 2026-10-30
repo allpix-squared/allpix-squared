@@ -155,7 +155,7 @@ namespace allpix {
         }
 
     private:
-        const Eigen::Matrix<T, S + 2, S> tableau_;
+        Eigen::Matrix<T, S + 2, S> tableau_;
         StepFunction function_;
         // Step size
         T h_;

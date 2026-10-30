@@ -43,6 +43,21 @@ namespace allpix {
          */
         G4VPhysicalVolume* Construct() override;
 
+        /**
+         * @brief Default destructor
+         */
+        ~GeometryConstructionG4() override = default;
+
+        /// @{
+        /**
+         * @brief Copying or moving is not allowed, the configuration is held by reference
+         */
+        GeometryConstructionG4(const GeometryConstructionG4&) = delete;
+        GeometryConstructionG4& operator=(const GeometryConstructionG4&) = delete;
+        GeometryConstructionG4(GeometryConstructionG4&&) = delete;
+        GeometryConstructionG4& operator=(GeometryConstructionG4&&) = delete;
+        /// @}
+
     private:
         GeometryManager* geo_manager_;
         Configuration& config_;
