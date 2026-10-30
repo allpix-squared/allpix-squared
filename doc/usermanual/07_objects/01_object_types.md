@@ -206,7 +206,7 @@ Main parameters:
 - The carrier type to check if the charge carriers are electrons or holes
   ([`getType()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1carrierpath/#function-gettype))
 
-- The list of way points of the trajector
+- The list of way points of the trajectory
   ([`getPoints()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1carrierpath/#function-getpoints))
 
 - The number of points stored on the path
