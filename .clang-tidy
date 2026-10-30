@@ -11,7 +11,7 @@ Checks: [
   'cert-*',
   'concurrency-*',
   'cppcoreguidelines-*','-cppcoreguidelines-pro-bounds-pointer-arithmetic','-cppcoreguidelines-owning-memory',
-  'google-*','-google-build-using-namespace','-google-explicit-constructor','-google-runtime-int',
+  'google-*','-google-build-using-namespace','-google-explicit-constructor','-google-runtime-int','-google-runtime-float',
   'hicpp-*',
   'llvm-*','-llvm-header-guard','-llvm-include-order','-llvm-prefer-static-over-anonymous-namespace',
   'misc-*','-misc-include-cleaner','-misc-non-private-member-variables-in-classes','-misc-use-anonymous-namespace',
