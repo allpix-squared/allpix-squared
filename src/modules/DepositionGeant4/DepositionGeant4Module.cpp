@@ -71,8 +71,6 @@
 #include "tools/ROOT.h"
 #include "tools/geant4/MTRunManager.hpp"
 
-#define G4_NUM_SEEDS 10
-
 using namespace allpix;
 
 thread_local std::unique_ptr<TrackInfoManager> DepositionGeant4Module::track_info_manager_ = nullptr;
