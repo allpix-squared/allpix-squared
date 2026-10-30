@@ -47,12 +47,13 @@ namespace allpix {
          */
         void run(Event* event) override;
 
-    private:
+    protected:
         /**
          * @brief Helper method to initialize the generator action for dispatching particles via a particle gun
          */
         void initialize_g4_action() override;
 
+    private:
         // The file reader for primary particles
         std::shared_ptr<PrimariesReader> reader_;
         PrimariesReader::FileModel file_model_;

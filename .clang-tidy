@@ -33,6 +33,7 @@ CheckOptions:
   misc-include-cleaner.IgnoreHeaders: 'Eigen/*;Math/*;G4*;spdlog/*'
   modernize-use-override.IgnoreDestructors: 'true'
   cppcoreguidelines-avoid-do-while.IgnoreMacros: 'true'
+  misc-override-with-different-visibility.IgnoredFunctions: '::G4MTRunManager::.*;::G4WorkerRunManager::.*'
   readability-identifier-naming.NamespaceCase: lower_case
   readability-identifier-naming.ClassCase: CamelCase
   readability-identifier-naming.ClassIgnoredRegexp: '^is_.+$'

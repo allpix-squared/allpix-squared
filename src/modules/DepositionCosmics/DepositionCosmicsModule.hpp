@@ -48,9 +48,10 @@ namespace allpix {
          */
         void finalize() override;
 
-    private:
+    protected:
         void initialize_g4_action() override;
 
+    private:
         static thread_local double cry_instance_time_simulated_;
         std::mutex stats_mutex_;
         double total_time_simulated_{};

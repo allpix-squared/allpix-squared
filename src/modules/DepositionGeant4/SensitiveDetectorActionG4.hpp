@@ -95,19 +95,20 @@ namespace allpix {
         void seed(uint64_t random_seed) { random_generator_.seed(random_seed); }
 
         /**
-         * @brief Process a single step of a particle passage through this sensor
-         * @param step Information about the step
-         * @param history Parameter not used
-         */
-        G4bool ProcessHits(G4Step* step, G4TouchableHistory* history) override;
-
-        /**
          * @brief Send the MCParticle and DepositedCharge messages
          * @param module The module which is responsible for dispatching the message
          * @param messenger The messenger used to dispatch it
          * @param event Event to dispatch the messages to
          */
         void dispatchMessages(Module* module, Messenger* messenger, Event* event);
+
+    protected:
+        /**
+         * @brief Process a single step of a particle passage through this sensor
+         * @param step Information about the step
+         * @param history Parameter not used
+         */
+        G4bool ProcessHits(G4Step* step, G4TouchableHistory* history) override;
 
     private:
         std::shared_ptr<Detector> detector_;

@@ -141,9 +141,10 @@ namespace allpix {
             return 2. * std::max({box->GetXHalfLength(), box->GetYHalfLength(), box->GetZHalfLength()});
         }
 
-    private:
+    protected:
         std::shared_ptr<G4VSolid> get_solid() const override { return nullptr; }
 
+    private:
         G4GDMLParser parser_;
 
         /**

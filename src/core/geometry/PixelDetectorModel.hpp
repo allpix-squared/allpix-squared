@@ -138,7 +138,7 @@ namespace allpix {
          */
         bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, size_t distance) const override;
 
-    protected:
+    private:
         void validate() override;
     };
 } // namespace allpix
