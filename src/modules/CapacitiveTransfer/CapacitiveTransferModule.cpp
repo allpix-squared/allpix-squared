@@ -206,7 +206,7 @@ void CapacitiveTransferModule::initialize() {
             throw InvalidValueError(config_, "coupling_scan_file", "ROOT file is corrupted. Please, check it");
         }
         for(size_t i = 1; i < 10; i++) {
-            capacitances_[i - 1] = static_cast<TGraph*>(root_file->Get(("Pixel_" + std::to_string(i)).c_str()));
+            capacitances_[i - 1] = root_file->Get<TGraph>(("Pixel_" + std::to_string(i)).c_str());
             if(capacitances_[i - 1]->IsZombie()) {
                 throw InvalidValueError(
                     config_, "coupling_scan_file", "ROOT TGraphs couldn't be imported. Please, check it");
