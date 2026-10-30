@@ -228,8 +228,8 @@ namespace allpix {
          * @return True if strip coordinates are within the strip grid, false otherwise
          */
         bool isWithinMatrix(const int x, const int y) const override {
-            return y >= 0 && y < static_cast<int>(getNPixels().y()) && x >= 0 &&
-                   x < static_cast<int>(number_of_strips_.at(static_cast<unsigned int>(y)));
+            return y >= 0 && std::cmp_less(y, getNPixels().y()) && x >= 0 &&
+                   std::cmp_less(x, number_of_strips_.at(static_cast<unsigned int>(y)));
         }
 
         /**

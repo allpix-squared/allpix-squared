@@ -244,7 +244,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
                     swap = true;
                 }
 
-                if(edge_idx >= static_cast<long>(edges.size())) {
+                if(std::cmp_greater_equal(edge_idx, edges.size())) {
                     throw std::runtime_error("edge index is higher than number of edges");
                 }
 
@@ -319,7 +319,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
                 }
 
                 if(size == 3 || size == 2) {
-                    if(element_idx >= static_cast<long>(edges.size())) {
+                    if(std::cmp_greater_equal(element_idx, edges.size())) {
                         throw std::runtime_error("edge index is higher than number of faces");
                     }
                     auto edge = edges[static_cast<size_t>(element_idx)];
@@ -330,7 +330,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
                     element.push_back(edge.second);
                 }
                 if(size == 4) {
-                    if(element_idx >= static_cast<long>(faces.size())) {
+                    if(std::cmp_greater_equal(element_idx, faces.size())) {
                         throw std::runtime_error("face index is higher than number of faces");
                     }
                     auto face = faces[static_cast<size_t>(element_idx)];

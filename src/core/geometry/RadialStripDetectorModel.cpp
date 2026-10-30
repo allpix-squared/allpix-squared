@@ -231,8 +231,8 @@ std::pair<int, int> RadialStripDetectorModel::getPixelIndex(const ROOT::Math::XY
 std::set<Pixel::Index> RadialStripDetectorModel::getPixels() const {
     std::set<Pixel::Index> pixels;
 
-    for(int x = 0; x < static_cast<int>(number_of_pixels_.x()); x++) {
-        for(int y = 0; y < static_cast<int>(number_of_pixels_.y()); y++) {
+    for(int x = 0; std::cmp_less(x, number_of_pixels_.x()); x++) {
+        for(int y = 0; std::cmp_less(y, number_of_pixels_.y()); y++) {
             if(isWithinMatrix(x, y)) {
                 pixels.insert({x, y});
             }
@@ -249,7 +249,7 @@ std::set<Pixel::Index> RadialStripDetectorModel::getNeighbors(const Pixel::Index
     auto seed_pol = getPositionPolar(getPixelCenter(idx.x(), idx.y()));
 
     // Iterate over eligible strip rows
-    for(int y = static_cast<int>(-distance); y <= static_cast<int>(distance); y++) {
+    for(int y = static_cast<int>(-distance); std::cmp_less_equal(y, distance); y++) {
         // Skip row if outside of pixel matrix
         if(!isWithinMatrix(0, idx.y() + y)) {
             continue;
@@ -272,7 +272,7 @@ std::set<Pixel::Index> RadialStripDetectorModel::getNeighbors(const Pixel::Index
         auto [row_seed_x, row_seed_y] = getPixelIndex({row_seed.x(), row_seed.y(), 0});
 
         // Iterate over potential neighbors of the row seed
-        for(int j = static_cast<int>(-distance); j <= static_cast<int>(distance); j++) {
+        for(int j = static_cast<int>(-distance); std::cmp_less_equal(j, distance); j++) {
             // Add to final neighbors if strip is within the pixel matrix
             if(isWithinMatrix(row_seed_x + j, row_seed_y)) {
                 neighbors.emplace_back(row_seed_x + j, row_seed_y);
@@ -297,7 +297,7 @@ bool RadialStripDetectorModel::areNeighbors(const Pixel::Index& seed,
     // Seed and entrant in the same strip row
     if(dist_y == 0) {
         // Compare x-index distance to the requested distance
-        return (static_cast<size_t>(std::abs(seed.x() - entrant.x())) <= distance);
+        return (std::cmp_less_equal(std::abs(seed.x() - entrant.x()), distance));
     }
 
     // Position of the global seed in polar coordinates
@@ -307,7 +307,7 @@ bool RadialStripDetectorModel::areNeighbors(const Pixel::Index& seed,
     auto row_seed_r = seed_pol.r();
 
     // Move row seed position to the center of the requested row
-    for(unsigned int shift_y = 0; shift_y < static_cast<unsigned int>(std::abs(dist_y)); shift_y++) {
+    for(unsigned int shift_y = 0; std::cmp_less(shift_y, std::abs(dist_y)); shift_y++) {
         row_seed_r += (dist_y < 0) ? (-strip_length_.at(static_cast<unsigned int>(seed.y()) - shift_y) / 2) -
                                          (strip_length_.at(static_cast<unsigned int>(seed.y()) - shift_y - 1) / 2)
                                    : (strip_length_.at(static_cast<unsigned int>(seed.y()) + shift_y) / 2) +
@@ -319,8 +319,8 @@ bool RadialStripDetectorModel::areNeighbors(const Pixel::Index& seed,
     auto [row_seed_x, row_seed_y] = getPixelIndex({row_seed.x(), row_seed.y(), 0});
 
     // Compare row seed and entrant positions
-    return (static_cast<size_t>(std::abs(row_seed_x - entrant.x())) <= distance) &&
-           (static_cast<size_t>(std::abs(dist_y)) <= distance);
+    return (std::cmp_less_equal(std::abs(row_seed_x - entrant.x()), distance)) &&
+           (std::cmp_less_equal(std::abs(dist_y), distance));
 }
 
 ROOT::Math::XYZPoint RadialStripDetectorModel::getSensorIntercept(const ROOT::Math::XYZPoint& inside,
