@@ -11,7 +11,7 @@
  */
 
 #ifndef TrackInfoG4_H
-#define TrackInfoG4_H 1
+#define TrackInfoG4_H
 
 #include <map>
 
