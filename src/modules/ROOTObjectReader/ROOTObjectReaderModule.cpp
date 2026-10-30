@@ -230,7 +230,7 @@ void ROOTObjectReaderModule::initialize() {
             message_info message_inf;
             message_inf.objects = new std::vector<Object*>;
             message_info_array_.emplace_back(message_inf);
-            branch->SetAddress(&(message_info_array_.back().objects));
+            branch->SetAddress(static_cast<void*>(&(message_info_array_.back().objects)));
 
             // Fill the rest of the message information
             // FIXME: we want to index this in a different way

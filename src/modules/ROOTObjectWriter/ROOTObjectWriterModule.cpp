@@ -210,8 +210,9 @@ void ROOTObjectWriterModule::run(Event* event) {
                 branch_name += message_name;
             }
 
-            trees_[class_name]->Bronch(
-                branch_name.c_str(), (std::string("std::vector<") + class_name_with_namespace + "*>").c_str(), addr);
+            trees_[class_name]->Bronch(branch_name.c_str(),
+                                       (std::string("std::vector<") + class_name_with_namespace + "*>").c_str(),
+                                       static_cast<void*>(addr));
 
             // Prefill new tree or new branch with empty records for all events that were missed since the start
             auto last_event = trees_["Event"]->GetEntries();
