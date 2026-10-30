@@ -174,6 +174,7 @@ namespace allpix {
          * @brief Kutta's third order method
          * @warning Without error function
          */
+        // NOLINTNEXTLINE(bugprone-throwing-static-initialization,cert-err58-cpp)
         static const auto RK3((Eigen::Matrix<double, 5, 3>() <<
             0, 0, 0,
             1.0/2, 0, 0,
@@ -184,6 +185,7 @@ namespace allpix {
          * @brief Classic original Runge-Kutta method
          * @warning Without error function
          */
+        // NOLINTNEXTLINE(bugprone-throwing-static-initialization,cert-err58-cpp)
         static const auto RK4((Eigen::Matrix<double, 6, 4>() <<
             0, 0, 0, 0,
             1.0/2, 0, 0, 0,
@@ -195,6 +197,7 @@ namespace allpix {
          * @brief Runge-Kutta-Fehlberg method
          * Values from https://ntrs.nasa.gov/citations/19680027281, p.13, Table III
          */
+        // NOLINTNEXTLINE(bugprone-throwing-static-initialization,cert-err58-cpp)
         static const auto RK5((Eigen::Matrix<double, 8, 6>() <<
             0, 0, 0, 0, 0, 0,
             1.0/4, 0, 0, 0, 0, 0,
@@ -207,6 +210,7 @@ namespace allpix {
         /**
          * @brief Runge-Kutta-Cash-Karp method
          */
+        // NOLINTNEXTLINE(bugprone-throwing-static-initialization,cert-err58-cpp)
         static const auto RKCK((Eigen::Matrix<double, 8, 6>() <<
             0, 0, 0, 0, 0, 0,
             1.0/5, 0, 0, 0, 0, 0,

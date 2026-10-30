@@ -39,9 +39,9 @@ using namespace allpix;
 using namespace lcio;
 
 namespace eutelescope {
-    static const std::string gTrackerHitEncoding = "sensorID:7,properties:7";
-    static const std::string gTrackerPulseEncoding = "sensorID:7,xSeed:12,ySeed:12,xCluSize:5,yCluSize:5,type:5,quality:5";
-    static const std::string gTrackerDataEncoding = "sensorID:7,sparsePixelType:5";
+    constexpr const char* gTrackerHitEncoding = "sensorID:7,properties:7";
+    constexpr const char* gTrackerPulseEncoding = "sensorID:7,xSeed:12,ySeed:12,xCluSize:5,yCluSize:5,type:5,quality:5";
+    constexpr const char* gTrackerDataEncoding = "sensorID:7,sparsePixelType:5";
 
     namespace {
         enum class HitProperties : std::uint8_t {

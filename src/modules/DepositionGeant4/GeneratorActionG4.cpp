@@ -94,6 +94,7 @@ static void apply_GPS_UI_commands_from_file(const std::string& file_name) {
 }
 
 // Define radioactive isotopes:
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization,cert-err58-cpp)
 std::map<std::string, std::tuple<int, int, int, double>> GeneratorActionG4::isotopes_ = {
     {"fe55", std::make_tuple(26, 55, 0, 0.)},
     {"am241", std::make_tuple(95, 241, 0, 0.)},

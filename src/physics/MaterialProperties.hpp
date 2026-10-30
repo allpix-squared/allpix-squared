@@ -21,6 +21,7 @@ namespace allpix {
      *
      * @warning All values in framework-internal units, here: MeV
      */
+    // NOLINTNEXTLINE(bugprone-throwing-static-initialization,cert-err58-cpp)
     static const std::map<SensorMaterial, double> ionization_energies = {
         {SensorMaterial::SILICON, 3.64e-6},
         {SensorMaterial::GALLIUM_ARSENIDE, 4.2e-6},
@@ -36,6 +37,7 @@ namespace allpix {
     /**
      * @brief Fano factors for different materials
      */
+    // NOLINTNEXTLINE(bugprone-throwing-static-initialization,cert-err58-cpp)
     static const std::map<SensorMaterial, double> fano_factors = {
         {SensorMaterial::SILICON, 0.115},
         {SensorMaterial::GALLIUM_ARSENIDE, 0.14},
