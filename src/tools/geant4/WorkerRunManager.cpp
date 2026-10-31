@@ -44,11 +44,6 @@
 
 using namespace allpix;
 
-namespace {
-    // counter to give each worker a unique id
-    std::atomic<int> counter;
-} // namespace
-
 WorkerRunManager::WorkerRunManager() {
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
     ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
@@ -173,6 +168,8 @@ WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() { // NOLINT
     // Initliazie per-thread stream-output
     // The following line is needed before we actually do I/O initialization
     // because the constructor of UI manager resets the I/O destination.
+    // Counter to give each worker a unique id
+    static std::atomic<int> counter{0};
     const G4int this_id = counter.fetch_add(1);
     G4Threading::G4SetThreadId(this_id);
     G4UImanager::GetUIpointer()->SetUpForAThread(this_id);
