@@ -9,6 +9,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <charconv>
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
@@ -16,6 +17,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
+#include <system_error>
 #include <vector>
 
 #include "core/log/log.h"
@@ -84,7 +87,13 @@ int main(int argc, const char* argv[]) {
                     LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
                 }
             } else if(strcmp(argv[i], "--values") == 0 && (i + 1 < argc)) {
-                n = static_cast<size_t>(std::atoi(argv[++i]));
+                const std::string_view arg{argv[++i]};
+                const auto [ptr, ec] = std::from_chars(arg.data(), arg.data() + arg.size(), n);
+                if(ec != std::errc() || ptr != arg.data() + arg.size()) {
+                    LOG(ERROR) << "Invalid value \"" << arg << "\" for option --values";
+                    print_help = true;
+                    return_code = 1;
+                }
             } else if(strcmp(argv[i], "--units") == 0 && (i + 1 < argc)) {
                 units = std::string(argv[++i]);
             } else {
