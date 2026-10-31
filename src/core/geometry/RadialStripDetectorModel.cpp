@@ -297,6 +297,7 @@ bool RadialStripDetectorModel::areNeighbors(const Pixel::Index& seed,
     // Seed and entrant in the same strip row
     if(dist_y == 0) {
         // Compare x-index distance to the requested distance
+        // NOLINTNEXTLINE(modernize-use-integer-sign-comparison): explicit casts kept for GCC compatibility
         return (static_cast<size_t>(std::abs(seed.x() - entrant.x())) <= distance);
     }
 
@@ -307,6 +308,7 @@ bool RadialStripDetectorModel::areNeighbors(const Pixel::Index& seed,
     auto row_seed_r = seed_pol.r();
 
     // Move row seed position to the center of the requested row
+    // NOLINTNEXTLINE(modernize-use-integer-sign-comparison): explicit casts kept for GCC compatibility
     for(unsigned int shift_y = 0; shift_y < static_cast<unsigned int>(std::abs(dist_y)); shift_y++) {
         row_seed_r += (dist_y < 0) ? (-strip_length_.at(static_cast<unsigned int>(seed.y()) - shift_y) / 2) -
                                          (strip_length_.at(static_cast<unsigned int>(seed.y()) - shift_y - 1) / 2)
@@ -319,8 +321,10 @@ bool RadialStripDetectorModel::areNeighbors(const Pixel::Index& seed,
     auto [row_seed_x, row_seed_y] = getPixelIndex({row_seed.x(), row_seed.y(), 0});
 
     // Compare row seed and entrant positions
+    // NOLINTBEGIN(modernize-use-integer-sign-comparison): explicit casts kept for GCC compatibility
     return (static_cast<size_t>(std::abs(row_seed_x - entrant.x())) <= distance) &&
            (static_cast<size_t>(std::abs(dist_y)) <= distance);
+    // NOLINTEND(modernize-use-integer-sign-comparison)
 }
 
 ROOT::Math::XYZPoint RadialStripDetectorModel::getSensorIntercept(const ROOT::Math::XYZPoint& inside,
