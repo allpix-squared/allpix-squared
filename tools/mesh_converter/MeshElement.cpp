@@ -22,6 +22,7 @@
 
 #include "core/log/log.h"
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define MIN_VOLUME 1e-12
 
 using namespace mesh_converter;

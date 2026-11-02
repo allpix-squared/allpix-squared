@@ -32,7 +32,7 @@
 #include <utility>
 
 // Mime type version for APF files
-// NOLINTNEXTLINE(cppcoreguidelines-macro-to-enum)
+// NOLINTNEXTLINE(cppcoreguidelines-macro-to-enum,cppcoreguidelines-macro-usage)
 #define APF_MIME_TYPE_VERSION 2
 
 namespace allpix {

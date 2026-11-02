@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <charconv>
 #include <cmath>
 #include <csignal>
 #include <cstdio>
@@ -17,6 +18,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
+#include <system_error>
 
 #include "TCanvas.h"
 #include "TFile.h"
@@ -105,8 +108,15 @@ int main(int argc, char** argv) {
             } else if(strcmp(argv[i], "-s") == 0) {
                 scalar_field = true;
             } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
-                slice_cut = static_cast<size_t>(std::atoi(argv[++i]));
-                flag_cut = true;
+                const std::string_view arg{argv[++i]};
+                const auto [ptr, ec] = std::from_chars(arg.data(), arg.data() + arg.size(), slice_cut);
+                if(ec != std::errc() || ptr != arg.data() + arg.size()) {
+                    LOG(ERROR) << "Invalid value \"" << arg << "\" for option -c";
+                    print_help = true;
+                    return_code = 1;
+                } else {
+                    flag_cut = true;
+                }
             } else if(strcmp(argv[i], "-l") == 0) {
                 log_scale = true;
             } else {

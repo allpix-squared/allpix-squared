@@ -56,11 +56,14 @@
 
 // Common prefix for all modules
 // TODO(simonspa): [doc] Should be provided by the build system
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define ALLPIX_MODULE_PREFIX "libAllpixModule"
 
 // These should point to the function defined in dynamic_module_impl.cpp
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
 #define ALLPIX_GENERATOR_FUNCTION "allpix_module_generator"
 #define ALLPIX_UNIQUE_FUNCTION "allpix_module_is_unique"
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 using namespace allpix;
 
