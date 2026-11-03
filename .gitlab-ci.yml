@@ -7,7 +7,7 @@ variables:
     DOCKER_DEPS_UBUNTU2404: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-ubuntu2404-deps:latest"
     DOCKER_DEPS_UBUNTU2204: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-ubuntu2204-deps:latest"
     EOS_PATH: "/eos/project/a/allpix-squared/www/"
-    DOCKER_FILE: etc/docker/Dockerfile
+    DOCKER_FILE: etc/docker/ubuntu-26.04/Dockerfile
 
 default:
     retry:
@@ -599,7 +599,7 @@ deploy:cvmfs:
 .deploy-docker:
     stage: deployment
     extends:
-        - .ubuntu2404
+        - .ubuntu2604
     before_script: []
     image:
         name: gcr.io/kaniko-project/executor:debug
