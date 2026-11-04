@@ -11,6 +11,7 @@
 
 #include "LoggerManager.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <mutex>
 #include <utility>
@@ -48,6 +49,19 @@ Logger& LoggerManager::getLogger(const std::string& topic) {
 }
 
 Logger& LoggerManager::getDefault() { return getLogger(""); }
+
+std::vector<std::string> LoggerManager::getTopics() const {
+    const std::scoped_lock lock(mutex_);
+    std::vector<std::string> topics;
+    topics.reserve(loggers_.size());
+    for(const auto& [topic, logger] : loggers_) {
+        if(!topic.empty()) {
+            topics.push_back(topic);
+        }
+    }
+    std::ranges::sort(topics);
+    return topics;
+}
 
 void LoggerManager::addSink(const spdlog::sink_ptr& sink) {
     const std::scoped_lock lock(mutex_);

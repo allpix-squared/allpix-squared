@@ -77,6 +77,12 @@ namespace allpix {
         Logger& getDefault();
 
         /**
+         * @brief Get the topics of all loggers, without the core logger
+         * @return Sorted topics
+         */
+        std::vector<std::string> getTopics() const;
+
+        /**
          * @brief Register a new sink, attaching it to existing loggers as well as all future loggers
          *
          * @param sink Sink to register
