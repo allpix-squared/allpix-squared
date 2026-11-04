@@ -16,6 +16,7 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <filesystem>
+#include <mutex>
 
 #include "core/config/exceptions.h"
 #include "core/histograms/ThreadedHistogram.hpp"
@@ -53,10 +54,10 @@ namespace allpix {
 
         /// @{
         /**
-         * @brief Use default move behaviour
+         * @brief Moving the manager is not allowed
          */
-        HistogramManager(HistogramManager&&) noexcept = default;
-        HistogramManager& operator=(HistogramManager&&) noexcept = default;
+        HistogramManager(HistogramManager&&) = delete;
+        HistogramManager& operator=(HistogramManager&&) = delete;
         /// @}
 
         /**
@@ -111,9 +112,7 @@ namespace allpix {
          * @brief Get the histogram list
          * @return vector with directories of histograms (key) and pointers to histograms (value)
          */
-        const std::vector<std::pair<std::string, std::shared_ptr<BaseHistogram>>>& get_histogram_list() const {
-            return histogram_list_;
-        };
+        std::vector<std::pair<std::string, std::shared_ptr<BaseHistogram>>> get_histogram_list() const;
 
     private:
         HistogramManager() = default;
@@ -127,6 +126,7 @@ namespace allpix {
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> create_histogram(TDirectory* directory, ARGS&&... args);
 
+        mutable std::mutex histogram_list_mutex_;
         std::vector<std::pair<std::string, std::shared_ptr<BaseHistogram>>> histogram_list_;
         std::unique_ptr<TFile> histogram_file_;
     };
