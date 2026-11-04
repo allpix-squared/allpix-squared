@@ -11,6 +11,8 @@
 
 #include "HistogramManager.hpp" // NOLINT(misc-header-include-cycle)
 
+#include <mutex>
+
 #include "core/histograms/ThreadedHistogram.hpp"
 
 namespace allpix {
@@ -35,7 +37,8 @@ namespace allpix {
         auto histogram = std::make_shared<ThreadedHistogram<T>>(std::forward<ARGS>(args)...);
 
         LOG(DEBUG) << "Registering histogram (" << local_path_str << ", " << histogram->Get()->GetName() << ")";
-        histogram_list_.push_back({local_path_str, histogram});
+        const std::scoped_lock lock{histogram_list_mutex_};
+        histogram_list_.emplace_back(local_path_str, histogram);
 
         return histogram;
     }

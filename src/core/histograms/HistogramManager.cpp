@@ -127,6 +127,7 @@ void HistogramManager::finalize() {
         return;
     }
 
+    const std::scoped_lock lock{histogram_list_mutex_};
     for(auto& it : histogram_list_) {
         if(!(it.second)) {
             throw LogicError("A histogram in the local directory " + it.first + " can no longer be accessed.");
@@ -135,4 +136,9 @@ void HistogramManager::finalize() {
         histogram_file_->cd(it.first.c_str());
         it.second->write();
     }
+}
+
+std::vector<std::pair<std::string, std::shared_ptr<BaseHistogram>>> HistogramManager::get_histogram_list() const {
+    const std::scoped_lock lock{histogram_list_mutex_};
+    return histogram_list_;
 }
