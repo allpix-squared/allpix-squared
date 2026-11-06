@@ -12,7 +12,6 @@
 #ifndef ALLPIX_THREADED_HISTOGRAM_H
 #define ALLPIX_THREADED_HISTOGRAM_H
 
-#include <atomic>
 #include <cmath>
 #include <concepts>
 #include <memory>
@@ -180,7 +179,6 @@ namespace allpix {
 
         std::unique_ptr<T> model_;
         std::vector<std::shared_ptr<T>> objects_;
-        std::vector<std::atomic<T*>> instances_;
         std::vector<TDirectory*> directories_;
         bool is_merged_{false};
         std::unordered_set<std::string> drawing_options_;

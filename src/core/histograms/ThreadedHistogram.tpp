@@ -29,13 +29,7 @@ namespace allpix {
 
     // NOLINTNEXTLINE(readability-identifier-naming)
     template <typename T> requires std::derived_from<T, TH1> std::shared_ptr<T> ThreadedHistogram<T>::Get() {
-        auto idx = ThreadPool::threadNum();
-        auto& object = objects_[idx];
-        if(!object) {
-            object.reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[idx]));
-            instances_[idx].store(object.get(), std::memory_order_release);
-        }
-        return object;
+        return objects_[ThreadPool::threadNum()];
     }
 
     template <typename T> requires std::derived_from<T, TH1> std::unique_ptr<TH1> ThreadedHistogram<T>::snapshot() const {
@@ -47,10 +41,8 @@ namespace allpix {
 
         auto snapshot = std::unique_ptr<T>(static_cast<T*>(model_->Clone()));
         TList instances;
-        for(const auto& instance : instances_) {
-            if(auto* object = instance.load(std::memory_order_acquire); object != nullptr) {
-                instances.Add(object);
-            }
+        for(const auto& object : objects_) {
+            instances.Add(object.get());
         }
         snapshot->Merge(&instances);
         return snapshot;
@@ -61,7 +53,6 @@ namespace allpix {
     void ThreadedHistogram<T>::init(ARGS&&... args) {
         const auto num_slots = ThreadPool::threadCount();
         objects_.resize(num_slots);
-        instances_ = std::vector<std::atomic<T*>>(num_slots);
 
 #if ROOT_VERSION_CODE < ROOT_VERSION(6, 22, 0)
         directories_ = ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create(num_slots);
@@ -77,9 +68,10 @@ namespace allpix {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         model_.reset(ROOT::Internal::TThreadedObjectUtils::Detacher<T>::Detach(new T(std::forward<ARGS>(args)...)));
 
-        // initialize at least the base object
-        objects_[0].reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[0]));
-        instances_[0].store(objects_[0].get(), std::memory_order_release);
+        // Create all thread-local objects
+        for(auto i = 0U; i < num_slots; ++i) {
+            objects_[i].reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[i]));
+        }
     }
 
     /**
