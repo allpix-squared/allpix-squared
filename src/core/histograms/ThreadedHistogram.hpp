@@ -14,6 +14,7 @@
 
 #include <cmath>
 #include <concepts>
+#include <memory>
 #include <optional>
 #include <string>
 #include <utility>
@@ -54,6 +55,14 @@ namespace allpix {
         virtual double GetMinimum() const = 0;
         virtual void SetMaximum(double) = 0;
         virtual double GetMaximum() const = 0;
+
+        /**
+         * @brief Merge the thread-local instances into a new histogram, without modifying or locking them
+         * @warning Concurrent fills are not synchronized, the snapshot may miss or partially contain them. Histograms with
+         *          extendable axes must not be filled concurrently. Not to be called concurrently with write().
+         * @return Merged copy of the histogram
+         */
+        virtual std::unique_ptr<TH1> snapshot() const = 0;
 
     protected:
         virtual void write() = 0;
@@ -136,6 +145,13 @@ namespace allpix {
          * Based on get in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html, optimized for faster retrieval.
          */
         std::shared_ptr<T> Get(); // NOLINT(readability-identifier-naming)
+
+        /**
+         * @brief Merge the thread-local instances into a new histogram
+         *
+         * Based on SnapshotMerge in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html.
+         */
+        std::unique_ptr<TH1> snapshot() const override;
 
     protected:
         /**

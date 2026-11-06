@@ -17,7 +17,9 @@
 
 #include <ROOT/TThreadedObject.hxx>
 #include <TAxis.h>
+#include <TDirectory.h>
 #include <TH1.h>
+#include <TList.h>
 #include <TObject.h>
 
 #include "core/log/log.h"
@@ -27,12 +29,23 @@ namespace allpix {
 
     // NOLINTNEXTLINE(readability-identifier-naming)
     template <typename T> requires std::derived_from<T, TH1> std::shared_ptr<T> ThreadedHistogram<T>::Get() {
-        auto idx = ThreadPool::threadNum();
-        auto& object = objects_[idx];
-        if(!object) {
-            object.reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[idx]));
+        return objects_[ThreadPool::threadNum()];
+    }
+
+    template <typename T> requires std::derived_from<T, TH1> std::unique_ptr<TH1> ThreadedHistogram<T>::snapshot() const {
+        // No current directory, so that the clones are not attached to one
+        const TDirectory::TContext context{nullptr};
+        if(is_merged_) {
+            return std::unique_ptr<TH1>(static_cast<T*>(objects_[0]->Clone()));
         }
-        return object;
+
+        auto snapshot = std::unique_ptr<T>(static_cast<T*>(model_->Clone()));
+        TList instances;
+        for(const auto& object : objects_) {
+            instances.Add(object.get());
+        }
+        snapshot->Merge(&instances);
+        return snapshot;
     }
 
     template <typename T>
@@ -55,8 +68,10 @@ namespace allpix {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         model_.reset(ROOT::Internal::TThreadedObjectUtils::Detacher<T>::Detach(new T(std::forward<ARGS>(args)...)));
 
-        // initialize at least the base object
-        objects_[0].reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[0]));
+        // Create all thread-local objects
+        for(auto i = 0U; i < num_slots; ++i) {
+            objects_[i].reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[i]));
+        }
     }
 
     /**
