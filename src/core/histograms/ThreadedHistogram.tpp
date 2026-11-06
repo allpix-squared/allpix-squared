@@ -17,7 +17,9 @@
 
 #include <ROOT/TThreadedObject.hxx>
 #include <TAxis.h>
+#include <TDirectory.h>
 #include <TH1.h>
+#include <TList.h>
 #include <TObject.h>
 
 #include "core/log/log.h"
@@ -31,8 +33,27 @@ namespace allpix {
         auto& object = objects_[idx];
         if(!object) {
             object.reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[idx]));
+            instances_[idx].store(object.get(), std::memory_order_release);
         }
         return object;
+    }
+
+    template <typename T> requires std::derived_from<T, TH1> std::unique_ptr<TH1> ThreadedHistogram<T>::snapshot() const {
+        // No current directory, so that the clones are not attached to one
+        const TDirectory::TContext context{nullptr};
+        if(is_merged_) {
+            return std::unique_ptr<TH1>(static_cast<T*>(objects_[0]->Clone()));
+        }
+
+        auto snapshot = std::unique_ptr<T>(static_cast<T*>(model_->Clone()));
+        TList instances;
+        for(const auto& instance : instances_) {
+            if(auto* object = instance.load(std::memory_order_acquire); object != nullptr) {
+                instances.Add(object);
+            }
+        }
+        snapshot->Merge(&instances);
+        return snapshot;
     }
 
     template <typename T>
@@ -40,6 +61,7 @@ namespace allpix {
     void ThreadedHistogram<T>::init(ARGS&&... args) {
         const auto num_slots = ThreadPool::threadCount();
         objects_.resize(num_slots);
+        instances_ = std::vector<std::atomic<T*>>(num_slots);
 
 #if ROOT_VERSION_CODE < ROOT_VERSION(6, 22, 0)
         directories_ = ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create(num_slots);
@@ -57,6 +79,7 @@ namespace allpix {
 
         // initialize at least the base object
         objects_[0].reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[0]));
+        instances_[0].store(objects_[0].get(), std::memory_order_release);
     }
 
     /**
