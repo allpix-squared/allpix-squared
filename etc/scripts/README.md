@@ -66,7 +66,7 @@ electronics_noise   double
 output_plots        bool
 threshold           double
 threshold_smearing  unsigned int
-adc_smearing        double
+qdc_smearing        double
 ```
 
 Parameters found in the source code are not de-duplicated, thus some might appear several times.

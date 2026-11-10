@@ -58,7 +58,7 @@ The reader provides the following models for electric fields:
   by default the field values are interpreted as representing `V/cm`. This is also the unit used in the output files from the `mesh converter` tool.
 
 * The **custom** field model allows to specify arbitrary analytic field functions for a single or all three vector components
-  of the electric field. For this, the `field_functions` parameter configured with either one formula which is then used for
+  of the electric field. For this, the `field_function` parameter configured with either one formula which is then used for
   the `z` component of the field vector, or with three functions representing the three components of the field vector. Using
   the `field_parameters` configuration, values for the free parameters defined in the formulae can be set. For the parameters
   units are supported and parsed. Each of the field vector components has access to its own free parameters as well as all
@@ -67,7 +67,7 @@ The reader provides the following models for electric fields:
 
 The `depletion_depth` parameter can be used to control the thickness of the depleted region inside the sensor.
 This can be useful for devices such as HV-CMOS sensors, where the typical depletion depth but not necessarily the full
-depletion voltage are know. It should be noted that `depletion_voltage` and `depletion_depth` are mutually exclusive
+depletion voltage are known. It should be noted that `depletion_voltage` and `depletion_depth` are mutually exclusive
 parameters and only one at a time can be specified. The alias `field_depth` can be used instead, as this parameter is the
 depth that the field will be created over. If the parameter is smaller than the field from an imported mesh, the field will
 be compressed in the z-direction.
@@ -120,10 +120,10 @@ be enabled and controlled with the plotting parameters listed below.
 
 ### Parameters for model `custom`
 
-* `field_functions` : Single equation (for a field vector along the `z` axis only) or array of three equations (for the three
+* `field_function` : Single equation (for a field vector along the `z` axis only) or array of three equations (for the three
   components of a vector field). All three coordinates `x`, `y`, and `z` can be used, parameters need to be specified in
   consecutively numbered square brackets (`[0]`, `[1]`), starting with `[0]` for each of the equations.
-* `field_parameters` : Array of values for the parameters of any equation defined in `field_equations`. Units can be used.
+* `field_parameters` : Array of values for the parameters of any equation defined in `field_function`. Units can be used.
   The number of parameters given must match the sum of the number of free parameters from all defined equations.
 
 ## Plotting parameters
@@ -169,7 +169,7 @@ maximum_field = 10000V/cm
 ```
 
 An example for a custom field definition is given below. Here, a one-dimensional field is defined, which will be
-automatically applied to the z-axis of the detector. Care should be take to use the proper variables in the formula, in this
+automatically applied to the z-axis of the detector. Care should be taken to use the proper variables in the formula, in this
 case `z` for the respective coordinate.
 
 ```ini

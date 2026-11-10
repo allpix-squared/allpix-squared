@@ -41,12 +41,12 @@ This is possible by using the `input` and `output` parameters of a module that s
 ```ini
 [DefaultDigitizer]
 name = "dut0"
-adc_resolution = 4
+qdc_resolution = 4
 output = "low_adc_resolution"
 
 [DefaultDigitizer]
 name = "dut0"
-adc_resolution = 12
+qdc_resolution = 12
 output = "high_adc_resolution"
 ```
 
