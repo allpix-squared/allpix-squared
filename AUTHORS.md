@@ -35,6 +35,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Katharina Dort, University of Gießen, [kdort](https://gitlab.cern.ch/kdort)
 * Simon Gardner, University of Glasgow, [simonge](https://github.com/simonge)
 * Neal Gauvin, Université de Genève, [ngauvin](https://gitlab.cern.ch/ngauvin)
+* Andreas Gsponer, University of California Santa Cruz, [agsponer](https://gitlab.cern.ch/agsponer)
 * Yajun He, DESY, [yajun](https://gitlab.cern.ch/yajun)
 * Ryan Heller, LBNL, [heller3](https://github.com/heller3)
 * Lennart Huth, DESY, [lhuth](https://gitlab.cern.ch/lhuth)
